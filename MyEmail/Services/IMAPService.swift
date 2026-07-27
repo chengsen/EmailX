@@ -439,6 +439,33 @@ actor IMAPService {
         return try await srv.fetchMessageInfo(for: UID(uid))
     }
 
+    // MARK: - Gmail extensions (X-GM-EXT-1)
+
+    /// True if this is a Gmail / Workspace account — the only server family
+    /// that advertises `X-GM-EXT-1`. Host-based because SwiftMail keeps the
+    /// parsed capability set `internal`. A misconfigured host is still safe:
+    /// `fetchGmailAttributes` is guarded and a non-Gmail server's tagged BAD
+    /// is swallowed by the caller.
+    func supportsGmailExtensions() -> Bool {
+        let host = account.imapHost.lowercased()
+        return host.contains("gmail.com") || host.contains("googlemail.com")
+    }
+
+    /// Fetch Gmail-native attributes (X-GM-MSGID / THRID / LABELS) for the
+    /// given UIDs. Folder must already be selected. Returns a UID→attrs map;
+    /// UIDs the server omits are simply absent.
+    func fetchGmailAttributes(uids: [UInt32]) async throws -> [UInt32: GmailMessageAttributes] {
+        guard !uids.isEmpty else { return [:] }
+        let srv = try await requireServer()
+        var set = UIDSet()
+        for uid in uids { set.insert(UID(uid)) }
+        let byUID = try await srv.fetchGmailAttributes(for: set)
+        var out: [UInt32: GmailMessageAttributes] = [:]
+        out.reserveCapacity(byUID.count)
+        for (uid, attrs) in byUID { out[uid.value] = attrs }
+        return out
+    }
+
     // MARK: - List all UIDs (for reconcile)
 
     /// `SEARCH ALL` — returns set of all UIDs in currently selected folder.

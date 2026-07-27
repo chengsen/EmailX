@@ -148,10 +148,25 @@ final class DatabaseService: Sendable {
     /// new schema changes go here as immutable `registerMigration` steps.
     private static func runMigrations(on pool: DatabasePool) throws {
         var migrator = DatabaseMigrator()
-        // No migrations yet beyond the canonical schema. Add future schema
-        // changes here, e.g.:
-        //   migrator.registerMigration("v{desc}") { db in try db.alter(...) }
-        // Each migration name is immutable once shipped.
+        // Add future schema changes here as immutable registerMigration steps.
+        // Each migration name is frozen once shipped (hard rule 11).
+
+        // Gmail X-GM-MSGID: stable per-account message identity (same across
+        // INBOX / All Mail / label folders, unlike per-folder UID). Stored as
+        // TEXT — it's a 64-bit *unsigned* id that can exceed Int64.max.
+        // Populated for Gmail accounts by `enrichGmailAttributes`; NULL
+        // elsewhere. Partial index feeds the future cross-folder body-dedup
+        // lookup (account_id, gm_msgid) without indexing the NULL majority.
+        migrator.registerMigration("vGmailMsgID") { db in
+            try db.alter(table: "messages") { table in
+                table.add(column: "gm_msgid", .text)
+            }
+            try db.execute(sql: """
+                CREATE INDEX IF NOT EXISTS messages_account_gm_msgid
+                ON messages(account_id, gm_msgid) WHERE gm_msgid IS NOT NULL
+                """)
+        }
+
         try migrator.migrate(pool)
     }
 

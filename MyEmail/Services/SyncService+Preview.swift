@@ -18,6 +18,11 @@ extension SyncService {
     /// Fetch preview snippets for recent messages without body.
     /// Folder must already be SELECTed on `imap`.
     func fetchPreviews(folderID: UUID, imap: IMAPService, limit: Int = 20) async {
+        // Shares the 4 post-sync call sites of preview fetching. Runs first and
+        // unconditionally — a folder with no preview-targets may still have
+        // messages needing Gmail-attribute enrichment. No-op on non-Gmail.
+        await enrichGmailAttributes(folderID: folderID, imap: imap)
+
         let targets: [(id: UUID, uid: UInt32)] = (try? await pool.read { db in
             try Row.fetchAll(db, sql: """
                 SELECT id, uid FROM messages
