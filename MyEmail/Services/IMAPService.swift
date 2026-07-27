@@ -26,8 +26,6 @@ actor IMAPService {
     private(set) var selectedFolderPath: String?
 
     // MARK: - Health state (Thunderbird parity §9.X)
-    /// Timestamp of last successful connect+auth. `nil` while disconnected.
-    private(set) var connectedAt: Date?
     /// Last successful round-trip (CONNECT, SELECT, NOOP). Used by the
     /// probe-skip freshness window so we don't NOOP-thrash a hot socket.
     private(set) var lastActivityAt: Date?
@@ -45,10 +43,6 @@ actor IMAPService {
     /// Skip the probe when the last successful round-trip is newer than this.
     /// 60s matches our STATUS-poll cadence, so two probes per ping never happen.
     private static let freshnessWindow: TimeInterval = 60
-    /// Hard cap on a single connection's lifetime — force-recycle past this.
-    /// TB doesn't enforce this directly, but its 24h IDLE rotation + auto-sync
-    /// pauses approximate the same outcome.
-    private static let maxConnectionAge: TimeInterval = 4 * 3600
 
     init(account: Account, keychain: KeychainService) {
         self.account = account
@@ -167,9 +161,7 @@ actor IMAPService {
         }
 
         self.server = srv
-        let now = Date()
-        self.connectedAt = now
-        self.lastActivityAt = now
+        self.lastActivityAt = Date()
         self.needsHealthProbe = false
         LogService.log(.info, .imap, "Connected \(account.email)")
     }
@@ -181,7 +173,6 @@ actor IMAPService {
         self.server = nil
         self.lastSelection = nil
         self.selectedFolderPath = nil
-        self.connectedAt = nil
         self.lastActivityAt = nil
         self.needsHealthProbe = false
         LogService.log(.info, .imap, "Disconnected \(account.email)")
@@ -204,11 +195,6 @@ actor IMAPService {
         self.needsHealthProbe = true
         self.selectedFolderPath = nil
         self.lastSelection = nil
-    }
-
-    /// Age of the current connection in seconds, or `nil` if disconnected.
-    func ageInSeconds() -> TimeInterval? {
-        connectedAt.map { Date().timeIntervalSince($0) }
     }
 
     /// Send a NOOP with a short timeout. Returns `true` if the socket
@@ -243,23 +229,19 @@ actor IMAPService {
     }
 
     /// Gate called from every entry-point before issuing IMAP commands.
-    /// Mirrors TB's `m_needNoop` flag + age-based connection recycling.
+    /// Mirrors TB's `m_needNoop` flag — a NOOP probe is the sole health
+    /// arbiter. No blunt age-based recycling: TB keeps pooled connections
+    /// alive via TCP keepalive and reuses them, reconnecting only when a
+    /// socket is proven dead (bug 1535969). A 4h-old but live socket answers
+    /// NOOP in ~30ms and gets reused — no reason to make the user's click pay
+    /// for a preemptive teardown.
     ///
     /// Logic:
     ///   1. Disconnected? Nothing to do — caller will explicitly `connect()`.
-    ///   2. Past hard-age cap? Force reconnect (no probe — assume dead).
-    ///   3. Fresh activity (< `freshnessWindow`) AND not explicitly stale? Skip.
-    ///   4. Otherwise: NOOP probe → on failure, reconnect with last folder.
+    ///   2. Fresh activity (< `freshnessWindow`) AND not explicitly stale? Skip.
+    ///   3. Otherwise: NOOP probe → on failure, reconnect with last folder.
     private func ensureHealthyConnection() async throws {
         guard isConnected else { return }
-
-        if let age = ageInSeconds(), age > Self.maxConnectionAge {
-            LogService.log(.info, .imap,
-                "Connection age \(Int(age))s exceeds cap; force-reconnecting",
-                detail: account.email)
-            try await reconnectInternal()
-            return
-        }
 
         if !needsHealthProbe,
            let last = lastActivityAt,
@@ -509,8 +491,8 @@ actor IMAPService {
     /// Probe-gated server accessor. All entry-point IMAP ops MUST use this
     /// (Thunderbird `m_needNoop` parity): runs `ensureHealthyConnection()`
     /// which does a short-timeout NOOP probe + auto-reconnect when the
-    /// socket has been idle, marked stale by foreground/wake observers, or
-    /// past the hard age cap. Cheap fast-path when `lastActivityAt` is fresh.
+    /// socket has been idle or marked stale by foreground/wake observers.
+    /// Cheap fast-path when `lastActivityAt` is fresh.
     func requireServer() async throws -> IMAPServer {
         try await ensureHealthyConnection()
         return try serverOrThrow()
