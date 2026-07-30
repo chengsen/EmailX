@@ -44,11 +44,20 @@ extension IMAPService {
 
     // MARK: - Move (batched, §9.1)
 
-    func moveMessages(uids: [UInt32], to destination: String) async throws {
-        guard !uids.isEmpty else { return }
+    /// Returns the server's verified source→destination UID mapping (RFC 4315
+    /// COPYUID), or `nil` when the server lacks UIDPLUS. Callers that persist
+    /// optimistic rows use it to write the real target UID immediately instead
+    /// of waiting for a resync to rediscover it.
+    @discardableResult
+    func moveMessages(uids: [UInt32], to destination: String) async throws -> [UInt32: UInt32]? {
+        guard !uids.isEmpty else { return nil }
         let set = UIDSet(uids.map { UID($0) })
         let srv = try await requireServer()
-        try await srv.move(messages: set, to: destination)
+        guard let copyUID = try await srv.move(messages: set, to: destination) else { return nil }
+        return Dictionary(
+            copyUID.mapping.map { ($0.source.value, $0.destination.value) },
+            uniquingKeysWith: { _, latest in latest }
+        )
     }
 
     // MARK: - Archive (SwiftMail built-in: resolves via SPECIAL-USE or name fallback)
