@@ -100,6 +100,17 @@ actor IMAPService {
 
         try await srv.connect()
 
+        // RFC 2971: register the client identity before authenticating so
+        // SwiftMail replays ID after every auth on every connection it opens —
+        // primary, per-folder IDLE sockets, and transparent re-auth. Both
+        // XOAUTH2 entry points rebuild `authentication` from this stored value,
+        // so setting it once here covers the whole session. Capability gating
+        // and NO/BAD tolerance are handled inside.
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        await srv.setClientIdentification(
+            Identification(name: "MyEmail", version: version, os: "macOS")
+        )
+
         switch account.authType {
         case .oauth2:
             let email = account.email
@@ -148,16 +159,6 @@ actor IMAPService {
                 username: account.email,
                 password: try keychain.password(for: account.id)
             )
-        }
-
-        // RFC 2971: Send IMAP ID after auth (best-practice, helps server-side debugging)
-        do {
-            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-            let clientID = Identification(name: "MyEmail", version: version, os: "macOS")
-            _ = try await srv.id(clientID)
-        } catch {
-            // Non-fatal — server may not support ID extension
-            LogService.log(.debug, .imap, "IMAP ID not supported", detail: "\(error)")
         }
 
         self.server = srv
