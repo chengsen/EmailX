@@ -57,7 +57,9 @@ extension ComposeView {
         attributedBody = merged
     }
 
-    private func signatureRanges(in attr: NSAttributedString) -> [NSRange] {
+    // Non-private: ComposeView+Prefill.swift inserts the async quote before
+    // the signature via this lookup.
+    func signatureRanges(in attr: NSAttributedString) -> [NSRange] {
         var ranges: [NSRange] = []
         attr.enumerateAttribute(
             RichTextSupport.signatureKey,

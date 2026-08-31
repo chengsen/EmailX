@@ -73,16 +73,37 @@ enum RichTextSupport {
     }
 
     /// Parse an HTML fragment to NSAttributedString. Used for reply/forward quotes.
+    /// Remote resources are stripped first: the legacy WebKit importer fetches
+    /// http(s) subresources synchronously on the main thread, freezing the
+    /// compose window for seconds (Thunderbird likewise never auto-loads
+    /// remote content in quoted HTML). Timeout is belt-and-braces for
+    /// anything the regexes miss.
     static func attributedFromHTML(_ html: String) -> NSAttributedString? {
-        guard let data = html.data(using: .utf8) else { return nil }
+        guard let data = strippingRemoteResources(html).data(using: .utf8) else { return nil }
         return try? NSAttributedString(
             data: data,
             options: [
                 .documentType: NSAttributedString.DocumentType.html,
                 .characterEncoding: String.Encoding.utf8.rawValue,
+                .timeout: 2.0,
             ],
             documentAttributes: nil
         )
+    }
+
+    /// Drop tags/CSS that reference http(s) URLs: <img src=…>, <link …>,
+    /// url(…) in inline styles. cid: refs stay — they resolve locally.
+    nonisolated static func strippingRemoteResources(_ html: String) -> String {
+        var result = html
+        for pattern in [
+            "(?is)<img[^>]*\\bsrc\\s*=\\s*[\"']?https?:[^>]*>",
+            "(?is)<link[^>]*>",
+            "(?is)url\\(\\s*[\"']?https?:[^)]*\\)",
+        ] {
+            result = result.replacingOccurrences(
+                of: pattern, with: "", options: .regularExpression)
+        }
+        return result
     }
 
     nonisolated static func escapeHTML(_ text: String) -> String {

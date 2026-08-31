@@ -44,7 +44,8 @@ extension ComposeView {
         case .reply:
             toField = msg.replyToAddresses.first ?? msg.fromAddress
             subjectField = prefixed(msg.subject, prefix: "Re:")
-            attributedBody = buildReplyBody(for: msg)
+            attributedBody = replyScaffold(for: msg)
+            scheduleQuoteInsertion(for: msg, asQuote: true)
         case .replyAll:
             toField = msg.replyToAddresses.first ?? msg.fromAddress
             let others = (msg.toAddresses + msg.ccAddresses)
@@ -52,10 +53,12 @@ extension ComposeView {
                     && $0.caseInsensitiveCompare(selectedAccount.email) != .orderedSame }
             ccField = others.joined(separator: ", ")
             subjectField = prefixed(msg.subject, prefix: "Re:")
-            attributedBody = buildReplyBody(for: msg)
+            attributedBody = replyScaffold(for: msg)
+            scheduleQuoteInsertion(for: msg, asQuote: true)
         case .forward:
             subjectField = prefixed(msg.subject, prefix: "Fwd:")
-            attributedBody = buildForwardBody(for: msg)
+            attributedBody = forwardScaffold(for: msg)
+            scheduleQuoteInsertion(for: msg, asQuote: false)
         }
     }
 
@@ -71,38 +74,18 @@ extension ComposeView {
         return "\(prefix) \(subject)"
     }
 
-    /// Reply body: two blank lines for the cursor, attribution, then a
-    /// <blockquote> containing the original message (HTML if available).
-    private func buildReplyBody(for msg: Message) -> NSAttributedString {
+    /// Reply scaffold: two blank lines for the cursor + attribution line.
+    /// The quote itself arrives via scheduleQuoteInsertion.
+    private func replyScaffold(for msg: Message) -> NSAttributedString {
         let attrs = RichTextSupport.defaultTypingAttributes
         let out = NSMutableAttributedString()
         out.append(NSAttributedString(string: "\n\n", attributes: attrs))
         out.append(NSAttributedString(string: attribution(msg) + "\n", attributes: attrs))
-        out.append(buildQuote(for: msg))
         return out
     }
 
-    /// Build the quoted original message. Parses the source HTML directly
-    /// (avoids the nested-<html> pitfall of wrapping full documents in a
-    /// <blockquote>) and then applies indentation + muted color as a paragraph
-    /// style across the whole range — Mail.app / Thunderbird convention.
-    private func buildQuote(for msg: Message) -> NSAttributedString {
-        let base: NSAttributedString
-        if let html = msg.bodyHTML, !html.isEmpty,
-           let parsed = RichTextSupport.attributedFromHTML(html) {
-            base = parsed
-        } else {
-            base = NSAttributedString(
-                string: msg.bodyText ?? "",
-                attributes: RichTextSupport.defaultTypingAttributes
-            )
-        }
-        return RichTextSupport.applyQuoteStyle(to: base)
-    }
-
-    /// Forward body: header block, blank line, original body (HTML preserved
-    /// when present).
-    private func buildForwardBody(for msg: Message) -> NSAttributedString {
+    /// Forward scaffold: banner + header block. Body arrives async.
+    private func forwardScaffold(for msg: Message) -> NSAttributedString {
         let attrs = RichTextSupport.defaultTypingAttributes
         let out = NSMutableAttributedString()
         out.append(NSAttributedString(
@@ -110,13 +93,42 @@ extension ComposeView {
             attributes: attrs
         ))
         out.append(NSAttributedString(string: forwardHeader(msg) + "\n\n", attributes: attrs))
+        return out
+    }
+
+    /// Insert the quoted original off the first paint: the WebKit HTML
+    /// importer is main-thread-only, so running it in prefill() froze the
+    /// window open (Thunderbird also streams the quote in asynchronously).
+    /// Inserted before the signature — applySelectedSignature() runs first
+    /// in onAppear and appends at the end. User typing is safe: the caret
+    /// sits at the top, insertion happens below it.
+    private func scheduleQuoteInsertion(for msg: Message, asQuote: Bool) {
+        Task { @MainActor in
+            var quote = parsedBody(msg)
+            if asQuote {
+                // Mail.app / Thunderbird convention: indentation + muted color
+                // as paragraph style instead of a nested-<html> blockquote.
+                quote = RichTextSupport.applyQuoteStyle(to: quote)
+            }
+            guard quote.length > 0 else { return }
+            let merged = NSMutableAttributedString(attributedString: attributedBody)
+            let at = signatureRanges(in: merged).first?.location ?? merged.length
+            merged.insert(quote, at: at)
+            attributedBody = merged
+        }
+    }
+
+    /// Original body as attributed text: parsed HTML when present, plain
+    /// text otherwise.
+    private func parsedBody(_ msg: Message) -> NSAttributedString {
         if let html = msg.bodyHTML, !html.isEmpty,
            let parsed = RichTextSupport.attributedFromHTML(html) {
-            out.append(parsed)
-        } else {
-            out.append(NSAttributedString(string: msg.bodyText ?? "", attributes: attrs))
+            return parsed
         }
-        return out
+        return NSAttributedString(
+            string: msg.bodyText ?? "",
+            attributes: RichTextSupport.defaultTypingAttributes
+        )
     }
 
     /// RFC 3676 / common MUA attribution line: "On <date>, <sender> wrote:".
