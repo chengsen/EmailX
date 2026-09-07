@@ -51,6 +51,9 @@ extension MCPServerService {
                 "account_id": .string(folder.accountID.uuidString),
                 "path": .string(folder.path),
                 "name": .string(folder.name),
+                // `name`/`path` are raw IMAP-UTF-7; hand over the decoded form
+                // too so the agent doesn't have to recognise "&BB8EPgQ0-".
+                "display_name": .string(folder.displayName),
                 "special_use": folder.specialUse.map { .string($0.rawValue) },
                 "total": .int(folder.totalCount),
                 "unread": .int(folder.unreadCount),
