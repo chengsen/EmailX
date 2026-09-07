@@ -150,19 +150,24 @@ extension MCPServerService {
         case .int64(let raw):  return .number(Double(raw))
         case .double(let raw): return .number(raw)
         case .string(let raw): return .string(raw)
-        case .blob(let data):  return .string("<blob \(data.count) bytes>")
+        case .blob(let data):
+            // GRDB stores UUIDs as 16-byte blobs; without this every id
+            // column comes back opaque and can't be fed to another tool.
+            guard data.count == 16 else { return .string("<blob \(data.count) bytes>") }
+            let raw = data.withUnsafeBytes { $0.loadUnaligned(as: uuid_t.self) }
+            return .string(UUID(uuid: raw).uuidString)
         }
     }
 
     // MARK: - Forced sync
 
     func syncFolder(_ arguments: JSONValue) async throws -> JSONValue {
-        if let folderID = arguments["folder_id"]?.uuidValue {
+        if let folderID = try arguments.optionalUUID("folder_id") {
             await sync.syncFolderIfNeeded(folderID: folderID)
             return .object(["synced": .string(folderID.uuidString)])
         }
 
-        let accountID = arguments["account_id"]?.uuidValue
+        let accountID = try arguments.optionalUUID("account_id")
         let account = try await DatabaseService.shared.pool.read { db -> Account? in
             if let accountID {
                 return try Account.fetchOne(db, key: accountID)

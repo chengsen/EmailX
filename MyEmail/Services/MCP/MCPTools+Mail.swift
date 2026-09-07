@@ -37,7 +37,7 @@ extension MCPServerService {
     // MARK: - Folders
 
     func listFolders(_ arguments: JSONValue) async throws -> JSONValue {
-        let accountID = arguments["account_id"]?.uuidValue
+        let accountID = try arguments.optionalUUID("account_id")
         let folders = try await DatabaseService.shared.pool.read { db in
             var request = Folder.all()
             if let accountID {
@@ -67,8 +67,8 @@ extension MCPServerService {
 
     func searchMessages(_ arguments: JSONValue) async throws -> JSONValue {
         let limit = min(max(arguments["limit"]?.intValue ?? 50, 1), 500)
-        let folderID = arguments["folder_id"]?.uuidValue
-        let accountID = arguments["account_id"]?.uuidValue
+        let folderID = try arguments.optionalUUID("folder_id")
+        let accountID = try arguments.optionalUUID("account_id")
 
         let query = SearchQuery(
             freetext: arguments["text"]?.stringValue.map { [$0] } ?? [],
@@ -131,9 +131,7 @@ extension MCPServerService {
     // MARK: - Single message
 
     func getMessage(_ arguments: JSONValue) async throws -> JSONValue {
-        guard let id = arguments["message_id"]?.uuidValue else {
-            throw MCPToolError.invalidParams("message_id must be a UUID")
-        }
+        let id = try arguments.requiredUUID("message_id")
         guard let message = try await sync.loadFullMessage(id: id) else {
             throw MCPToolError.notFound("message \(id.uuidString)")
         }
@@ -190,7 +188,7 @@ extension MCPServerService {
         let cc = arguments["cc"]?.stringArrayValue ?? []
         let bcc = arguments["bcc"]?.stringArrayValue ?? []
 
-        let requestedID = arguments["account_id"]?.uuidValue
+        let requestedID = try arguments.optionalUUID("account_id")
         let account = try await DatabaseService.shared.pool.read { db -> Account? in
             if let requestedID {
                 return try Account.filter(Column("id") == requestedID).fetchOne(db)

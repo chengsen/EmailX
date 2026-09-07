@@ -141,3 +141,24 @@ enum JSONValue: Codable, Sendable, Equatable {
         return text
     }
 }
+
+// MARK: - Argument accessors
+
+extension JSONValue {
+    /// Optional UUID argument. Absent is fine; malformed is not — silently
+    /// dropping a bad id would answer confidently about the wrong scope.
+    nonisolated func optionalUUID(_ key: String) throws -> UUID? {
+        guard let raw = self[key] else { return nil }
+        guard let value = raw.uuidValue else {
+            throw MCPToolError.invalidParams("\(key) must be a UUID")
+        }
+        return value
+    }
+
+    nonisolated func requiredUUID(_ key: String) throws -> UUID {
+        guard let value = try optionalUUID(key) else {
+            throw MCPToolError.invalidParams("\(key) is required")
+        }
+        return value
+    }
+}
