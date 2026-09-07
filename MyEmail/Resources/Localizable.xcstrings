@@ -235,6 +235,16 @@
         }
       }
     },
+    "Agent access (MCP)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ для агентов (MCP)"
+          }
+        }
+      }
+    },
     "All": {
       "extractionState": "manual",
       "localizations": {
@@ -474,6 +484,16 @@
         }
       }
     },
+    "Bcc: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрытая копия: %@"
+          }
+        }
+      }
+    },
     "Before and After: date range.": {
       "localizations": {
         "en": {
@@ -593,6 +613,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Копия:"
+          }
+        }
+      }
+    },
+    "Cc: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Копия: %@"
           }
         }
       }
@@ -741,6 +771,16 @@
         }
       }
     },
+    "Copied": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировано"
+          }
+        }
+      }
+    },
     "Copy": {
       "extractionState": "manual",
       "localizations": {
@@ -775,6 +815,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Копировать лог"
+          }
+        }
+      }
+    },
+    "Copy setup command": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать команду подключения"
           }
         }
       }
@@ -921,6 +971,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отображаемое имя"
+          }
+        }
+      }
+    },
+    "Don't Send": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не отправлять"
           }
         }
       }
@@ -1256,6 +1316,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "От:"
+          }
+        }
+      }
+    },
+    "From: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "От: %@"
           }
         }
       }
@@ -1641,6 +1711,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Расположение"
+          }
+        }
+      }
+    },
+    "Let agents work with this mailbox": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить агентам работать с этой почтой"
           }
         }
       }
@@ -2445,6 +2525,16 @@
         }
       }
     },
+    "Regenerate token": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевыпустить токен"
+          }
+        }
+      }
+    },
     "Remote Content": {},
     "Remote content is always loaded for trusted senders.": {},
     "Remote images blocked": {
@@ -2633,6 +2723,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Применить правила к выделенным письмам"
+          }
+        }
+      }
+    },
+    "Runs a local endpoint on 127.0.0.1 so an agent can search, read and diagnose your mail. Sending always asks you first. Anything holding the token can read every message — keep it to tools you trust.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поднимает локальную точку доступа на 127.0.0.1: агент может искать, читать и диагностировать почту. Отправка всегда спрашивает подтверждения. Любой, у кого есть токен, прочитает все письма — давайте его только доверенным инструментам."
           }
         }
       }
@@ -2890,6 +2990,16 @@
         }
       }
     },
+    "Send this message on your behalf?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправить это письмо от вашего имени?"
+          }
+        }
+      }
+    },
     "Sender email hashes are sent to gravatar.com to fetch avatars.": {},
     "Sender name": {
       "localizations": {
@@ -3129,6 +3239,16 @@
         }
       }
     },
+    "Stopped": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановлен"
+          }
+        }
+      }
+    },
     "Subject": {
       "localizations": {
         "ru": {
@@ -3145,6 +3265,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Тема:"
+          }
+        }
+      }
+    },
+    "Subject: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тема: %@"
           }
         }
       }
@@ -3329,6 +3459,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Кому:"
+          }
+        }
+      }
+    },
+    "To: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кому: %@"
           }
         }
       }

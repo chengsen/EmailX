@@ -18,6 +18,8 @@ struct AdvancedSettingsView: View {
 
     @State private var cacheSize: String = "Calculating…"
 
+    @Environment(AppEnvironment.self) private var env
+
     var body: some View {
         Form {
             Section("Timeouts") {
@@ -76,6 +78,8 @@ struct AdvancedSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            MCPServerSettingsSection(server: env.mcpServer)
         }
         .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

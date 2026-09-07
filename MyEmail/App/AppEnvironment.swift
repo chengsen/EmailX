@@ -48,6 +48,9 @@ final class AppEnvironment {
     // Trusted senders
     let trustedSenderService: TrustedSenderService
 
+    // Local MCP endpoint for agents (off unless enabled in Settings)
+    let mcpServer: MCPServerService
+
     init() {
         self.logService = LogService.shared
         self.keychain = KeychainService.shared
@@ -73,6 +76,7 @@ final class AppEnvironment {
         self.draftRecovery = DraftRecoveryService()
         self.gravatarService = GravatarService()
         self.trustedSenderService = TrustedSenderService()
+        self.mcpServer = MCPServerService(syncService: sync)
 
         // Start network monitor + App Nap prevention + proactive OAuth sweep
         sync.startNetworkMonitor()
@@ -86,6 +90,8 @@ final class AppEnvironment {
         let notifications = NotificationService.shared
         notifications.setupDelegate()
         Task { await notifications.requestAuthorization() }
+
+        mcpServer.startIfEnabled()
 
         LogService.log(.info, .uiDebug, "App started")
     }

@@ -70,6 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        environment.mcpServer.stop()
         LogService.shared.log(.info, .uiDebug, "NSApplication willTerminate")
     }
 
