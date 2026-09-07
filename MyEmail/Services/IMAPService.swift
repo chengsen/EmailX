@@ -442,14 +442,11 @@ actor IMAPService {
 
     // MARK: - Gmail extensions (X-GM-EXT-1)
 
-    /// True if this is a Gmail / Workspace account — the only server family
-    /// that advertises `X-GM-EXT-1`. Host-based because SwiftMail keeps the
-    /// parsed capability set `internal`. A misconfigured host is still safe:
-    /// `fetchGmailAttributes` is guarded and a non-Gmail server's tagged BAD
-    /// is swallowed by the caller.
-    func supportsGmailExtensions() -> Bool {
-        let host = account.imapHost.lowercased()
-        return host.contains("gmail.com") || host.contains("googlemail.com")
+    /// True if the server advertised `X-GM-EXT-1` in CAPABILITY. Needs a live
+    /// connection; without one we report unsupported rather than guessing.
+    func supportsGmailExtensions() async -> Bool {
+        guard let srv = try? await requireServer() else { return false }
+        return await srv.supportsGmailExtensions
     }
 
     /// Fetch Gmail-native attributes (X-GM-MSGID / THRID / LABELS) for the
