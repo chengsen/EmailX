@@ -29,6 +29,11 @@ final class AppState {
 
     /// First selected message — used for detail pane display.
     var selectedMessageID: UUID? { selectedMessageIDs.first }
+
+    /// Row order as actually rendered by the message table (threading + sort
+    /// applied). Published by `MessageListTable`; read only by
+    /// `pruneSelection` to advance the selection when rows vanish.
+    var visibleOrder: [UUID] = []
     var selectedSidebarItem: SidebarItem? {
         didSet { sidebarSelectionChanged() }
     }
@@ -128,7 +133,24 @@ final class AppState {
         guard !selectedMessageIDs.isEmpty else { return }
         if isSearchActive { return }
         let visibleIDs = Set(messageItems.map(\.id))
-        selectedMessageIDs.formIntersection(visibleIDs)
+        let survivors = selectedMessageIDs.intersection(visibleIDs)
+        guard survivors.isEmpty else {
+            selectedMessageIDs = survivors
+            return
+        }
+        // Everything selected is gone (archive/delete/move) — step to the next
+        // row instead of emptying the reading pane. `visibleOrder` is still the
+        // pre-update order here, so it knows where the vanished rows sat.
+        selectedMessageIDs = nextRowAfterVanishedSelection(alive: visibleIDs).map { [$0] } ?? []
+    }
+
+    /// Next still-present row after the vanished selection, falling back to the
+    /// preceding one when the selection was at the end of the list.
+    private func nextRowAfterVanishedSelection(alive: Set<UUID>) -> UUID? {
+        guard let anchor = visibleOrder.lastIndex(where: selectedMessageIDs.contains)
+        else { return nil }
+        return visibleOrder[(anchor + 1)...].first(where: alive.contains)
+            ?? visibleOrder[..<anchor].last(where: alive.contains)
     }
 
     // MARK: - Sidebar selection → observation switch

@@ -118,6 +118,9 @@ struct MessageListTable: View {
         )
         cachedOrder = sorted.map(\.id)
         cachedSignature = currentSignature
+        // Publish for AppState.pruneSelection — it advances the selection to
+        // the next row when the selected one is archived/deleted/moved.
+        appState.visibleOrder = cachedOrder
     }
 
     var body: some View {
