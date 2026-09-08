@@ -39,6 +39,7 @@ final class MCPServerService {
     static let path = "/mcp"
 
     private let syncService: SyncService
+    private let undoService: UndoActionService
     private var listener: MCPHTTPListener?
 
     private(set) var isRunning = false
@@ -67,8 +68,9 @@ final class MCPServerService {
 
     var endpointURL: String { "http://127.0.0.1:\(port)\(Self.path)" }
 
-    init(syncService: SyncService) {
+    init(syncService: SyncService, undoService: UndoActionService) {
         self.syncService = syncService
+        self.undoService = undoService
     }
 
     // MARK: - Token
@@ -258,24 +260,45 @@ final class MCPServerService {
         }
     }
 
+    /// Split by area: one switch over every tool trips the complexity limit.
     private func execute(tool: String, arguments: JSONValue) async throws -> JSONValue {
+        if let result = try await executeMailTool(tool, arguments) { return result }
+        if let result = try await executeDebugTool(tool, arguments) { return result }
+        throw MCPToolError.unknownTool(tool)
+    }
+
+    private func executeMailTool(
+        _ tool: String, _ arguments: JSONValue
+    ) async throws -> JSONValue? {
         switch tool {
-        case "list_accounts":   return try await listAccounts()
-        case "list_folders":    return try await listFolders(arguments)
-        case "search_messages": return try await searchMessages(arguments)
-        case "get_message":     return try await getMessage(arguments)
-        case "send_message":    return try await sendMessage(arguments)
-        case "get_logs":        return getLogs(arguments)
-        case "get_status":      return try await getStatus()
-        case "query_db":        return try await queryDatabase(arguments)
-        case "sync_folder":     return try await syncFolder(arguments)
-        default:                throw MCPToolError.unknownTool(tool)
+        case "list_accounts":    return try await listAccounts()
+        case "list_folders":     return try await listFolders(arguments)
+        case "search_messages":  return try await searchMessages(arguments)
+        case "get_message":      return try await getMessage(arguments)
+        case "send_message":     return try await sendMessage(arguments)
+        case "archive_messages": return try await archiveMessages(arguments)
+        case "set_flags":        return try await setFlags(arguments)
+        case "move_messages":    return try await moveMessages(arguments)
+        default:                 return nil
+        }
+    }
+
+    private func executeDebugTool(
+        _ tool: String, _ arguments: JSONValue
+    ) async throws -> JSONValue? {
+        switch tool {
+        case "get_logs":    return getLogs(arguments)
+        case "get_status":  return try await getStatus()
+        case "query_db":    return try await queryDatabase(arguments)
+        case "sync_folder": return try await syncFolder(arguments)
+        default:            return nil
         }
     }
 
     // MARK: - Shared helpers for the tool implementations
 
     var sync: SyncService { syncService }
+    var undo: UndoActionService { undoService }
 }
 
 // MARK: - JSON-RPC envelope

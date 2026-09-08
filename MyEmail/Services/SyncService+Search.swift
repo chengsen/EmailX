@@ -303,7 +303,17 @@ extension SyncService {
 
         if criteria.isEmpty { criteria.append(.all) }
 
-        return try await imap.searchMessages(criteria: criteria)
+        // Chunked, not open-ended: `* SEARCH <uids>` is a single response line,
+        // and swift-nio-imap cuts lines at a hardcoded 8 KB
+        // (`IMAPDefaults.lineLengthLimit`), so a folder with more than ~1100
+        // hits failed outright with PayloadTooLargeError — Gmail's All Mail
+        // could not be searched on the server at all. Thunderbird splits the
+        // same way (`nsImapProtocol` searches per UID range).
+        let uidNext = await imap.selectedUIDNext
+        guard let upper = uidNext, upper > 1 else {
+            return try await imap.searchMessages(criteria: criteria)
+        }
+        return try await imap.searchInUIDRange(from: 1, to: upper - 1, criteria: criteria)
     }
 
     /// Hydrate server search results: fetch missing headers and persist.

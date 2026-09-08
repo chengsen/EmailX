@@ -278,6 +278,10 @@ actor IMAPService {
         return try await selectFolderRaw(path)
     }
 
+    /// UIDNEXT reported by the last SELECT, or nil when no folder is selected.
+    /// Callers use it as the upper bound for chunked UID ranges.
+    var selectedUIDNext: UInt32? { lastSelection?.uidNext.value }
+
     /// Raw SELECT without probe gate — used by `reconnectInternal` and from
     /// the probe-gated `selectFolder` itself (where probing already happened
     /// in the outer call). Goes through `serverOrThrow` to avoid recursion.

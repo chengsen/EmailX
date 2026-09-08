@@ -9,7 +9,7 @@
 import Foundation
 
 enum MCPToolCatalog {
-    static var definitions: [JSONValue] { mailTools + debugTools }
+    static var definitions: [JSONValue] { mailTools + actionTools + debugTools }
 
     /// Split in two: one literal with every schema in it pushes the
     /// type-checker past its time budget.
@@ -44,7 +44,11 @@ enum MCPToolCatalog {
                     "before": string("Only messages before this date."),
                     "folder_id": string("Restrict to one folder."),
                     "account_id": string("Restrict to one account."),
-                    "limit": integer("Max results, default 50, max 500.")
+                    "limit": integer("Max results, default 50, max 500."),
+                    "on_server": boolean(
+                        "Ask the IMAP server instead of the local index. Slower, "
+                        + "needs folder_id, but finds mail that was never synced."
+                    )
                 ]
             ),
             tool(
@@ -75,6 +79,43 @@ enum MCPToolCatalog {
                 ],
                 required: ["to", "subject", "body"]
             ),
+        ]
+    }
+
+    private static var actionTools: [JSONValue] {
+        [
+            tool(
+                "archive_messages",
+                "Move messages to the account's archive folder. Undoable from "
+                    + "the app with Cmd-Z. The message ids do not survive the "
+                    + "move — search again before acting on these messages.",
+                properties: ["message_ids": stringArray("Message ids to archive.")],
+                required: ["message_ids"]
+            ),
+            tool(
+                "set_flags",
+                "Mark messages read/unread and/or flagged/unflagged. Pass only "
+                    + "the flags you want to change.",
+                properties: [
+                    "message_ids": stringArray("Message ids to update."),
+                    "read": boolean("true marks read, false marks unread."),
+                    "flagged": boolean("true flags, false unflags.")
+                ],
+                required: ["message_ids"]
+            ),
+            tool(
+                "move_messages",
+                "Move messages into a folder of the same account. Use "
+                    + "list_folders for folder_id. Undoable with Cmd-Z. The "
+                    + "message ids do not survive the move — search again "
+                    + "before acting on these messages. A message that exists "
+                    + "in several accounts has a separate id per account.",
+                properties: [
+                    "message_ids": stringArray("Message ids to move."),
+                    "folder_id": string("Destination folder.")
+                ],
+                required: ["message_ids", "folder_id"]
+            )
         ]
     }
 

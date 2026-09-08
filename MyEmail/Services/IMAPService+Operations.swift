@@ -125,6 +125,21 @@ extension IMAPService {
         return Array(result).sorted()
     }
 
+    /// Starting width for a chunked UID SEARCH. Wide enough that a 137k-message
+    /// folder takes ~14 round-trips rather than 274.
+    static let initialSearchWindow: UInt32 = 10_000
+
+    /// Floor for window halving. Below this a folder is dense enough that the
+    /// response cannot be made to fit, and the error belongs to the caller.
+    static let minimumSearchWindow: UInt32 = 250
+
+    /// swift-nio-imap surfaces an over-long response line as
+    /// `ByteToMessageDecoderError.PayloadTooLargeError`, which SwiftMail wraps
+    /// before it reaches us — match on the name rather than import NIO here.
+    nonisolated static func isResponseTooLarge(_ error: Error) -> Bool {
+        "\(error)".contains("PayloadTooLarge")
+    }
+
     /// UID SEARCH scoped to a UID range (Thunderbird §5.2 step 5).
     /// `UID SEARCH <startUID>:<upperUID> <criteria>` — returns UIDs in range.
     ///
@@ -145,19 +160,34 @@ extension IMAPService {
             return try await uidSearchAsSet(identifierSet: uidSet, criteria: criteria)
         }
 
-        // Chunk to keep each SEARCH response under the 8 KB line-length
-        // limit (`IMAPDefaults.lineLengthLimit` in swift-nio-imap). Budget
-        // worst-case 11 bytes per UID (10 digits + separator) — Gmail's
-        // All Mail UIDs reach 6+ digits. 500 UIDs × 11 ≈ 5.5 KB, safe.
-        let chunkSize: UInt32 = 500
+        // Chunked to keep each SEARCH response under the 8 KB line-length limit
+        // (`IMAPDefaults.lineLengthLimit` in swift-nio-imap, hardcoded in
+        // IMAPClientHandler's byte-to-message processor).
+        //
+        // The window adapts instead of being fixed small: what has to fit is
+        // the *matches* in the range, not the range itself, and that ratio is
+        // unknowable up front. A fixed 500 costs 274 round-trips on Gmail's
+        // All Mail — measured at 135 s for one search — while starting wide
+        // costs a single retry when a window turns out too dense.
+        var window = Self.initialSearchWindow
         var merged: Set<UInt32> = []
         var chunkStart = startUID
         while chunkStart <= upper {
-            let chunkEnd = min(upper, chunkStart &+ (chunkSize - 1))
+            let chunkEnd = min(upper, chunkStart &+ (window - 1))
             let uidSet = MessageIdentifierSet<UID>(UID(chunkStart)...UID(chunkEnd))
-            merged.formUnion(
-                try await uidSearchAsSet(identifierSet: uidSet, criteria: criteria)
-            )
+            do {
+                merged.formUnion(
+                    try await uidSearchAsSet(identifierSet: uidSet, criteria: criteria)
+                )
+            } catch where Self.isResponseTooLarge(error) && window > Self.minimumSearchWindow {
+                // Too many hits in this window — halve it and retry the same
+                // start. The narrower window stays: a dense stretch of the
+                // folder is likely to be followed by more of the same.
+                window = max(Self.minimumSearchWindow, window / 2)
+                LogService.log(.debug, .search,
+                    "SEARCH window too dense, narrowing to \(window) UIDs")
+                continue
+            }
             // `&+ 1` guards against overflow on chunkEnd == UInt32.max.
             if chunkEnd == UInt32.max { break }
             chunkStart = chunkEnd + 1
@@ -231,7 +261,6 @@ extension IMAPService {
             return await srv.supportsQResync
         }
     }
-
 
     /// CONDSTORE delta FETCH (RFC 7162 §3.1.2). Returns `MessageInfo` (uid,
     /// flags, internalDate, fullHeader, modSequence — no envelope/bodyStructure)

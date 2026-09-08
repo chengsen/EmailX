@@ -84,6 +84,10 @@ extension MCPServerService {
             throw MCPToolError.invalidParams("Give at least one filter")
         }
 
+        if arguments["on_server"]?.boolValue == true {
+            return try await searchOnServer(query: query, folderID: folderID, limit: limit)
+        }
+
         let scope: SearchScope = folderID != nil ? .currentFolder
             : (accountID != nil ? .currentAccount : .allAccounts)
         let results = try await sync.searchLocal(
@@ -94,6 +98,50 @@ extension MCPServerService {
             "count": .int(min(results.count, limit)),
             "truncated": .bool(results.count > limit),
             "messages": .array(results.prefix(limit).map(Self.summary))
+        ])
+    }
+
+    /// IMAP SEARCH against one folder. Returns UIDs the server matched, plus
+    /// whichever of them are already stored locally — a UID with no local row
+    /// is mail that was never synced.
+    private func searchOnServer(
+        query: SearchQuery, folderID: UUID?, limit: Int
+    ) async throws -> JSONValue {
+        guard let folderID else {
+            throw MCPToolError.invalidParams("on_server needs folder_id")
+        }
+        let context = try await DatabaseService.shared.pool.read { db -> (Folder, Account)? in
+            guard let folder = try Folder.fetchOne(db, key: folderID),
+                  let account = try Account.fetchOne(db, key: folder.accountID)
+            else { return nil }
+            return (folder, account)
+        }
+        guard let (folder, account) = context else {
+            throw MCPToolError.notFound("folder \(folderID.uuidString)")
+        }
+
+        let uids: Set<UInt32>
+        do {
+            uids = try await sync.searchOnServer(
+                query: query, account: account, folderPath: folder.path
+            )
+        } catch {
+            throw MCPToolError.failed("Server search failed: \(error)")
+        }
+
+        let sorted = uids.sorted().suffix(limit)
+        let known = try await DatabaseService.shared.pool.read { db in
+            try UInt32.fetchSet(db, sql: """
+                SELECT uid FROM messages WHERE folder_id = ? AND uid IN (\(
+                    databaseQuestionMarks(count: sorted.count))
+                )
+                """, arguments: StatementArguments([folderID] + sorted.map { Int($0) }))
+        }
+        return .object([
+            "searched": .string(folder.displayName),
+            "server_matches": .int(uids.count),
+            "uids": .array(sorted.map { .int(Int($0)) }),
+            "not_synced_locally": .int(sorted.count { !known.contains($0) })
         ])
     }
 

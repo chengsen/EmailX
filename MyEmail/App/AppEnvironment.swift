@@ -76,7 +76,7 @@ final class AppEnvironment {
         self.draftRecovery = DraftRecoveryService()
         self.gravatarService = GravatarService()
         self.trustedSenderService = TrustedSenderService()
-        self.mcpServer = MCPServerService(syncService: sync)
+        self.mcpServer = MCPServerService(syncService: sync, undoService: undoService)
 
         // Start network monitor + App Nap prevention + proactive OAuth sweep
         sync.startNetworkMonitor()

@@ -30,61 +30,99 @@ enum SearchQueryParser {
     /// Parse raw search text into a structured SearchQuery.
     nonisolated static func parse(_ raw: String) -> SearchQuery {
         let tokens = tokenize(raw)
-        var q = SearchQuery()
+        var query = SearchQuery()
 
         for token in tokens {
             switch token {
             case .word(let value, let negated):
-                if negated { q.excludes.append(value) }
-                else { q.freetext.append(value) }
+                if negated { query.excludes.append(value) } else { query.freetext.append(value) }
             case .phrase(let value, let negated):
-                if negated { q.excludes.append(value) }
-                else { q.phrases.append(value) }
+                if negated { query.excludes.append(value) } else { query.phrases.append(value) }
             case .op(let key, let value, let negated):
-                apply(key: key, value: value, negated: negated, to: &q)
+                apply(key: key, value: value, negated: negated, to: &query)
             }
         }
 
-        return q
+        return query
     }
 
     // MARK: - Apply operator
 
+    /// Routes an operator to the group that owns it. Split by operator family
+    /// rather than one flat switch: each group has its own value semantics —
+    /// addresses accumulate and split on commas, text fields hold a single
+    /// value, filters parse their value into a date, size or enum.
     nonisolated private static func apply(
-        key: String, value: String, negated: Bool, to q: inout SearchQuery
+        key: String, value: String, negated: Bool, to query: inout SearchQuery
     ) {
         if negated {
-            // Negated field operators map to typed exclude lists so we can emit
-            // proper `NOT col:value` in FTS5 MATCH and `.not(.from(...))` on the
-            // server. Unknown keys drop into plain excludes for safety.
-            switch key {
-            case "from": q.excludeFrom.append(contentsOf: splitCSV(value))
-            case "to": q.excludeTo.append(contentsOf: splitCSV(value))
-            case "cc": q.excludeCc.append(contentsOf: splitCSV(value))
-            case "bcc": q.excludeBcc.append(contentsOf: splitCSV(value))
-            case "subject": q.excludeSubject.append(value)
-            case "body": q.excludeBody.append(value)
-            default: q.excludes.append("\(key):\(value)")
-            }
-            return
+            applyNegated(key: key, value: value, to: &query)
+        } else if !applyAddress(key: key, value: value, to: &query),
+                  !applyText(key: key, value: value, to: &query) {
+            applyFilter(key: key, value: value, to: &query)
         }
+    }
 
-        let lowered = value.lowercased()
+    /// Negated field operators map to typed exclude lists so we can emit
+    /// proper `NOT col:value` in FTS5 MATCH and `.not(.from(...))` on the
+    /// server. Unknown keys drop into plain excludes for safety.
+    nonisolated private static func applyNegated(
+        key: String, value: String, to query: inout SearchQuery
+    ) {
         switch key {
-        case "from": q.from.append(contentsOf: splitCSV(value))
-        case "to": q.to.append(contentsOf: splitCSV(value))
-        case "cc": q.cc.append(contentsOf: splitCSV(value))
-        case "bcc": q.bcc.append(contentsOf: splitCSV(value))
-        case "subject": q.subject = value
-        case "body": q.body = value
-        case "list": q.listID = lowered
-        case "in": q.folderName = value
-        case "before": q.before = parseDate(value)
-        case "after": q.after = parseDate(value)
-        case "larger": q.largerThan = parseSize(value)
-        case "smaller": q.smallerThan = parseSize(value)
-        case "is": q.isFilter = SearchQuery.IsFilter(rawValue: lowered)
-        case "has": q.hasFilter = SearchQuery.HasFilter(rawValue: lowered)
+        case "from": query.excludeFrom.append(contentsOf: splitCSV(value))
+        case "to": query.excludeTo.append(contentsOf: splitCSV(value))
+        case "cc": query.excludeCc.append(contentsOf: splitCSV(value))
+        case "bcc": query.excludeBcc.append(contentsOf: splitCSV(value))
+        case "subject": query.excludeSubject.append(value)
+        case "body": query.excludeBody.append(value)
+        default: query.excludes.append("\(key):\(value)")
+        }
+    }
+
+    /// Address operators repeat and accept comma-separated lists:
+    /// `from:alice,bob from:carol` → [alice, bob, carol].
+    /// Returns false when `key` belongs to another group.
+    nonisolated private static func applyAddress(
+        key: String, value: String, to query: inout SearchQuery
+    ) -> Bool {
+        switch key {
+        case "from": query.from.append(contentsOf: splitCSV(value))
+        case "to": query.to.append(contentsOf: splitCSV(value))
+        case "cc": query.cc.append(contentsOf: splitCSV(value))
+        case "bcc": query.bcc.append(contentsOf: splitCSV(value))
+        default: return false
+        }
+        return true
+    }
+
+    /// Single-valued text operators — a repeat replaces the previous value.
+    nonisolated private static func applyText(
+        key: String, value: String, to query: inout SearchQuery
+    ) -> Bool {
+        switch key {
+        case "subject": query.subject = value
+        case "body": query.body = value
+        case "list": query.listID = value.lowercased()
+        case "in": query.folderName = value
+        default: return false
+        }
+        return true
+    }
+
+    /// Operators whose value is parsed into a date, a byte count or an enum.
+    /// An unparseable value leaves the field nil, so `before:garbage` narrows
+    /// nothing instead of matching everything.
+    nonisolated private static func applyFilter(
+        key: String, value: String, to query: inout SearchQuery
+    ) {
+        switch key {
+        case "before": query.before = parseDate(value)
+        case "after": query.after = parseDate(value)
+        case "larger": query.largerThan = parseSize(value)
+        case "smaller": query.smallerThan = parseSize(value)
+        case "is": query.isFilter = SearchQuery.IsFilter(rawValue: value.lowercased())
+        case "has": query.hasFilter = SearchQuery.HasFilter(rawValue: value.lowercased())
         default: break
         }
     }
@@ -123,7 +161,7 @@ enum SearchQueryParser {
         formatter.timeZone = TimeZone(identifier: "UTC")
         for fmt in formats {
             formatter.dateFormat = fmt
-            if let d = formatter.date(from: trimmed) { return d }
+            if let date = formatter.date(from: trimmed) { return date }
         }
         return nil
     }
@@ -166,66 +204,89 @@ enum SearchQueryParser {
         let end = raw.endIndex
 
         while cursor < end {
-            // Skip leading whitespace.
-            while cursor < end, raw[cursor].isWhitespace {
-                cursor = raw.index(after: cursor)
-            }
+            cursor = skipWhitespace(raw, from: cursor, end: end)
             guard cursor < end else { break }
 
-            // Negation prefix.
-            var negated = false
-            if raw[cursor] == "-" {
-                let next = raw.index(after: cursor)
-                if next < end, !raw[next].isWhitespace {
-                    negated = true
-                    cursor = next
-                }
+            let (negated, afterNegation) = readNegation(raw, from: cursor, end: end)
+            cursor = afterNegation
+
+            // A recognized operator consumes its value even when that value is
+            // empty (`from:` alone), so the scan advances either way.
+            if let (token, next) = readOperator(raw, from: cursor, end: end, negated: negated) {
+                if let token { tokens.append(token) }
+                cursor = next
+                continue
             }
 
-            // Try operator: read until ':' within a contiguous non-whitespace run,
-            // but only commit to operator-parse if the colon appears before any quote.
-            let runStart = cursor
-            var colonIdx: String.Index?
-            var runCursor = cursor
-            while runCursor < end, !raw[runCursor].isWhitespace {
-                if raw[runCursor] == ":" && colonIdx == nil {
-                    colonIdx = runCursor
-                    break
-                }
-                if raw[runCursor] == "\"" { break }
-                runCursor = raw.index(after: runCursor)
-            }
-
-            if let colon = colonIdx {
-                let key = String(raw[runStart..<colon]).lowercased()
-                if knownOperators.contains(key) {
-                    cursor = raw.index(after: colon)
-                    let (value, advance) = readValue(raw, from: cursor, end: end)
-                    cursor = advance
-                    if !value.isEmpty {
-                        tokens.append(.op(key: key, value: value, negated: negated))
-                    }
-                    continue
-                }
-            }
-
-            // Not a recognized operator — read as phrase or word.
-            if cursor < end, raw[cursor] == "\"" {
-                let (value, advance) = readQuoted(raw, from: cursor, end: end)
-                cursor = advance
-                if !value.isEmpty {
-                    tokens.append(.phrase(value, negated: negated))
-                }
-            } else {
-                let (value, advance) = readWord(raw, from: cursor, end: end)
-                cursor = advance
-                if !value.isEmpty {
-                    tokens.append(.word(value, negated: negated))
-                }
-            }
+            let (token, next) = readTerm(raw, from: cursor, end: end, negated: negated)
+            if let token { tokens.append(token) }
+            cursor = next
         }
 
         return tokens
+    }
+
+    nonisolated private static func skipWhitespace(
+        _ raw: String, from start: String.Index, end: String.Index
+    ) -> String.Index {
+        var cursor = start
+        while cursor < end, raw[cursor].isWhitespace {
+            cursor = raw.index(after: cursor)
+        }
+        return cursor
+    }
+
+    /// A leading `-` negates the next term, but only when something follows it:
+    /// a bare `-` is an ordinary word.
+    nonisolated private static func readNegation(
+        _ raw: String, from start: String.Index, end: String.Index
+    ) -> (negated: Bool, next: String.Index) {
+        guard raw[start] == "-" else { return (false, start) }
+        let next = raw.index(after: start)
+        guard next < end, !raw[next].isWhitespace else { return (false, start) }
+        return (true, next)
+    }
+
+    /// Parses `key:value` when `key` is a known operator. Returns nil when the
+    /// run is not an operator at all, so the caller falls back to a plain term.
+    /// The inner token is nil for a recognized key with an empty value.
+    nonisolated private static func readOperator(
+        _ raw: String, from start: String.Index, end: String.Index, negated: Bool
+    ) -> (token: Token?, next: String.Index)? {
+        guard let colon = findColon(raw, from: start, end: end) else { return nil }
+        let key = String(raw[start..<colon]).lowercased()
+        guard knownOperators.contains(key) else { return nil }
+
+        let (value, next) = readValue(raw, from: raw.index(after: colon), end: end)
+        guard !value.isEmpty else { return (nil, next) }
+        return (.op(key: key, value: value, negated: negated), next)
+    }
+
+    /// Colon ending the operator key, searched only within the contiguous
+    /// non-whitespace run and only before any quote — `"a:b"` is a phrase,
+    /// not an operator.
+    nonisolated private static func findColon(
+        _ raw: String, from start: String.Index, end: String.Index
+    ) -> String.Index? {
+        var cursor = start
+        while cursor < end, !raw[cursor].isWhitespace {
+            if raw[cursor] == ":" { return cursor }
+            if raw[cursor] == "\"" { return nil }
+            cursor = raw.index(after: cursor)
+        }
+        return nil
+    }
+
+    /// Everything that is not an operator: a quoted phrase or a bare word.
+    nonisolated private static func readTerm(
+        _ raw: String, from start: String.Index, end: String.Index, negated: Bool
+    ) -> (token: Token?, next: String.Index) {
+        if start < end, raw[start] == "\"" {
+            let (value, next) = readQuoted(raw, from: start, end: end)
+            return (value.isEmpty ? nil : .phrase(value, negated: negated), next)
+        }
+        let (value, next) = readWord(raw, from: start, end: end)
+        return (value.isEmpty ? nil : .word(value, negated: negated), next)
     }
 
     /// Read operator value: may be quoted or plain word.
