@@ -522,10 +522,18 @@ extension SyncService {
                 "CONDSTORE delta fetch failed, falling back to legacy",
                 detail: "\(folderPath): \(error)")
             await recycleConnectionIfDesynced(error, imap: imap)
+            // That recycle drops the cached SELECT on purpose, and the legacy
+            // path FETCHes without re-selecting — which is what turned every
+            // fallback into "BAD UID FETCH not allowed now" and left the
+            // watermark stuck, so the next pass asked for an even larger
+            // delta and timed out again. Re-select before falling back and
+            // hand the fresh selection down; if the SELECT itself fails,
+            // throw and let the next pass retry on a clean session.
+            let freshSel = try await imap.ensureFolderSelected(folderPath)
             // Fall back to legacy — keep current watermark; don't regress.
             try await legacyIncrementalSync(
                 account: account, folderID: folderID, folderPath: folderPath,
-                imap: imap, saved: saved, sel: sel,
+                imap: imap, saved: saved, sel: freshSel,
                 localUIDs: localUIDs,
                 pendingSourceUIDs: pendingSourceUIDs,
                 pendingTargetUIDs: pendingTargetUIDs,

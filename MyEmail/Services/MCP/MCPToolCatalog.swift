@@ -108,7 +108,11 @@ enum MCPToolCatalog {
                 "Run a read-only SELECT against the local mail database. "
                     + "For diagnosis when the other tools don't expose what you "
                     + "need. Writes are rejected. Tables: accounts, folders, "
-                    + "messages, attachments, pending_actions, rules, contacts.",
+                    + "messages, attachments, pending_actions, rules, contacts. "
+                    + "Id columns are stored as blobs and are read back as UUID "
+                    + "strings, but a UUID string will not match one in a WHERE "
+                    + "clause: filter on hex(id) = '<32 hex digits>', or join on "
+                    + "a text column such as folders.path.",
                 properties: [
                     "sql": string("A single SELECT statement."),
                     "limit": integer("Max rows, default 100, max 1000.")
