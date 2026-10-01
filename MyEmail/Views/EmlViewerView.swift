@@ -36,16 +36,20 @@ struct EmlViewerView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            EmlViewerHeader(email: email, dateFormatter: Self.dateFormatter)
-            Divider()
-            bodyArea
-            if !visibleAttachments.isEmpty {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                EmlViewerHeader(email: email, dateFormatter: Self.dateFormatter,
+                                maximumHeight: min(220, geometry.size.height * 0.4))
                 Divider()
-                AttachmentStripView(
-                    attachments: visibleAttachments,
-                    onRefetch: { _ in nil }
-                )
+                bodyArea
+                if !visibleAttachments.isEmpty {
+                    Divider()
+                    AttachmentStripView(
+                        attachments: visibleAttachments,
+                        onRefetch: { _ in nil },
+                        maximumHeight: min(140, geometry.size.height * 0.25)
+                    )
+                }
             }
         }
     }
@@ -91,8 +95,18 @@ struct EmlViewerView: View {
 private struct EmlViewerHeader: View {
     let email: EmailMessage
     let dateFormatter: DateFormatter
+    var maximumHeight: CGFloat = 220
 
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            headerContent.fixedSize(horizontal: false, vertical: true)
+            ScrollView(.vertical) { headerContent }
+        }
+        .frame(maxHeight: maximumHeight)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var headerContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let subject = email.subject, !subject.isEmpty {
                 Text(subject)

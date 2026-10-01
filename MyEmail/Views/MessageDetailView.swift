@@ -12,6 +12,7 @@ import SwiftMail
 struct MessageDetailView: View {
     let messageID: UUID
     var usesWindowToolbar = false
+    var onMessageAvailabilityChanged: ((Bool) -> Void)?
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
     @State private var message: Message?
@@ -83,55 +84,62 @@ struct MessageDetailView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if let message {
-                MessageHeaderBar(
-                    message: message,
-                    gravatarImage: enableGravatar
-                        ? env.gravatarService.avatar(for: EmailAddress.emailOnly(from: message.fromAddress))
-                        : nil,
-                    onReply: usesWindowToolbar ? nil : { openCompose(.reply(messageID: message.id, accountID: message.accountID)) },
-                    onReplyAll: { openCompose(.replyAll(messageID: message.id, accountID: message.accountID)) },
-                    onForward: { openCompose(.forward(messageID: message.id, accountID: message.accountID)) },
-                    onViewSource: { Task { await viewSource() } },
-                    onArchive: usesWindowToolbar ? nil : {
-                        let id = message.id
-                        Task { await env.undoService.archiveMessages([id], undoManager: undoManager) }
-                    },
-                    onDelete: usesWindowToolbar ? nil : {
-                        let id = message.id
-                        Task { await env.undoService.deleteMessages([id], undoManager: undoManager) }
-                    },
-                    onMarkSpam: {
-                        let id = message.id
-                        Task { await env.syncService.markAsJunk([id]) }
-                    }
-                )
-                Divider()
-                bodyContent(message)
-                if hasBothFormats(message) {
-                    BodyFormatTabs(preferPlainBody: $preferPlainBody)
-                }
-                if !attachments.isEmpty {
-                    Divider()
-                    AttachmentStripView(
-                        attachments: attachments,
-                        onRefetch: { att in
-                            try? await env.syncService.refetchAttachment(att)
-                        }
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                if let message {
+                    MessageHeaderBar(
+                        message: message,
+                        gravatarImage: enableGravatar
+                            ? env.gravatarService.avatar(for: EmailAddress.emailOnly(from: message.fromAddress))
+                            : nil,
+                        onReply: usesWindowToolbar ? nil : { openCompose(.reply(messageID: message.id, accountID: message.accountID)) },
+                        onReplyAll: { openCompose(.replyAll(messageID: message.id, accountID: message.accountID)) },
+                        onForward: { openCompose(.forward(messageID: message.id, accountID: message.accountID)) },
+                        onViewSource: { Task { await viewSource() } },
+                        onArchive: usesWindowToolbar ? nil : {
+                            let id = message.id
+                            Task { await env.undoService.archiveMessages([id], undoManager: undoManager) }
+                        },
+                        onDelete: usesWindowToolbar ? nil : {
+                            let id = message.id
+                            Task { await env.undoService.deleteMessages([id], undoManager: undoManager) }
+                        },
+                        onMarkSpam: {
+                            let id = message.id
+                            Task { await env.syncService.markAsJunk([id]) }
+                        },
+                        maximumHeight: min(220, geometry.size.height * 0.4)
                     )
-                }
-            } else if isLoading {
-                ProgressView("Loading…")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ContentUnavailableView {
-                    Label("Failed to load message", systemImage: "envelope.badge")
-                } actions: {
-                    Button("Retry") { Task { await loadBody() } }
-                        .buttonStyle(.bordered)
+                    Divider()
+                    bodyContent(message)
+                    if hasBothFormats(message) {
+                        BodyFormatTabs(preferPlainBody: $preferPlainBody)
+                    }
+                    if !attachments.isEmpty {
+                        Divider()
+                        AttachmentStripView(
+                            attachments: attachments,
+                            onRefetch: { att in
+                                try? await env.syncService.refetchAttachment(att)
+                            },
+                            maximumHeight: min(140, geometry.size.height * 0.25)
+                        )
+                    }
+                } else if isLoading {
+                    ProgressView("Loading…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ContentUnavailableView {
+                        Label("Failed to load message", systemImage: "envelope.badge")
+                    } actions: {
+                        Button("Retry") { Task { await loadBody() } }
+                            .buttonStyle(.bordered)
+                    }
                 }
             }
+        }
+        .onChange(of: message != nil, initial: true) { _, available in
+            onMessageAvailabilityChanged?(available)
         }
         .task(id: messageID) { await loadBody() }
         .task(id: renderKey) { await rebuildRenderedHTML() }

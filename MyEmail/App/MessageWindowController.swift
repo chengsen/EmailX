@@ -15,6 +15,7 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
     let messageID: UUID
     private let environment: AppEnvironment
     private let onClose: (UUID) -> Void
+    private var hasMessage = false
 
     init(
         messageID: UUID,
@@ -40,7 +41,13 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
             "EmailXMessageWindow-\(messageID.uuidString.prefix(8))"
         )
 
-        let rootView = MessageDetailView(messageID: messageID, usesWindowToolbar: true)
+        let rootView = MessageDetailView(
+            messageID: messageID,
+            usesWindowToolbar: true,
+            onMessageAvailabilityChanged: { [weak window] available in
+                (window?.windowController as? MessageWindowController)?.setMessageAvailable(available)
+            }
+        )
             .environment(appState)
             .environment(environment)
             .environment(environment.logService)
@@ -140,6 +147,13 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    private func setMessageAvailable(_ available: Bool) {
+        hasMessage = available
+        for item in window?.toolbar?.items ?? [] {
+            item.isEnabled = available
+        }
+    }
+
     // MARK: - Helpers
 
     private func openCompose(mode: @escaping (UUID) -> ComposeMode) {
@@ -168,7 +182,18 @@ extension MessageWindowController: NSUserInterfaceValidations {
     nonisolated func validateUserInterfaceItem(
         _ item: any NSValidatedUserInterfaceItem
     ) -> Bool {
-        return true
+        MainActor.assumeIsolated {
+            guard let action = item.action else { return true }
+            switch action {
+            case #selector(replyToMessage(_:)), #selector(replyAllToMessage(_:)),
+                 #selector(forwardMessage(_:)), #selector(archiveMessage(_:)),
+                 #selector(deleteMessage(_:)), #selector(toggleReadState(_:)),
+                 #selector(toggleFlag(_:)), #selector(markAsJunk(_:)):
+                return hasMessage
+            default:
+                return true
+            }
+        }
     }
 }
 
@@ -224,6 +249,8 @@ extension MessageWindowController: NSToolbarDelegate {
         item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: label)
         item.target = self
         item.action = action
+        item.autovalidates = false
+        item.isEnabled = hasMessage
         item.visibilityPriority = id == .reply ? .high : .standard
         return item
     }

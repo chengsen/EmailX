@@ -33,8 +33,10 @@ final class MainMenuBuilder {
     // MARK: - App menu
 
     private func buildAppMenu() -> NSMenuItem {
-        let appName = ProcessInfo.processInfo.processName
-        let item = NSMenuItem()
+        let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? ProcessInfo.processInfo.processName
+        let item = NSMenuItem(title: appName, action: nil, keyEquivalent: "")
         let menu = NSMenu(title: appName)
 
         menu.addItem(withTitle: String(localized: "About EmailX"),
@@ -95,11 +97,13 @@ final class MainMenuBuilder {
         let item = NSMenuItem()
         let menu = NSMenu(title: String(localized: "File"))
 
-        menu.addItem(makeItem(
+        let newMessage = makeItem(
             title: String(localized: "New Message"),
-            selector: #selector(MainWindowController.newMessage(_:)),
+            selector: #selector(AppDelegate.newMessage(_:)),
             key: "n"
-        ))
+        )
+        newMessage.target = delegate
+        menu.addItem(newMessage)
 
         menu.addItem(makeItem(
             title: String(localized: "Open Message in New Window"),
@@ -187,6 +191,14 @@ final class MainMenuBuilder {
         toggleSidebar.keyEquivalentModifierMask = [.command, .control]
         menu.addItem(toggleSidebar)
 
+        let toggleToolbar = NSMenuItem(
+            title: String(localized: "Show Toolbar"),
+            action: #selector(NSWindow.toggleToolbarShown(_:)),
+            keyEquivalent: "t"
+        )
+        toggleToolbar.keyEquivalentModifierMask = [.command, .option]
+        menu.addItem(toggleToolbar)
+
         menu.addItem(.separator())
 
         let toggleThreading = makeItem(
@@ -194,7 +206,7 @@ final class MainMenuBuilder {
             selector: #selector(MainWindowController.toggleThreading(_:)),
             key: "t"
         )
-        toggleThreading.keyEquivalentModifierMask = [.command, .option]
+        toggleThreading.keyEquivalentModifierMask = [.command, .option, .shift]
         menu.addItem(toggleThreading)
 
         menu.addItem(.separator())

@@ -12,6 +12,19 @@ struct ComposeAttachmentsStripView: View {
     let onRemove: (ComposeAttachment) -> Void
 
     var body: some View {
+        // Keep every attachment reachable without letting a large batch
+        // consume the body editor. A single row keeps its natural height.
+        ViewThatFits(in: .vertical) {
+            attachmentFlow
+            ScrollView(.vertical) {
+                attachmentFlow
+            }
+            .scrollIndicators(.automatic)
+        }
+        .frame(maxHeight: 140)
+    }
+
+    private var attachmentFlow: some View {
         FlowLayout(spacing: 8) {
             ForEach(attachments) { att in
                 chip(att)
@@ -40,17 +53,21 @@ struct ComposeAttachmentsStripView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(att.filename))
+            .accessibilityValue(Text(FormatHelpers.formatByteCount(Int(att.size))))
 
             Button {
                 onRemove(att)
             } label: {
                 Image(systemName: "xmark")
+                    .frame(minWidth: 20, minHeight: 20)
             }
             .buttonStyle(.bordered)
-            .controlSize(.small)
+            .controlSize(.regular)
             .help("Remove attachment")
             .accessibilityLabel(Text("Remove attachment"))
-            .accessibilityHint(Text(att.filename))
+            .accessibilityValue(Text(att.filename))
         }
         .padding(.leading, 10)
         .padding(.trailing, 6)

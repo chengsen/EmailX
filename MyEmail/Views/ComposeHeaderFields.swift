@@ -34,6 +34,7 @@ struct ComposeHeaderFields: View {
                             systemImage: showExtraFields ? "minus.circle" : "plus.circle"
                         )
                         .labelStyle(.iconOnly)
+                        .frame(minWidth: 20, minHeight: 20)
                     }
                     .buttonStyle(.bordered)
                     .help(showExtraFields ? "Hide Cc/Bcc" : "Show Cc/Bcc")
@@ -119,7 +120,17 @@ struct RecipientTextField: View {
                     suggestions = []
                     showSuggestions = false
                 }
-                .onChange(of: text) { _, _ in updateSuggestions() }
+                .onChange(of: text) { _, _ in
+                    guard isEditing else {
+                        suggestions = []
+                        showSuggestions = false
+                        return
+                    }
+                    updateSuggestions()
+                }
+                .onChange(of: isEditing) { _, editing in
+                    if editing { updateSuggestions() }
+                }
 
             if showSuggestions {
                 VStack(alignment: .leading, spacing: 2) {
@@ -146,7 +157,9 @@ struct RecipientTextField: View {
                             .padding(.vertical, 6)
                         }
                         .buttonStyle(.bordered)
-                        .accessibilityElement(children: .combine)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text([suggestion.name, suggestion.email]
+                            .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")))
                     }
                 }
                 .accessibilityElement(children: .contain)

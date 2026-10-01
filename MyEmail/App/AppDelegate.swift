@@ -113,6 +113,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindowController?.showMain()
     }
 
+    @objc func newMessage(_ sender: Any?) {
+        openCompose(mode: .newMessage)
+    }
+
     @objc func showSettings(_ sender: Any?) {
         if settingsWindowController == nil {
             settingsWindowController = SettingsWindowController(

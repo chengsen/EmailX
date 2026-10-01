@@ -6,6 +6,7 @@
 //  Native macOS compose window.
 //
 
+import Accessibility
 import AppKit
 import GRDB
 import SwiftMail
@@ -216,6 +217,9 @@ struct ComposeView: View {
         }
         .task { await draftAutosaveLoop() }
         .onDisappear { env.draftRecovery.remove(windowID: recoveryID) }
+        .onChange(of: errorMessage) { _, message in
+            if let message { AccessibilityNotification.Announcement(message).post() }
+        }
         .onChange(of: toField) { _, _ in isDirty = true }
         .onChange(of: ccField) { _, _ in isDirty = true }
         .onChange(of: subjectField) { _, _ in isDirty = true }

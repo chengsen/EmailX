@@ -107,6 +107,13 @@ final class MessageSummaryCellView: NSTableCellView {
         addSubview(unreadDot)
         addSubview(textStack)
 
+        // This cell exposes one complete summary. AppKit otherwise promotes
+        // the underlying NSCell/image descendants even when their NSViews are
+        // marked ignored, repeating text and decorative status symbols.
+        setAccessibilityElement(true)
+        setAccessibilityRole(.cell)
+        setAccessibilityChildren([])
+
         NSLayoutConstraint.activate([
             unreadDot.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             unreadDot.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -117,6 +124,7 @@ final class MessageSummaryCellView: NSTableCellView {
             textStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
             textStack.centerYAnchor.constraint(equalTo: centerYAnchor),
 
+            subject.widthAnchor.constraint(equalTo: textStack.widthAnchor),
             topRow.widthAnchor.constraint(equalTo: textStack.widthAnchor),
             bottomRow.widthAnchor.constraint(equalTo: textStack.widthAnchor),
 
@@ -184,15 +192,27 @@ final class MessageSummaryCellView: NSTableCellView {
         var description = [senderText, subject.stringValue, preview.stringValue, dateText, accountValue]
             .filter { !$0.isEmpty } + status
         if let count, count > 1 { description.append(String(localized: "(\(count) messages)")) }
-        setAccessibilityElement(true)
-        setAccessibilityRole(.cell)
         setAccessibilityLabel(description.joined(separator: ", "))
-        for view in [sender, date, subject, preview, account, flag, attachment, threadCount, unreadDot] as [NSView] {
-            view.setAccessibilityElement(false)
-        }
 
         toolTip = [senderText, subjectText, previewText]
             .filter { !$0.isEmpty }
             .joined(separator: "\n")
+    }
+}
+
+/// Preserve NSTableView selection, arrow navigation and type selection; Return
+/// activates the selected message instead of attempting to edit a summary cell.
+final class MessageListTableView: NSTableView {
+    var onActivateSelection: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if [36, 76].contains(event.keyCode),
+           event.modifierFlags.intersection([.command, .option, .control, .shift]).isEmpty,
+           selectedRow >= 0,
+           let onActivateSelection {
+            onActivateSelection()
+            return
+        }
+        super.keyDown(with: event)
     }
 }
