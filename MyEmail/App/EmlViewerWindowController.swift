@@ -1,6 +1,6 @@
 //
 //  EmlViewerWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned standalone window for viewing a raw `.eml` file that is
 //  NOT in the local GRDB store (e.g. opened from Finder, received as a
@@ -44,7 +44,7 @@ final class EmlViewerWindowController: NSWindowController, NSWindowDelegate {
         // Unique autosave per source path keeps each file's window geometry
         // independent across sessions.
         let autosaveID = key.data(using: .utf8)?.base64EncodedString().prefix(16) ?? "default"
-        window.setFrameAutosaveName("MyEmailEmlViewer-\(autosaveID)")
+        window.setFrameAutosaveName("EmailXEmlViewer-\(autosaveID)")
 
         let root = EmlViewerView(
             email: email,
