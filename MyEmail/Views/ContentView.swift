@@ -56,8 +56,15 @@ struct ContentView: View {
     }
 
     private var banners: some View {
-        ErrorBannerView()
-            .padding(.top, 1)
+        VStack(spacing: 8) {
+            HStack {
+                Spacer()
+                OfflineStatusBannerView()
+            }
+            ErrorBannerView()
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
     }
 
     private func wireNotificationNavigation() {
