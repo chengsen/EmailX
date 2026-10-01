@@ -81,15 +81,14 @@ struct MessageHeaderBar: View {
                 .font(.title2.weight(.semibold))
                 .textSelection(.enabled)
 
-            // Date line (plain text — icon is not in this row's layout).
-            Text(Self.dateFormatter.string(from: message.date))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        // Keep the optional mail-client indicator out of the content flow.
-        .overlay(alignment: .bottomTrailing) {
-            if showMUA, let ua = message.userAgent, !ua.isEmpty {
-                MUAIconSlot(userAgent: ua)
+            HStack {
+                Text(Self.dateFormatter.string(from: message.date))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                if showMUA, let ua = message.userAgent, !ua.isEmpty {
+                    MUAIconSlot(userAgent: ua)
+                }
             }
         }
         .padding(18)
@@ -103,7 +102,7 @@ struct MessageHeaderBar: View {
                 .resizable()
                 .frame(width: 36, height: 36)
                 .clipShape(Circle())
-                .transition(.opacity)
+                .accessibilityHidden(true)
         } else {
             InitialsAvatarView(
                 name: message.fromName ?? EmailAddress(message.fromAddress)?.name,
@@ -119,9 +118,10 @@ struct MessageHeaderBar: View {
                 Button(action: onReply) {
                     Image(systemName: "arrowshape.turn.up.left")
                 }
-                .buttonStyle(.glass)
-                .controlSize(.large)
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
                 .help("Reply")
+                .accessibilityLabel(Text("Reply"))
             }
 
             if onReplyAll != nil || onForward != nil || onArchive != nil
@@ -161,10 +161,11 @@ struct MessageHeaderBar: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
-                .buttonStyle(.glass)
-                .controlSize(.large)
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
                 .fixedSize()
                 .help("More")
+                .accessibilityLabel(Text("More"))
             }
         }
     }
@@ -173,7 +174,7 @@ struct MessageHeaderBar: View {
 // MARK: - MUA icon slot
 
 /// Small mail-client icon rendered next to the date. Delegates detection to
-/// the GPL-isolated MUAResolver XPC service; keeps a stable 14×14 frame so
+/// the GPL-isolated MUAResolver XPC service; keeps a stable image frame so
 /// the surrounding layout never shifts while the async resolve is in flight.
 private struct MUAIconSlot: View {
     let userAgent: String
@@ -185,7 +186,6 @@ private struct MUAIconSlot: View {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
-                    .transition(.opacity)
             } else {
                 Color.clear
             }
@@ -237,10 +237,11 @@ struct AddressTokenView: View {
         } label: {
             Text(displayName)
                 .font(font)
-                .underline(false)
+                .lineLimit(1)
+                .truncationMode(.middle)
         }
         .menuStyle(.borderlessButton)
-        .fixedSize()
+        .accessibilityLabel(Text(verbatim: "\(displayName), \(email)"))
     }
 }
 
@@ -271,7 +272,7 @@ struct AddressListRow: View {
                     .controlSize(.small)
                 }
             } else {
-                HStack(spacing: 6) {
+                FlowLayout(spacing: 6) {
                     ForEach(Array(addresses.prefix(3).enumerated()), id: \.offset) { _, raw in
                         token(for: raw)
                     }
@@ -284,8 +285,8 @@ struct AddressListRow: View {
                         .controlSize(.small)
                     }
 
-                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .font(.subheadline)

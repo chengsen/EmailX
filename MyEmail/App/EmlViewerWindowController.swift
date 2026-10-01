@@ -41,6 +41,7 @@ final class EmlViewerWindowController: NSWindowController, NSWindowDelegate {
         )
         window.title = email.subject ?? sourceURL.lastPathComponent
         window.minSize = NSSize(width: 500, height: 400)
+        window.autorecalculatesKeyViewLoop = true
         // Unique autosave per source path keeps each file's window geometry
         // independent across sessions.
         let autosaveID = key.data(using: .utf8)?.base64EncodedString().prefix(16) ?? "default"

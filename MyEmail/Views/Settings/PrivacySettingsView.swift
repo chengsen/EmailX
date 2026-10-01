@@ -37,29 +37,27 @@ struct PrivacySettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                List {
-                    ForEach(trustedSenders) { sender in
-                        HStack {
-                            Text(EmailAddress.emailOnly(from: sender.email))
-                            Spacer()
-                            Button {
-                                removeSender(sender)
-                            } label: {
-                                Image(systemName: "trash")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .buttonStyle(.glass)
-                            .controlSize(.small)
+                ForEach(trustedSenders) { sender in
+                    HStack {
+                        Text(EmailAddress.emailOnly(from: sender.email))
+                            .textSelection(.enabled)
+                        Spacer()
+                        Button {
+                            removeSender(sender)
+                        } label: {
+                            Label("Remove", systemImage: "trash")
                         }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                     }
                 }
-                .frame(minHeight: 80)
 
                 HStack {
                     TextField("Add email", text: $newSenderEmail)
                         .textFieldStyle(.roundedBorder)
                     Button("Add") { addSender() }
-                        .buttonStyle(.glass)
+                        .buttonStyle(.bordered)
                         .disabled(newSenderEmail.isEmpty)
                 }
             }

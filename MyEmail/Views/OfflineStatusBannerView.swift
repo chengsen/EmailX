@@ -7,7 +7,6 @@ import SwiftUI
 
 struct OfflineStatusBannerView: View {
     @Environment(AppEnvironment.self) private var env
-    @Environment(\.accessibilityShowBorders) private var showBorders
 
     var body: some View {
         let sync = env.syncService
@@ -49,8 +48,8 @@ struct OfflineStatusBannerView: View {
                         tint: .orange
                     )
                 }
-                .buttonStyle(.glass)
-                .fixedSize()
+                .buttonStyle(.bordered)
+                .fixedSize(horizontal: false, vertical: true)
                 .help("Retry or discard failed actions")
             }
         }
@@ -59,12 +58,6 @@ struct OfflineStatusBannerView: View {
 
     private func notice(icon: String, text: String, tint: Color) -> some View {
         noticeContent(icon: icon, text: text, tint: tint)
-            .glassEffect()
-            .overlay {
-                if showBorders {
-                    Capsule().stroke(.secondary)
-                }
-            }
     }
 
     private func noticeContent(icon: String, text: String, tint: Color) -> some View {
@@ -73,6 +66,6 @@ struct OfflineStatusBannerView: View {
             .foregroundStyle(tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .fixedSize()
+            .fixedSize(horizontal: false, vertical: true)
     }
 }

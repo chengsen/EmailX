@@ -46,7 +46,7 @@ struct AddGenericAccountView: View {
                     Text("Back")
                 }
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .disabled(isSaving)
 
             Spacer()
@@ -68,7 +68,6 @@ struct AddGenericAccountView: View {
                 Text(errorMessage)
                     .font(.caption)
                     .foregroundStyle(.red)
-                    .lineLimit(2)
             }
 
             Spacer()
@@ -76,13 +75,13 @@ struct AddGenericAccountView: View {
             Button("Test Connection") {
                 testConnection()
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .disabled(isSaving || !form.isValid)
 
             Button("Save") {
                 Task { await save() }
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
             .disabled(isSaving || !form.isValid)
         }
@@ -205,33 +204,11 @@ struct AccountFormGeneralSection: View {
     @Binding var form: GenericAccountForm
 
     var body: some View {
-        Section {
-            Grid(alignment: .trailing, horizontalSpacing: 8, verticalSpacing: 8) {
-                GridRow {
-                    Text("Account name")
-                    TextField("Personal, Work, …", text: $form.accountName)
-                        .textFieldStyle(.roundedBorder)
-                }
-                GridRow {
-                    Text("Display name")
-                    TextField("Your name", text: $form.name)
-                        .textFieldStyle(.roundedBorder)
-                }
-                GridRow {
-                    Text("Email")
-                    TextField("user@example.com", text: $form.email)
-                        .textFieldStyle(.roundedBorder)
-                }
-                GridRow {
-                    Text("Password")
-                    SecureField("Password", text: $form.password)
-                        .textFieldStyle(.roundedBorder)
-                }
-            }
-        } header: {
-            Text("General")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
+        Section("General") {
+            TextField("Account name", text: $form.accountName, prompt: Text("Personal, Work, …"))
+            TextField("Display name", text: $form.name, prompt: Text("Your name"))
+            TextField("Email", text: $form.email, prompt: Text("user@example.com"))
+            SecureField("Password", text: $form.password)
         }
     }
 }
@@ -240,46 +217,20 @@ struct AccountFormIMAPSection: View {
     @Binding var form: GenericAccountForm
 
     var body: some View {
-        Section {
-            Grid(alignment: .trailing, horizontalSpacing: 8, verticalSpacing: 8) {
-                GridRow {
-                    Text("Server")
-                    TextField("imap.example.com", text: $form.imapHost)
-                        .textFieldStyle(.roundedBorder)
-                }
-                GridRow {
-                    Text("Port")
-                    TextField(
-                        "993",
-                        value: $form.imapPort,
-                        format: .number.grouping(.never)
-                    )
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 100, alignment: .leading)
-                }
-                GridRow {
-                    Text("Security")
-                    Picker("", selection: $form.imapSecurity) {
-                        Text("SSL/TLS").tag(ConnectionSecurity.ssl)
-                        Text("STARTTLS").tag(ConnectionSecurity.starttls)
-                        Text("None").tag(ConnectionSecurity.none)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                    .onChange(of: form.imapSecurity) { _, newSecurity in
-                        // Auto-update port only when current value matches a
-                        // known default — preserves user's custom port choice.
-                        if DefaultPorts.allIMAP.contains(form.imapPort) {
-                            form.imapPort = DefaultPorts.imap(for: newSecurity)
-                        }
-                    }
+        Section("IMAP (incoming)") {
+            TextField("Server", text: $form.imapHost, prompt: Text("imap.example.com"))
+            TextField("Port", value: $form.imapPort, format: .number.grouping(.never))
+            Picker("Security", selection: $form.imapSecurity) {
+                Text("SSL/TLS").tag(ConnectionSecurity.ssl)
+                Text("STARTTLS").tag(ConnectionSecurity.starttls)
+                Text("None").tag(ConnectionSecurity.none)
+            }
+            .onChange(of: form.imapSecurity) { _, newSecurity in
+                // Only replace known defaults; preserve custom company server ports.
+                if DefaultPorts.allIMAP.contains(form.imapPort) {
+                    form.imapPort = DefaultPorts.imap(for: newSecurity)
                 }
             }
-        } header: {
-            Text("IMAP (incoming)")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
         }
     }
 }
@@ -288,44 +239,19 @@ struct AccountFormSMTPSection: View {
     @Binding var form: GenericAccountForm
 
     var body: some View {
-        Section {
-            Grid(alignment: .trailing, horizontalSpacing: 8, verticalSpacing: 8) {
-                GridRow {
-                    Text("Server")
-                    TextField("smtp.example.com", text: $form.smtpHost)
-                        .textFieldStyle(.roundedBorder)
-                }
-                GridRow {
-                    Text("Port")
-                    TextField(
-                        "587",
-                        value: $form.smtpPort,
-                        format: .number.grouping(.never)
-                    )
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 100, alignment: .leading)
-                }
-                GridRow {
-                    Text("Security")
-                    Picker("", selection: $form.smtpSecurity) {
-                        Text("SSL/TLS").tag(ConnectionSecurity.ssl)
-                        Text("STARTTLS").tag(ConnectionSecurity.starttls)
-                        Text("None").tag(ConnectionSecurity.none)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                    .onChange(of: form.smtpSecurity) { _, newSecurity in
-                        if DefaultPorts.allSMTP.contains(form.smtpPort) {
-                            form.smtpPort = DefaultPorts.smtp(for: newSecurity)
-                        }
-                    }
+        Section("SMTP (outgoing)") {
+            TextField("Server", text: $form.smtpHost, prompt: Text("smtp.example.com"))
+            TextField("Port", value: $form.smtpPort, format: .number.grouping(.never))
+            Picker("Security", selection: $form.smtpSecurity) {
+                Text("SSL/TLS").tag(ConnectionSecurity.ssl)
+                Text("STARTTLS").tag(ConnectionSecurity.starttls)
+                Text("None").tag(ConnectionSecurity.none)
+            }
+            .onChange(of: form.smtpSecurity) { _, newSecurity in
+                if DefaultPorts.allSMTP.contains(form.smtpPort) {
+                    form.smtpPort = DefaultPorts.smtp(for: newSecurity)
                 }
             }
-        } header: {
-            Text("SMTP (outgoing)")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
         }
     }
 }

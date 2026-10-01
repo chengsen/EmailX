@@ -53,12 +53,11 @@ struct AttachmentStripView: View {
                 Text(att.filename)
                     .font(.callout)
                     .lineLimit(1)
+                    .truncationMode(.middle)
                 Text(FormatHelpers.formatByteCount(att.size))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
         }
         .buttonStyle(.bordered)
         .accessibilityLabel(Text(att.filename))

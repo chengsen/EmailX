@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ErrorBannerView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @Environment(AppEnvironment.self) private var env
 
     var body: some View {
@@ -37,7 +38,7 @@ struct ErrorBannerView: View {
                             }
                         }
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
             }
@@ -54,13 +55,15 @@ struct ErrorBannerView: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .controlSize(.small)
                     .help("Dismiss")
                     .accessibilityLabel(Text("Dismiss"))
                     .accessibilityHint(Text(error.title))
                 }
-                .task {
+                .task(id: voiceOverEnabled) {
+                    // Do not remove an error while assistive speech is reading it.
+                    guard !voiceOverEnabled else { return }
                     try? await Task.sleep(for: .seconds(8))
                     guard !Task.isCancelled else { return }
                     appState.errors.removeAll { $0.id == error.id }
@@ -81,34 +84,22 @@ private struct StatusNotice<Actions: View>: View {
     var detail: String?
     let actions: () -> Actions
 
-    @Environment(\.accessibilityShowBorders) private var showBorders
-
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: symbol)
-                .foregroundStyle(tint)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.callout.weight(.medium))
-                if let detail, !detail.isEmpty {
-                    Text(detail)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+        GroupBox {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label(title, systemImage: symbol)
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(tint)
+                    if let detail, !detail.isEmpty {
+                        Text(detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
                 }
-            }
-
-            Spacer(minLength: 12)
-            actions()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .glassEffect(in: .rect(cornerRadius: 14))
-        .overlay {
-            if showBorders {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                actions()
             }
         }
     }

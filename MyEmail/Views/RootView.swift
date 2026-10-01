@@ -12,12 +12,11 @@ struct RootView: View {
     @AppStorage("debugLogPanelVisible") private var isDebugLogVisible: Bool = false
 
     var body: some View {
-        VStack(spacing: 0) {
+        VSplitView {
             ContentView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, minHeight: 300, idealHeight: 580, maxHeight: .infinity)
 
             if isDebugLogVisible {
-                Divider()
                 DebugLogPanelView()
             }
         }

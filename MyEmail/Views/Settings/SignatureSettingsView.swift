@@ -14,10 +14,12 @@ struct SignatureSettingsView: View {
     @State private var accounts: [Account] = []
     @State private var selectedID: UUID?
 
+    @State private var isConfirmingRemoval = false
+
     private var pool: DatabasePool { DatabaseService.shared.pool }
 
     var body: some View {
-        HStack(spacing: 0) {
+        HSplitView {
             // Signature list
             VStack(spacing: 0) {
                 List(signatures, selection: $selectedID) { sig in
@@ -34,12 +36,10 @@ struct SignatureSettingsView: View {
                 AddRemoveToolbar(
                     canRemove: selectedID != nil,
                     onAdd: addSignature,
-                    onRemove: removeSelected
+                    onRemove: { isConfirmingRemoval = true }
                 )
             }
-            .frame(width: 240)
-
-            Divider()
+            .frame(minWidth: 180, idealWidth: 220, maxWidth: 300)
 
             // Stable right pane regardless of selection (rule #9).
             ZStack {
@@ -50,13 +50,18 @@ struct SignatureSettingsView: View {
                         onSave: { save(signatures[idx]) }
                     )
                 } else {
-                    Text("Select a signature")
-                        .foregroundStyle(.secondary)
+                    ContentUnavailableView("Select a signature", systemImage: "signature")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { load() }
+        .confirmationDialog("Remove this signature?", isPresented: $isConfirmingRemoval) {
+            Button("Remove", role: .destructive) { removeSelected() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This signature will be permanently removed.")
+        }
     }
 
     private func load() {
@@ -124,6 +129,7 @@ private struct SignatureDetailPane: View {
                 TextEditor(text: $signature.body)
                     .font(.system(.body, design: .monospaced))
                     .frame(minHeight: 120)
+                    .accessibilityLabel(Text("Body"))
                     .onChange(of: signature.body) { onSave() }
             }
         }

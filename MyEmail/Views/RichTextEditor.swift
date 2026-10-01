@@ -442,35 +442,38 @@ struct FormattingToolbar: View {
     }
 
     var body: some View {
-        HStack(spacing: 2) {
-            toolbarButton("Bold", systemImage: "bold", shortcut: "b") { tv in
-                RichTextSupport.toggleTrait(.boldFontMask, on: tv)
+        ScrollView(.horizontal) {
+            HStack(spacing: 2) {
+                toolbarButton("Bold", systemImage: "bold", shortcut: "b") { tv in
+                    RichTextSupport.toggleTrait(.boldFontMask, on: tv)
+                }
+                toolbarButton("Italic", systemImage: "italic", shortcut: "i") { tv in
+                    RichTextSupport.toggleTrait(.italicFontMask, on: tv)
+                }
+                toolbarButton("Underline", systemImage: "underline", shortcut: "u") { tv in
+                    RichTextSupport.toggleUnderline(on: tv)
+                }
+                verticalDivider
+                familyPicker
+                sizePicker
+                verticalDivider
+                toolbarButton("Bulleted list", systemImage: "list.bullet") { tv in
+                    prefixLinesAsList(in: tv, numbered: false)
+                }
+                toolbarButton("Numbered list", systemImage: "list.number") { tv in
+                    prefixLinesAsList(in: tv, numbered: true)
+                }
+                verticalDivider
+                toolbarButton("Insert link", systemImage: "link", shortcut: "k") { _ in
+                    showLinkSheet = true
+                }
+                toolbarButton("Text color", systemImage: "paintpalette") { _ in
+                    NSColorPanel.shared.orderFront(nil)
+                }
+                Spacer()
             }
-            toolbarButton("Italic", systemImage: "italic", shortcut: "i") { tv in
-                RichTextSupport.toggleTrait(.italicFontMask, on: tv)
-            }
-            toolbarButton("Underline", systemImage: "underline", shortcut: "u") { tv in
-                RichTextSupport.toggleUnderline(on: tv)
-            }
-            verticalDivider
-            familyPicker
-            sizePicker
-            verticalDivider
-            toolbarButton("Bulleted list", systemImage: "list.bullet") { tv in
-                prefixLinesAsList(in: tv, numbered: false)
-            }
-            toolbarButton("Numbered list", systemImage: "list.number") { tv in
-                prefixLinesAsList(in: tv, numbered: true)
-            }
-            verticalDivider
-            toolbarButton("Insert link", systemImage: "link", shortcut: "k") { _ in
-                showLinkSheet = true
-            }
-            toolbarButton("Text color", systemImage: "paintpalette") { _ in
-                NSColorPanel.shared.orderFront(nil)
-            }
-            Spacer()
         }
+        .scrollIndicators(.automatic)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .sheet(isPresented: $showLinkSheet) {
@@ -478,7 +481,7 @@ struct FormattingToolbar: View {
         }
         .onAppear { syncFromTextView() }
         .onChange(of: textView) { _, _ in syncFromTextView() }
-        .task(id: ObjectIdentifier(textView ?? NSTextView())) {
+        .task(id: textView.map(ObjectIdentifier.init)) {
             await observeSelectionChanges()
         }
     }
@@ -502,7 +505,8 @@ struct FormattingToolbar: View {
             }
         }
         .labelsHidden()
-        .frame(width: 160)
+        .frame(minWidth: 120, idealWidth: 160, maxWidth: 200)
+        .disabled(textView == nil)
         .help("Font family")
     }
 
@@ -521,7 +525,8 @@ struct FormattingToolbar: View {
             }
         }
         .labelsHidden()
-        .frame(width: 64)
+        .frame(minWidth: 64)
+        .disabled(textView == nil)
         .help("Font size")
     }
 
@@ -565,6 +570,8 @@ struct FormattingToolbar: View {
             Image(systemName: systemImage)
         }
         .buttonStyle(.accessoryBarAction)
+        .accessibilityLabel(Text(label))
+        .disabled(textView == nil)
         .help(label)
 
         if let shortcut {
@@ -629,10 +636,11 @@ struct LinkInsertSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Insert link").font(.headline)
-            TextField("URL", text: $urlText)
-                .textFieldStyle(.roundedBorder)
-            TextField("Link label", text: $linkText)
-                .textFieldStyle(.roundedBorder)
+            Form {
+                TextField("URL", text: $urlText)
+                TextField("Link label", text: $linkText)
+            }
+            .formStyle(.grouped)
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) { onClose() }
@@ -643,7 +651,7 @@ struct LinkInsertSheet: View {
             }
         }
         .padding(16)
-        .frame(width: 360)
+        .frame(minWidth: 360, idealWidth: 420)
         .onAppear { populateFromSelection() }
     }
 

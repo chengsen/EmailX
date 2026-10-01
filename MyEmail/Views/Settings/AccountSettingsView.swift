@@ -22,6 +22,8 @@ struct AccountSettingsView: View {
     @State private var isShowingAddSheet = false
     @State private var loadError: String?
 
+    @State private var isConfirmingRemoval = false
+
     private var selectedAccount: Binding<Account?> {
         Binding(
             get: {
@@ -33,7 +35,7 @@ struct AccountSettingsView: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
+        HSplitView {
             VStack(spacing: 0) {
                 AccountListPane(
                     accounts: accounts,
@@ -44,12 +46,10 @@ struct AccountSettingsView: View {
                 AddRemoveToolbar(
                     canRemove: selectedAccountID != nil,
                     onAdd: { isShowingAddSheet = true },
-                    onRemove: removeSelected
+                    onRemove: { isConfirmingRemoval = true }
                 )
             }
-            .frame(width: 240)
-
-            Divider()
+            .frame(minWidth: 180, idealWidth: 220, maxWidth: 300)
 
             // Stable right pane regardless of selection (rule #9).
             ZStack {
@@ -61,14 +61,19 @@ struct AccountSettingsView: View {
                     )
                     .id(account.id)
                 } else {
-                    Text("Select an account")
-                        .foregroundStyle(.secondary)
+                    ContentUnavailableView("Select an account", systemImage: "at")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .task {
             await reload()
+        }
+        .confirmationDialog("Remove this account?", isPresented: $isConfirmingRemoval) {
+            Button("Remove", role: .destructive) { removeSelected() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This removes the account and its local mail from EmailX. Mail on the server is kept.")
         }
         .sheet(isPresented: $isShowingAddSheet, onDismiss: {
             Task { await reload() }
@@ -192,7 +197,6 @@ struct AccountListPane: View {
             .onMove(perform: onMove)
         }
         .listStyle(.sidebar)
-        .environment(\.defaultMinListRowHeight, 40)
     }
 }
 
@@ -223,6 +227,7 @@ private struct AccountListRow: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)
                     .help(Text("Needs re-authentication"))
+                    .accessibilityLabel(Text("Needs re-authentication"))
             }
         }
         .padding(.vertical, 2)
@@ -341,7 +346,7 @@ struct AccountDetailPane: View {
                 .opacity(isSaved ? 1 : 0)
             Spacer()
             Button("Save") { save() }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(accountName.trimmingCharacters(in: .whitespaces).isEmpty)
         }
@@ -410,15 +415,17 @@ struct AddRemoveToolbar: View {
     var body: some View {
         HStack(spacing: 6) {
             Button(action: onAdd) {
-                Image(systemName: "plus")
+                Label("Add", systemImage: "plus")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
+            .labelStyle(.iconOnly)
             .controlSize(.small)
 
             Button(action: onRemove) {
-                Image(systemName: "minus")
+                Label("Remove", systemImage: "minus")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
+            .labelStyle(.iconOnly)
             .controlSize(.small)
             .disabled(!canRemove)
 

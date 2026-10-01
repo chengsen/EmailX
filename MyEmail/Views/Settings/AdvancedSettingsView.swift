@@ -61,12 +61,7 @@ struct AdvancedSettingsView: View {
             }
 
             Section("Cache") {
-                HStack {
-                    Text("Database size")
-                    Spacer()
-                    Text(cacheSize)
-                        .foregroundStyle(.secondary)
-                }
+                LabeledContent("Database size", value: cacheSize)
 
                 Button("Clear attachment cache") {
                     clearAttachmentCache()

@@ -129,7 +129,7 @@ final class AppState {
     /// Guards observation-driven updates from retriggering the observation.
     private var isApplyingSearchObservation = false
     var searchResultsCancellable: AnyDatabaseCancellable?
-    /// Set to true by ⌘F command; SearchBarView observes and takes focus.
+    /// Set to true by ⌘F command; the native toolbar search field observes and takes focus.
     var focusSearchField = false
 
     /// Pre-built lookup for O(1) account name by ID (used in MessageListTable).

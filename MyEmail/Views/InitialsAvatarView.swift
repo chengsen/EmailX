@@ -23,6 +23,7 @@ struct InitialsAvatarView: View {
                 .foregroundStyle(.white)
         }
         .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 
     private var initial: String {

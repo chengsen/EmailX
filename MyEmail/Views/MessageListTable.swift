@@ -55,12 +55,16 @@ struct MessageListTable: View {
 
     /// Row height mapped from density setting (DESIGN.md §4.4).
     private var rowHeight: CGFloat {
-        switch density {
-        case "compact": return 54
-        case "normal":  return 64
-        case "wide":    return 76
-        default:        return 64
+        let body = NSFont.preferredFont(forTextStyle: .body, options: [:])
+        let caption = NSFont.preferredFont(forTextStyle: .caption1, options: [:])
+        let minimum = ceil(body.ascender - body.descender + body.leading) * 2
+            + ceil(caption.ascender - caption.descender + caption.leading) + 8
+        let preferred: CGFloat = switch density {
+        case "compact": 54
+        case "wide": 76
+        default: 64
         }
+        return max(preferred, minimum)
     }
 
     private var itemByID: [UUID: MessageListItem] {
@@ -155,7 +159,7 @@ struct MessageListTable: View {
                     Button("Next page", systemImage: "chevron.right") { appState.loadMoreLocalMessages() }
                         .disabled(!appState.hasMoreLocalMessages)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.bordered)
                 .padding(8)
             }
         }
