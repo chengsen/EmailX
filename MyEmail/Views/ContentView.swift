@@ -11,20 +11,11 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppState.self) private var appState
     @Environment(AppEnvironment.self) private var env
-    @AppStorage("windowLayout") private var layout: String = "wide"
 
     var body: some View {
         Group {
             if appState.accounts.isEmpty {
                 emptyState
-            } else if layout == "classic" {
-                HSplitView {
-                    SidebarView()
-                        .frame(minWidth: 180, idealWidth: 220, maxWidth: 350)
-                    ClassicDetailView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .overlay(alignment: .top) { banners }
             } else {
                 WideLayoutView()
                     .overlay(alignment: .top) { banners }
@@ -52,24 +43,15 @@ struct ContentView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable()
-                .interpolation(.high)
-                .frame(width: 128, height: 128)
-            Text("MyEmail")
-                .font(.system(.largeTitle, design: .rounded).weight(.semibold))
-            Text("Add an account in Settings (⌘,)")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-            Button {
+        ContentUnavailableView {
+            Label("EmailX", systemImage: "envelope")
+        } description: {
+            Text("Add an account to start using EmailX.")
+        } actions: {
+            Button("Open Settings") {
                 (NSApp.delegate as? AppDelegate)?.showSettings(nil)
-            } label: {
-                Text("Open Settings")
             }
-            .controlSize(.large)
             .keyboardShortcut(.defaultAction)
-            .padding(.top, 8)
         }
     }
 
