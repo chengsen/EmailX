@@ -146,6 +146,17 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         onAction?(sender.itemIdentifier.rawValue)
     }
 
+    func refreshSelectionActions(hasSelection: Bool) {
+        for item in toolbar?.items ?? [] {
+            switch item.itemIdentifier {
+            case .archive, .tbDelete, .reply:
+                item.isHidden = !hasSelection
+            default:
+                break
+            }
+        }
+    }
+
     // MARK: - Threading selection visuals
 
     /// Updates icon fill state of the threading items to reflect current mode.
