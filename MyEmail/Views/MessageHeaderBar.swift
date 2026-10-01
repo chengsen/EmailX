@@ -31,12 +31,12 @@ struct MessageHeaderBar: View {
     }()
 
     var body: some View {
-        ViewThatFits(in: .vertical) {
-            headerContent.fixedSize(horizontal: false, vertical: true)
-            ScrollView(.vertical) { headerContent }
-        }
-        .frame(maxHeight: maximumHeight)
-        .fixedSize(horizontal: false, vertical: true)
+        // Keep one content tree mounted when its height changes so expanded
+        // recipients and native keyboard focus survive viewport resizing.
+        ScrollView(.vertical) { headerContent }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: maximumHeight)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private var headerContent: some View {

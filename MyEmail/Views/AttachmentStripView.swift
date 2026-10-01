@@ -18,12 +18,12 @@ struct AttachmentStripView: View {
     @State private var quickLookCoordinator = QuickLookCoordinator()
 
     var body: some View {
-        ViewThatFits(in: .vertical) {
-            attachmentContent.fixedSize(horizontal: false, vertical: true)
-            ScrollView(.vertical) { attachmentContent }
-        }
-        .frame(maxHeight: maximumHeight)
-        .fixedSize(horizontal: false, vertical: true)
+        // Keep one content tree mounted when its height changes so attachment
+        // state and native keyboard focus survive viewport resizing.
+        ScrollView(.vertical) { attachmentContent }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: maximumHeight)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private var attachmentContent: some View {

@@ -39,7 +39,7 @@ struct EmlViewerView: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 EmlViewerHeader(email: email, dateFormatter: Self.dateFormatter,
-                                maximumHeight: min(220, geometry.size.height * 0.4))
+                                maximumHeight: min(220, geometry.size.height * 0.35))
                 Divider()
                 bodyArea
                 if !visibleAttachments.isEmpty {
@@ -47,7 +47,7 @@ struct EmlViewerView: View {
                     AttachmentStripView(
                         attachments: visibleAttachments,
                         onRefetch: { _ in nil },
-                        maximumHeight: min(140, geometry.size.height * 0.25)
+                        maximumHeight: min(140, geometry.size.height * 0.2)
                     )
                 }
             }
@@ -98,12 +98,12 @@ private struct EmlViewerHeader: View {
     var maximumHeight: CGFloat = 220
 
     var body: some View {
-        ViewThatFits(in: .vertical) {
-            headerContent.fixedSize(horizontal: false, vertical: true)
-            ScrollView(.vertical) { headerContent }
-        }
-        .frame(maxHeight: maximumHeight)
-        .fixedSize(horizontal: false, vertical: true)
+        // Keep one content tree mounted when its height changes so expanded
+        // recipients and native keyboard focus survive viewport resizing.
+        ScrollView(.vertical) { headerContent }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: maximumHeight)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private var headerContent: some View {

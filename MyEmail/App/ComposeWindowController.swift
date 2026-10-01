@@ -31,7 +31,7 @@ final class ComposeWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
         window.title = Self.title(for: mode)
-        window.minSize = NSSize(width: 560, height: 400)
+        window.contentMinSize = NSSize(width: 560, height: 400)
         window.toolbarStyle = .unified
         window.autorecalculatesKeyViewLoop = true
         // Manual frame persistence: NSWindow.setFrameAutosaveName refuses to

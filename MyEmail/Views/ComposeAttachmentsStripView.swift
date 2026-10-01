@@ -10,6 +10,7 @@ import UniformTypeIdentifiers
 struct ComposeAttachmentsStripView: View {
     let attachments: [ComposeAttachment]
     let onRemove: (ComposeAttachment) -> Void
+    var maximumHeight: CGFloat = 140
 
     var body: some View {
         // Keep every attachment reachable without letting a large batch
@@ -21,7 +22,7 @@ struct ComposeAttachmentsStripView: View {
             }
             .scrollIndicators(.automatic)
         }
-        .frame(maxHeight: 140)
+        .frame(maxHeight: maximumHeight)
     }
 
     private var attachmentFlow: some View {

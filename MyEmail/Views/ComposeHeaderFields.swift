@@ -3,9 +3,15 @@
 //  EmailX
 //
 
+import AppKit
 import SwiftUI
 
+enum ComposeFieldFocus: Hashable {
+    case field(String), suggestion(String)
+}
+
 struct ComposeHeaderFields: View {
+    @FocusState private var focus: ComposeFieldFocus?
     let accounts: [Account]
     @Binding var selectedAccountID: UUID
     @Binding var to: String
@@ -14,8 +20,18 @@ struct ComposeHeaderFields: View {
     @Binding var replyTo: String
     @Binding var subject: String
     @Binding var showExtraFields: Bool
+    var maximumHeight: CGFloat = 220
 
     var body: some View {
+        // Keep one form mounted: changing autocomplete height must not swap
+        // its controls and discard the active field's focus/state.
+        ScrollView(.vertical) { fields }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: maximumHeight)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var fields: some View {
         Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
             GridRow {
                 fieldLabel("From")
@@ -25,7 +41,9 @@ struct ComposeHeaderFields: View {
             GridRow {
                 fieldLabel("To")
                 HStack(spacing: 8) {
-                    RecipientTextField(text: $to, placeholder: String(localized: "To"))
+                    RecipientTextField(text: $to, placeholder: String(localized: "To"),
+                                       focus: $focus, field: "to",
+                                       nextField: showExtraFields ? "cc" : "subject", previousField: nil)
                     Button {
                         showExtraFields.toggle()
                     } label: {
@@ -44,21 +62,25 @@ struct ComposeHeaderFields: View {
             if showExtraFields {
                 GridRow {
                     fieldLabel("Cc")
-                    RecipientTextField(text: $cc, placeholder: String(localized: "Cc"))
+                    RecipientTextField(text: $cc, placeholder: String(localized: "Cc"),
+                                       focus: $focus, field: "cc", nextField: "bcc", previousField: "to")
                 }
                 GridRow {
                     fieldLabel("Bcc")
-                    RecipientTextField(text: $bcc, placeholder: String(localized: "Bcc"))
+                    RecipientTextField(text: $bcc, placeholder: String(localized: "Bcc"),
+                                       focus: $focus, field: "bcc", nextField: "replyTo", previousField: "cc")
                 }
                 GridRow {
                     fieldLabel("Reply-To")
                     TextField("Reply-To", text: $replyTo)
+                        .focused($focus, equals: .field("replyTo"))
                 }
             }
 
             GridRow {
                 fieldLabel("Subject")
                 TextField("Subject", text: $subject)
+                    .focused($focus, equals: .field("subject"))
             }
         }
         .padding(.horizontal, 16)
@@ -102,7 +124,10 @@ struct RecipientTextField: View {
     @Binding var text: String
     let placeholder: String
 
-    @FocusState private var isEditing: Bool
+    @FocusState.Binding var focus: ComposeFieldFocus?
+    let field: String
+    let nextField: String
+    let previousField: String?
     @State private var suggestions: [RecipientSuggestion] = []
     @State private var showSuggestions = false
 
@@ -115,21 +140,45 @@ struct RecipientTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             TextField(placeholder, text: $text)
-                .focused($isEditing)
+                .focused($focus, equals: .field(field))
                 .onExitCommand {
                     suggestions = []
                     showSuggestions = false
                 }
                 .onChange(of: text) { _, _ in
-                    guard isEditing else {
+                    guard focus == .field(field) else {
                         suggestions = []
                         showSuggestions = false
                         return
                     }
                     updateSuggestions()
                 }
-                .onChange(of: isEditing) { _, editing in
-                    if editing { updateSuggestions() }
+                .onChange(of: focus) { previous, focus in
+                    if focus == .field(field), case .suggestion = previous {
+                        // Native text fields select all when focus returns. Keep previously
+                        // chosen recipients when the user continues typing the next address.
+                        let window = NSApp.keyWindow
+                        DispatchQueue.main.async {
+                            guard self.focus == .field(field), window?.isKeyWindow == true,
+                                  let editor = window?.firstResponder as? NSTextView,
+                                  editor.isFieldEditor else { return }
+                            editor.setSelectedRange(NSRange(location: editor.string.utf16.count, length: 0))
+                        }
+                    }
+                    else if focus == .field(field) { updateSuggestions() }
+                    else {
+                        switch focus {
+                        case .suggestion: break
+                        default:
+                            suggestions = []
+                            showSuggestions = false
+                        }
+                    }
+                }
+                .onKeyPress(.downArrow) {
+                    guard let first = suggestions.first else { return .ignored }
+                    focus = .suggestion(first.id)
+                    return .handled
                 }
 
             if showSuggestions {
@@ -157,7 +206,20 @@ struct RecipientTextField: View {
                             .padding(.vertical, 6)
                         }
                         .buttonStyle(.bordered)
-                        .accessibilityElement(children: .ignore)
+                        .focusable()
+                        .focused($focus, equals: .suggestion(suggestion.id))
+                        .onKeyPress(.downArrow) { moveSuggestion(suggestion, offset: 1) }
+                        .onKeyPress(.upArrow) { moveSuggestion(suggestion, offset: -1) }
+                        .onKeyPress(.return) {
+                            commitSuggestion(suggestion)
+                            return .handled
+                        }
+                        .onKeyPress(.escape) {
+                            suggestions = []
+                            showSuggestions = false
+                            focus = .field(field)
+                            return .handled
+                        }
                         .accessibilityLabel(Text([suggestion.name, suggestion.email]
                             .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")))
                     }
@@ -165,6 +227,24 @@ struct RecipientTextField: View {
                 .accessibilityElement(children: .contain)
             }
         }
+        .onKeyPress(keys: [.tab]) { key in
+            guard showSuggestions else { return .ignored }
+            let backwards = key.modifiers.contains(.shift)
+            guard !backwards || previousField != nil else { return .ignored }
+            suggestions = []
+            showSuggestions = false
+            if backwards, let previousField { focus = .field(previousField) }
+            else { focus = .field(nextField) }
+            return .handled
+        }
+    }
+
+    private func moveSuggestion(_ suggestion: RecipientSuggestion, offset: Int) -> KeyPress.Result {
+        guard let index = suggestions.firstIndex(where: { $0.id == suggestion.id }) else { return .ignored }
+        let next = index + offset
+        if next < 0 { focus = .field(field) }
+        else if suggestions.indices.contains(next) { focus = .suggestion(suggestions[next].id) }
+        return .handled
     }
 
     private func updateSuggestions() {
@@ -186,6 +266,6 @@ struct RecipientTextField: View {
         text = parts.joined(separator: ", ") + ", "
         suggestions = []
         showSuggestions = false
-        isEditing = true
+        focus = .field(field)
     }
 }

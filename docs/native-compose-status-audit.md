@@ -38,3 +38,11 @@ The acceptance branch additionally corrects these concrete defects:
 Apple references reviewed for this pass: [Keyboards](https://developer.apple.com/design/human-interface-guidelines/keyboards), [Focus and selection](https://developer.apple.com/design/human-interface-guidelines/focus-and-selection), [Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars), [Show Borders](https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityshowborders), and [native accessibility announcements](https://developer.apple.com/documentation/accessibility/accessibilitynotification/announcement). Native bordered controls retain system focus and borders; the Show Borders guidance applies to custom interactive controls and does not require drawing a second border around system buttons.
 
 RichTextEditor type-checking with an isolated logging stub, Swift parsing of affected files, `git diff --check`, and the existing compose-toolbar probe passed. No system preferences, private APIs, production test flags, or localization keys were added.
+
+## UI interaction follow-up
+
+The next acceptance round replaces duplicated compose header alternatives with a single native ScrollView. Headers are limited to 35 percent of content height (220-point maximum), attachments to 20 percent (140 maximum), and long send errors to 10 percent (100 maximum). ComposeWindowController now sets contentMinSize rather than counting toolbar chrome inside the 560 by 400 minimum.
+
+Production rich and plain editors reuse the localized Message body accessibility label. Link insertion uses NSTextView.insertText so native delegate validation, one-step Undo/Redo and selection restoration are retained; bare HTTP(S) schemes cannot be inserted. The production editor interaction probe runs real asynchronous AppKit windows and verifies shared nil-target NSColorPanel routing between drafts. It does not claim mouse-driven color picker acceptance.
+
+Recipient suggestions retain native button roles and keyboard focus. Arrow keys choose candidates, Return commits, Escape returns to input, and returning input restores the native field editor caret at the end so further recipients do not replace existing addresses. The header owns shared focus for recipient and subject fields. Full evidence and current limits are in ui-interaction-acceptance-2026-10-02.md.

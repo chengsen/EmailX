@@ -144,41 +144,48 @@ struct ComposeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ComposeHeaderFields(
-                accounts: appState.accounts,
-                selectedAccountID: $selectedAccountID,
-                to: $toField, cc: $ccField,
-                bcc: $bccField, replyTo: $replyToField,
-                subject: $subjectField,
-                showExtraFields: $showExtraFields
-            )
-            Divider()
-            if isRichMode {
-                FormattingToolbar(textView: activeTextView)
-                Divider()
-            }
-            ComposeEditor(
-                attributed: $attributedBody,
-                isRichMode: isRichMode,
-                onTextViewReady: { activeTextView = $0 },
-                onFileURLsDropped: { urls in addAttachments(from: urls) },
-                onDragTargetChanged: { isDropTargeted = $0 }
-            )
-            if !attachments.isEmpty {
-                Divider()
-                ComposeAttachmentsStripView(
-                    attachments: attachments,
-                    onRemove: { att in attachments.removeAll { $0.id == att.id }; isDirty = true }
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                ComposeHeaderFields(
+                    accounts: appState.accounts,
+                    selectedAccountID: $selectedAccountID,
+                    to: $toField, cc: $ccField,
+                    bcc: $bccField, replyTo: $replyToField,
+                    subject: $subjectField,
+                    showExtraFields: $showExtraFields,
+                    maximumHeight: min(220, geometry.size.height * 0.35)
                 )
-            }
-            if let errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(.red)
-                    .textSelection(.enabled)
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .accessibilityLabel(String(localized: "Send") + ": " + errorMessage)
+                Divider()
+                if isRichMode {
+                    FormattingToolbar(textView: activeTextView)
+                    Divider()
+                }
+                ComposeEditor(
+                    attributed: $attributedBody,
+                    isRichMode: isRichMode,
+                    onTextViewReady: { activeTextView = $0 },
+                    onFileURLsDropped: { urls in addAttachments(from: urls) },
+                    onDragTargetChanged: { isDropTargeted = $0 }
+                )
+                if !attachments.isEmpty {
+                    Divider()
+                    ComposeAttachmentsStripView(
+                        attachments: attachments,
+                        onRemove: { att in attachments.removeAll { $0.id == att.id }; isDirty = true },
+                        maximumHeight: min(140, geometry.size.height * 0.2)
+                    )
+                }
+                if let errorMessage {
+                    ScrollView(.vertical) {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                            .textSelection(.enabled)
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityLabel(String(localized: "Send") + ": " + errorMessage)
+                    }
+                    .frame(maxHeight: min(100, geometry.size.height * 0.1))
+                }
             }
         }
         .frame(minWidth: 560, minHeight: 400)
@@ -402,6 +409,7 @@ struct ComposeEditor: View {
             )
         } else {
             TextEditor(text: plainBinding)
+                .accessibilityLabel(Text("Message body"))
                 .font(.system(.body, design: .monospaced))
                 .scrollContentBackground(.hidden)
                 .padding(8)
