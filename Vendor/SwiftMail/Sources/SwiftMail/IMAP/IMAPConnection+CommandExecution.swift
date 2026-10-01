@@ -1,0 +1,293 @@
+import Foundation
+@preconcurrency import NIOIMAP
+import NIOIMAPCore
+import NIO
+import Logging
+
+extension IMAPConnection {
+    @discardableResult func fetchCapabilities() async throws -> [Capability] {
+        let command = CapabilityCommand()
+        let serverCapabilities = try await executeCommand(command)
+        self.capabilities = Set(serverCapabilities)
+        return serverCapabilities
+    }
+
+    /// Replaces the capability snapshot with `reportedCapabilities`, or — when the
+    /// server reported none — with the result of an explicit CAPABILITY command.
+    /// Pass `useCommandBody: true` from call sites that already hold the command
+    /// queue (mirrors `fetchNamespacesIfSupported(useCommandBody:)`).
+    func refreshCapabilities(using reportedCapabilities: [Capability], useCommandBody: Bool = false) async throws {
+        if !reportedCapabilities.isEmpty {
+            self.capabilities = Set(reportedCapabilities)
+            return
+        }
+
+        if useCommandBody {
+            let refreshedCapabilities = try await executeCommandBody(CapabilityCommand())
+            self.capabilities = Set(refreshedCapabilities)
+        } else {
+            try await fetchCapabilities()
+        }
+    }
+
+    func fetchNamespaces() async throws -> NamespaceResponse {
+        let response = try await executeCommand(NamespaceCommand())
+        namespaces = response
+        return response
+    }
+
+    func fetchNamespacesIfSupported(useCommandBody: Bool) async {
+        let namespaceCapability = Capability("NAMESPACE")
+        guard capabilities.contains(namespaceCapability) else {
+            namespaces = nil
+            return
+        }
+
+        do {
+            if useCommandBody {
+                namespaces = try await executeCommandBody(NamespaceCommand())
+            } else {
+                namespaces = try await executeCommand(NamespaceCommand())
+            }
+        } catch {
+            logger.warning("\(connectionContext) Failed to fetch namespace metadata: \(error)")
+        }
+    }
+
+    func executeCommand<CommandType: IMAPCommand>(_ command: CommandType) async throws -> CommandType.ResultType {
+        try await commandQueue.run { [self] in
+            try await self.executeCommandBody(command)
+        }
+    }
+
+    func executeCommandBody<CommandType: IMAPCommand>(
+        _ command: CommandType
+    ) async throws -> CommandType.ResultType {
+        try command.validate()
+        try await waitForIdleCompletionIfNeeded()
+        try await recycleConnectionIfBufferedTerminationIfNeeded(operation: String(describing: CommandType.self))
+
+        clearInvalidChannel()
+
+        if self.channel == nil {
+            logger.info("\(connectionContext) Channel is nil, re-establishing connection before sending command")
+            try await connectBody()
+            try await reauthenticateIfSessionWasLost(before: String(describing: CommandType.self))
+        }
+
+        guard let channel = self.channel, channel.isActive else {
+            throw IMAPError.connectionFailed("Channel not initialized")
+        }
+
+        let resultPromise = channel.eventLoop.makePromise(of: CommandType.ResultType.self)
+        let tag = generateCommandTag()
+        let handler = command.makeHandler(commandTag: tag, promise: resultPromise)
+
+        return try await runCommandHandler(
+            CommandHandlerRun(
+                command: command,
+                channel: channel,
+                tag: tag,
+                handler: handler,
+                resultPromise: resultPromise
+            )
+        )
+    }
+
+    private struct CommandHandlerRun<CommandType: IMAPCommand> {
+        let command: CommandType
+        let channel: Channel
+        let tag: String
+        let handler: CommandType.HandlerType
+        let resultPromise: EventLoopPromise<CommandType.ResultType>
+    }
+
+    /// Arm a command's deadline. The timer is cancelled on the event loop the
+    /// moment the result promise completes, so a response that arrived in time
+    /// can never be followed by a timeout, even if the awaiting task resumes late.
+    @discardableResult
+    static func armCommandTimeout<ResultType: Sendable>(
+        channel: Channel,
+        timeoutSeconds: Int,
+        promise: EventLoopPromise<ResultType>,
+        logger: Logging.Logger
+    ) -> Scheduled<Void> {
+        let scheduled = channel.eventLoop.scheduleTask(in: .seconds(Int64(timeoutSeconds))) {
+            logger.warning("Command timed out after \(timeoutSeconds) seconds")
+            // The caller never waits on the write (see `send`), so failing the
+            // result wakes it; its timeout handling then recycles the connection,
+            // which also fails a write still waiting for a `+`.
+            promise.fail(IMAPError.timeout)
+        }
+        promise.futureResult.whenComplete { _ in scheduled.cancel() }
+        return scheduled
+    }
+
+    private func runCommandHandler<CommandType: IMAPCommand>(
+        _ run: CommandHandlerRun<CommandType>
+    ) async throws -> CommandType.ResultType {
+        let command = run.command
+        let channel = run.channel
+        let tag = run.tag
+        let handler = run.handler
+        let resultPromise = run.resultPromise
+        // The timeout measures the SERVER. It is armed by `send`'s `whenWritten`
+        // callback, in the same event-loop task that emits the command, so no
+        // local delay — installing the handler, building an APPEND payload, a
+        // busy cooperative pool or event loop, other work queued between the
+        // write and the arming — is counted, and none can stretch the deadline.
+        // Arming it earlier let a server that answered instantly still "time
+        // out", seen live on Gmail's post-LOGIN NAMESPACE. The timer cancels
+        // itself when the result is set, including a result set before it.
+        // Touched only on the event loop: whether the command's last write had
+        // settled when the result failed. Recorded as the failure happens, since
+        // a `+` in the same read can complete the write before we resume.
+        let writeState = WriteState()
+        resultPromise.futureResult.whenFailure { _ in writeState.failedWithWritePending = !writeState.settled }
+        do {
+            try await channel.pipeline.addHandler(handler, position: .before(responseBuffer)).get()
+            responseBuffer.hasActiveHandler = true
+            let timeoutSeconds = command.timeoutSeconds
+            let logger = self.logger
+            try await command.send(on: channel, tag: tag) { lastWrite in
+                Self.armCommandTimeout(
+                    channel: channel, timeoutSeconds: timeoutSeconds, promise: resultPromise, logger: logger)
+                lastWrite.whenComplete { _ in writeState.settled = true }
+            }
+            // A close that raced the handler's installation may have been
+            // delivered before the handler was added; don't wait out the deadline.
+            if !channel.isActive {
+                resultPromise.fail(IMAPError.connectionFailed("Connection closed before command completed"))
+            }
+            let result = try await resultPromise.futureResult.get()
+
+            responseBuffer.hasActiveHandler = false
+
+            await handleConnectionTerminationInResponses(handler.untaggedResponses)
+            duplexLogger.flushInboundBuffer()
+
+            return result
+        } catch let caught {
+            responseBuffer.hasActiveHandler = false
+
+            // Ensure the promise is always resolved — prevents NIO "leaking promise" fatal error
+            // when the channel becomes inactive between the guard and pipeline operations.
+            resultPromise.fail(caught)
+            // If the timeout fired first, report it rather than the write it aborted.
+            var error = caught
+            do { _ = try await resultPromise.futureResult.get() } catch let settled { error = settled }
+
+            await handleConnectionTerminationInResponses(handler.untaggedResponses)
+            duplexLogger.flushInboundBuffer()
+            if !handler.isCompleted {
+                try? await channel.pipeline.removeHandler(handler)
+            }
+            logErrorDiagnostics(error: error, operation: "command \(String(describing: CommandType.self)) [\(tag)]")
+            // A result that failed while its write is still pending (a literal
+            // awaiting `+`) leaves NIOIMAP mid-command: the next command would
+            // queue behind it. Recycle, whatever the error.
+            let writePending = (try? await channel.eventLoop.submit { writeState.failedWithWritePending }.get())
+                ?? false
+            if writePending || shouldRecycleConnection(for: error) {
+                try? await disconnectBody()
+            }
+            throw error
+        }
+    }
+
+    func executeHandlerOnly<T: Sendable, HandlerType: IMAPCommandHandler>(
+        handlerType: HandlerType.Type,
+        timeoutSeconds: Int = 5
+    ) async throws -> T where HandlerType.ResultType == T {
+        try await recycleConnectionIfBufferedTerminationIfNeeded(operation: String(describing: HandlerType.self))
+        clearInvalidChannel()
+
+        if self.channel == nil {
+            logger.info("\(connectionContext) Channel is nil, re-establishing connection before executing handler")
+            try await connectBody()
+        }
+
+        guard let channel = self.channel, channel.isActive else {
+            throw IMAPError.connectionFailed("Channel not initialized")
+        }
+
+        let resultPromise = channel.eventLoop.makePromise(of: T.self)
+        let handler = HandlerType.init(commandTag: "", promise: resultPromise)
+        let scheduledTask = scheduleHandlerTimeout(
+            channel: channel,
+            timeoutSeconds: timeoutSeconds,
+            promise: resultPromise
+        )
+
+        return try await runStandaloneHandler(
+            handler: handler,
+            channel: channel,
+            resultPromise: resultPromise,
+            scheduledTask: scheduledTask
+        )
+    }
+
+    private func scheduleHandlerTimeout<ResultType: Sendable>(
+        channel: Channel,
+        timeoutSeconds: Int,
+        promise: EventLoopPromise<ResultType>
+    ) -> Scheduled<Void> {
+        let logger = self.logger
+        return channel.eventLoop.scheduleTask(in: .seconds(Int64(timeoutSeconds))) {
+            logger.warning("Handler execution timed out after \(timeoutSeconds) seconds")
+            promise.fail(IMAPError.timeout)
+        }
+    }
+
+    private func runStandaloneHandler<T: Sendable, HandlerType: IMAPCommandHandler>(
+        handler: HandlerType,
+        channel: Channel,
+        resultPromise: EventLoopPromise<T>,
+        scheduledTask: Scheduled<Void>
+    ) async throws -> T where HandlerType.ResultType == T {
+        do {
+            try await channel.pipeline.addHandler(handler, position: .before(responseBuffer)).get()
+            responseBuffer.hasActiveHandler = true
+            let result = try await resultPromise.futureResult.get()
+
+            scheduledTask.cancel()
+            responseBuffer.hasActiveHandler = false
+
+            await handleConnectionTerminationInResponses(handler.untaggedResponses)
+            duplexLogger.flushInboundBuffer()
+
+            return result
+        } catch {
+            scheduledTask.cancel()
+            responseBuffer.hasActiveHandler = false
+
+            // Ensure the promise is always resolved — prevents NIO "leaking promise" fatal error
+            // when the channel becomes inactive between the guard and pipeline operations.
+            resultPromise.fail(error)
+
+            await handleConnectionTerminationInResponses(handler.untaggedResponses)
+            duplexLogger.flushInboundBuffer()
+            if !handler.isCompleted {
+                try? await channel.pipeline.removeHandler(handler)
+            }
+            logErrorDiagnostics(error: error, operation: "handler \(String(describing: HandlerType.self))")
+            if shouldRecycleConnection(for: error) {
+                try? await disconnectBody()
+            }
+            throw error
+        }
+    }
+
+    func generateCommandTag() -> String {
+        let tagPrefix = "A"
+        commandTagCounter += 1
+        return "\(tagPrefix)\(String(format: "%03d", commandTagCounter))"
+    }
+}
+
+/// Whether a command's last write has settled, and whether its result failed
+/// before that; read and written only on the channel's event loop.
+private final class WriteState: @unchecked Sendable {
+    var settled = false
+    var failedWithWritePending = false
+}

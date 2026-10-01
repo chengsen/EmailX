@@ -334,7 +334,7 @@ private struct ActionRow: View {
                 )) {
                     Text("—").tag("")
                     ForEach(flattenedFolders, id: \.folder.id) { entry in
-                        Text(String(repeating: "    ", count: entry.depth) + entry.folder.displayName)
+                        Text(String(repeating: "    ", count: entry.depth) + entry.folder.localizedName)
                             .tag(entry.folder.path)
                     }
                 }

@@ -1,0 +1,80 @@
+// IMAPCommand.swift
+// Base protocol for all IMAP commands
+
+import Foundation
+import NIO
+import NIOIMAP
+import NIOIMAPCore
+
+/// A protocol for all IMAP commands that know their handler type.
+protocol IMAPCommand where ResultType: Sendable {
+    /// The result type this command produces
+    associatedtype ResultType
+
+    /// The handler type used to process this command
+    associatedtype HandlerType: IMAPCommandHandler where HandlerType.ResultType == ResultType
+
+    /// Default timeout for this command type
+    var timeoutSeconds: Int { get }
+
+    /// Check if the command is valid before execution
+    func validate() throws
+
+    /// Send the command to the server without waiting on its writes.
+    /// `whenWritten` runs on the event loop in the same task that emits the
+    /// command, right after it, so nothing can run between the two. It gets the
+    /// future of the command's last write, which a synchronizing literal keeps
+    /// pending until the server's `+`.
+    func send(
+        on channel: Channel, tag: String, whenWritten: @escaping @Sendable (EventLoopFuture<Void>) -> Void
+    ) async throws
+
+    /// Build the response handler. Commands with request-specific validation
+    /// may override the default implementation.
+    func makeHandler(
+        commandTag: String,
+        promise: EventLoopPromise<ResultType>
+    ) -> HandlerType
+}
+
+/// A command that can be represented as a tagged IMAP command.
+protocol IMAPTaggedCommand: IMAPCommand {
+    /// Convert this high-level command to a NIO TaggedCommand.
+    func toTaggedCommand(tag: String) -> TaggedCommand
+}
+
+// Provide reasonable defaults.
+extension IMAPCommand {
+    var timeoutSeconds: Int { return 5 }
+
+    func validate() throws {
+        // Default implementation does no validation
+    }
+
+    func makeHandler(
+        commandTag: String,
+        promise: EventLoopPromise<ResultType>
+    ) -> HandlerType {
+        HandlerType(commandTag: commandTag, promise: promise)
+    }
+}
+
+extension IMAPTaggedCommand {
+    func send(
+        on channel: Channel, tag: String, whenWritten: @escaping @Sendable (EventLoopFuture<Void>) -> Void
+    ) async throws {
+        let taggedCommand = toTaggedCommand(tag: tag)
+        let wrapped = IMAPClientHandler.OutboundIn.part(CommandStreamPart.tagged(taggedCommand))
+        // Like AppendCommand, don't await the write. A command carrying a
+        // synchronizing literal finishes writing only after the server's `+`,
+        // so awaiting it would park the caller where neither the response
+        // handler nor the deadline can wake it. A failed write closes the
+        // channel, which fails the outstanding command.
+        let written = channel.eventLoop.makePromise(of: Void.self)
+        written.futureResult.whenFailure { _ in channel.close(promise: nil) }
+        channel.eventLoop.execute {
+            channel.writeAndFlush(wrapped, promise: written)
+            whenWritten(written.futureResult)
+        }
+    }
+}

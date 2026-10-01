@@ -379,7 +379,7 @@ struct AddressListRow: View {
         // Menu chevron + horizontal padding around the label.
         let chrome: CGFloat = 18
         // Worst-case badge text width — `addresses.count` is the upper bound.
-        let badgeText = "and \(addresses.count) more"
+        let badgeText = String(localized: "and \(addresses.count) more")
         let badgeWidth = (badgeText as NSString).size(withAttributes: attrs).width + chrome
 
         let available = max(0, width - badgeWidth - spacing)

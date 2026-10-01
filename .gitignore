@@ -14,6 +14,7 @@ DerivedData/
 # SPM
 .swiftpm/
 Package.resolved
+!MyEmail.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # Local working notes
 *do_not_commit*

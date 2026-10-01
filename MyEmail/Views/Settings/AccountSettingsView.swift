@@ -106,7 +106,7 @@ struct AccountSettingsView: View {
                 "Failed to load accounts",
                 detail: String(describing: error)
             )
-            self.loadError = String(describing: error)
+            self.loadError = String(localized: "Unable to load or update account settings. Please try again.")
         }
     }
 
@@ -141,7 +141,8 @@ struct AccountSettingsView: View {
                 await reload()
             }
         } catch {
-            self.loadError = String(describing: error)
+            LogService.log(.error, .db, "Account settings update failed", detail: String(describing: error))
+            self.loadError = String(localized: "Unable to load or update account settings. Please try again.")
         }
     }
 
@@ -152,7 +153,8 @@ struct AccountSettingsView: View {
                 accounts[idx] = updated
             }
         } catch {
-            self.loadError = String(describing: error)
+            LogService.log(.error, .db, "Account settings update failed", detail: String(describing: error))
+            self.loadError = String(localized: "Unable to load or update account settings. Please try again.")
         }
     }
 
@@ -167,7 +169,8 @@ struct AccountSettingsView: View {
             appState.accounts = (try? env.accountRepository.all()) ?? appState.accounts
             appState.rebuildAccountLookup()
         } catch {
-            self.loadError = String(describing: error)
+            LogService.log(.error, .db, "Account settings update failed", detail: String(describing: error))
+            self.loadError = String(localized: "Unable to load or update account settings. Please try again.")
             Task { await reload() }
         }
     }
@@ -298,7 +301,7 @@ struct AccountDetailPane: View {
                 Text("\(account.smtpHost):\(account.smtpPort)").foregroundStyle(.secondary)
             }
             LabeledContent("Auth") {
-                Text(account.authType == .oauth2 ? "OAuth 2.0" : "Password").foregroundStyle(.secondary)
+                Text(account.authType == .oauth2 ? String(localized: "OAuth 2.0") : String(localized: "Password")).foregroundStyle(.secondary)
             }
         }
     }

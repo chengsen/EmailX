@@ -125,9 +125,10 @@ struct AddGenericAccountView: View {
 
             onFinished()
         } catch AuthError.accountAlreadyExists(let email) {
-            errorMessage = "Account \(email) is already added."
+            errorMessage = String(localized: "Account \(email) is already added.")
         } catch {
-            errorMessage = String(describing: error)
+            LogService.log(.error, .auth, "Account setup failed", detail: String(describing: error))
+            errorMessage = String(localized: "Could not connect to the mail server. Check your network and account settings.")
         }
     }
 }

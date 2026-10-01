@@ -28,9 +28,10 @@ struct ErrorBannerView: View {
                         } catch AuthError.userCancelled {
                             // User closed the browser; banner stays for next attempt
                         } catch {
+                            LogService.log(.error, .auth, "Reconnect failed", detail: String(describing: error))
                             appState.errors.append(AppError(
-                                title: "Reconnect failed",
-                                detail: String(describing: error)
+                                title: String(localized: "Reconnect failed"),
+                                detail: (error as? AuthError)?.errorDescription ?? String(localized: "Could not connect to the mail server. Check your network and account settings.")
                             ))
                         }
                     }
