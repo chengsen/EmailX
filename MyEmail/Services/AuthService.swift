@@ -11,7 +11,7 @@ import Foundation
 
 // MARK: - Errors
 
-enum AuthError: Error, Sendable {
+enum AuthError: LocalizedError, Sendable {
     case secretsMissing
     case userCancelled
     case noCallbackURL
@@ -20,6 +20,23 @@ enum AuthError: Error, Sendable {
     case tokenExchangeFailed(String)
     case userInfoFetchFailed(String)
     case accountAlreadyExists(email: String)
+
+    nonisolated var errorDescription: String? {
+        switch self {
+        case .secretsMissing:
+            String(localized: "Google sign-in is not configured for this build.")
+        case .userCancelled:
+            String(localized: "Sign in was cancelled.")
+        case .accountAlreadyExists(let email):
+            String(localized: "Account \(email) is already added.")
+        case .stateMismatch, .noCallbackURL, .invalidCallback:
+            String(localized: "Sign-in verification failed. Please try again.")
+        case .tokenExchangeFailed:
+            String(localized: "Could not complete sign-in. Please try again.")
+        case .userInfoFetchFailed:
+            String(localized: "Could not load your account information. Please try again.")
+        }
+    }
 }
 
 // MARK: - Constants

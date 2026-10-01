@@ -46,25 +46,8 @@ struct BulkActionPanelView: View {
         .background(Color(nsColor: .controlBackgroundColor))
     }
 
-    // Russian plural: 1 → письмо, 2–4 → письма, 5+ → писем (with 11–19 exception)
     private nonisolated func selectionLabel(_ n: Int) -> String {
-        let isRu = Locale.current.language.languageCode?.identifier == "ru"
-        if isRu {
-            let rem10 = n % 10
-            let rem100 = n % 100
-            let noun: String
-            if rem10 == 1 && rem100 != 11 {
-                noun = "письмо выбрано"
-            } else if rem10 >= 2 && rem10 <= 4 && (rem100 < 10 || rem100 >= 20) {
-                noun = "письма выбрано"
-            } else {
-                noun = "писем выбрано"
-            }
-            return "\(n) \(noun)"
-        }
-        return n == 1
-            ? "1 message selected"
-            : "\(n) messages selected"
+        String(localized: "\(n) messages selected")
     }
 
     private func perform(op: @escaping ([UUID]) async -> Void) {

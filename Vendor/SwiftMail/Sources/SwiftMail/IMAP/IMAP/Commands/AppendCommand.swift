@@ -1,0 +1,69 @@
+import Foundation
+import NIO
+import NIOIMAP
+import NIOIMAPCore
+
+/// Command for appending a message to a mailbox.
+struct AppendCommand: IMAPCommand {
+    typealias ResultType = AppendResult
+    typealias HandlerType = AppendHandler
+
+    let mailboxName: String
+    let message: Data
+
+    init(mailboxName: String, message: String, flags: [Flag], internalDate: ServerMessageDate?) {
+        self.init(mailboxName: mailboxName, message: Data(message.utf8), flags: flags, internalDate: internalDate)
+    }
+
+    init(mailboxName: String, message: Data, flags: [Flag], internalDate: ServerMessageDate?) {
+        self.mailboxName = mailboxName
+        self.message = message
+        self.flags = flags
+        self.internalDate = internalDate
+    }
+    let flags: [Flag]
+    let internalDate: ServerMessageDate?
+
+    var timeoutSeconds: Int { return 30 }
+
+    func validate() throws {
+        guard !mailboxName.isEmpty else {
+            throw IMAPError.invalidArgument("Mailbox name must not be empty")
+        }
+    }
+
+    func send(
+        on channel: Channel, tag: String, whenWritten: @escaping @Sendable (EventLoopFuture<Void>) -> Void
+    ) async throws {
+        var messageBuffer = channel.allocator.buffer(capacity: message.count)
+        messageBuffer.writeBytes(message)
+
+        var mailboxBuffer = channel.allocator.buffer(capacity: mailboxName.utf8.count)
+        mailboxBuffer.writeString(mailboxName)
+        let mailbox = MailboxName(mailboxBuffer)
+
+        let nioFlags = flags.map { $0.toNIO() }
+        let appendOptions = AppendOptions(flagList: nioFlags, internalDate: internalDate)
+        let metadata = AppendMessage(options: appendOptions, data: AppendData(byteCount: messageBuffer.readableBytes))
+
+        // The payload is built above, off the event loop; the writes and the
+        // `whenWritten` callback then run in one event-loop task.
+        channel.eventLoop.execute {
+            let start = IMAPClientHandler.OutboundIn.part(.append(.start(tag: tag, appendingTo: mailbox)))
+            channel.write(start, promise: nil)
+            channel.write(IMAPClientHandler.OutboundIn.part(.append(.beginMessage(message: metadata))), promise: nil)
+            // Flush APPEND metadata first so servers can respond with literal continuation.
+            channel.flush()
+            // The server's clock starts with that flush: arm the deadline now,
+            // before any payload-sized work (writing, logging) on the loop.
+            let finished = channel.eventLoop.makePromise(of: Void.self)
+            whenWritten(finished.futureResult)
+
+            // Do not await write promises here. These writes may be continuation-gated by the IMAP state
+            // machine, and awaiting them can deadlock this command send path until timeout.
+            channel.write(IMAPClientHandler.OutboundIn.part(.append(.messageBytes(messageBuffer))), promise: nil)
+            channel.write(IMAPClientHandler.OutboundIn.part(.append(.endMessage)), promise: nil)
+            channel.writeAndFlush(IMAPClientHandler.OutboundIn.part(.append(.finish)), promise: finished)
+        }
+    }
+}

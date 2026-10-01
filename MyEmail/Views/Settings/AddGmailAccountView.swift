@@ -121,7 +121,7 @@ struct AddGmailAccountView: View {
                     .controlSize(.small)
                     .opacity(isWorking ? 1 : 0)
                 Image(systemName: "person.badge.key")
-                Text(isWorking ? "Waiting for browser…" : "Sign in with Google")
+                Text(isWorking ? String(localized: "Waiting for browser…") : String(localized: "Sign in with Google"))
             }
             .frame(minWidth: 220)
         }
@@ -148,22 +148,10 @@ struct AddGmailAccountView: View {
             if let inbox = await env.syncService.syncAccount(account) {
                 appState.selectedSidebarItem = .folder(inbox.id)
             }
-        } catch AuthError.userCancelled {
-            errorMessage = "Sign in was cancelled."
-        } catch AuthError.secretsMissing {
-            errorMessage = "OAuth client not configured. Fill Secrets.swift with Google client ID and redirect URI."
-        } catch AuthError.accountAlreadyExists(let email) {
-            errorMessage = "Account \(email) is already added."
-        } catch AuthError.stateMismatch {
-            errorMessage = "Security check failed (state mismatch). Try again."
-        } catch AuthError.tokenExchangeFailed(let reason) {
-            errorMessage = "Token exchange failed: \(reason)"
-        } catch AuthError.userInfoFetchFailed(let reason) {
-            errorMessage = "Could not load profile: \(reason)"
-        } catch AuthError.invalidCallback(let detail) {
-            errorMessage = "Invalid OAuth callback: \(detail)"
         } catch {
-            errorMessage = String(describing: error)
+            LogService.log(.error, .auth, "Sign-in failed", detail: String(describing: error))
+            errorMessage = (error as? AuthError)?.errorDescription
+                ?? String(localized: "Could not connect to the mail server. Check your network and account settings.")
         }
     }
 }

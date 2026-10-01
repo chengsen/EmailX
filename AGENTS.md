@@ -24,3 +24,6 @@ If `semble` is not on `$PATH`, use `uvx --from "semble[mcp]" semble` in its plac
 2. Inspect full files only when the returned chunk is not enough context.
 3. Optionally use `semble find-related` with a promising result's `file_path` and `line` to discover related implementations.
 4. Use grep only when you need exhaustive literal matches or quick confirmation of an exact string.
+## Localization
+
+Use Apple String Catalogs in `MyEmail/Resources/Localizable.xcstrings`; preserve existing translations. Localize SwiftUI literals and use `String(localized:)` for dynamic strings and AppKit labels. Use native catalog plural variations and Foundation formatting. Do not translate mail content, contact names, attachment filenames, or custom folder names; use `Folder.localizedName` for role-based folder labels. The Settings language picker contains only system, zh-Hans, and en, and saves native app-scoped `AppleLanguages` preferences for the next launch.

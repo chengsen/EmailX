@@ -10,6 +10,7 @@ import Foundation
 import GRDB
 import SwiftEmailParser
 import SwiftMail
+import struct NIOIMAPCore.ModificationSequenceValue
 
 extension SyncService {
 
@@ -153,7 +154,7 @@ extension SyncService {
         if let serverModSeq = sel.highestModSequence,
            let savedModSeq = saved.highestModSequence,
            savedModSeq > 0,
-           UInt64(savedModSeq) > serverModSeq {
+           UInt64(savedModSeq) > UInt64(serverModSeq) {
             LogService.log(.warning, .sync, "MODSEQ regression — full resync",
                            detail: "\(folderPath): \(savedModSeq) → \(serverModSeq)")
             try await fullResync(account: account, folderID: folderID,
@@ -202,7 +203,7 @@ extension SyncService {
                 try? await pool.write { db in
                     try db.execute(
                         sql: "UPDATE folders SET highest_mod_sequence = ? WHERE id = ?",
-                        arguments: [Int(exactly: newModSeq) ?? Int.max, folderID]
+                        arguments: [Int(exactly: UInt64(newModSeq)) ?? Int.max, folderID]
                     )
                 }
             }
@@ -395,7 +396,7 @@ extension SyncService {
 
         // 5) Advance HIGHESTMODSEQ watermark — never regress.
         let fetchedMax = changedInfos.compactMap(\.modSequence).max() ?? 0
-        let selectMax = sel.highestModSequence ?? 0
+        let selectMax = sel.highestModSequence.map { UInt64($0) } ?? 0
         let newMax = max(fetchedMax, selectMax, savedModSeq)
         if fetchedMax > 0, fetchedMax < savedModSeq {
             LogService.log(.warning, .sync,
@@ -638,7 +639,7 @@ extension SyncService {
         // MODSEQs below the requested CHANGEDSINCE — never regress. Prefer
         // the SELECT-reported HIGHESTMODSEQ when it's larger.
         let fetchedMax = changedInfos.compactMap(\.modSequence).max() ?? 0
-        let selectMax = sel.highestModSequence ?? 0
+        let selectMax = sel.highestModSequence.map { UInt64($0) } ?? 0
         let newMax = max(fetchedMax, selectMax, savedModSeq)
         if fetchedMax > 0, fetchedMax < savedModSeq {
             LogService.log(.warning, .sync,
@@ -731,7 +732,7 @@ extension SyncService {
             try? await pool.write { db in
                 try db.execute(
                     sql: "UPDATE folders SET highest_mod_sequence = ? WHERE id = ?",
-                    arguments: [Int(exactly: newModSeq) ?? Int.max, folderID]
+                    arguments: [Int(exactly: UInt64(newModSeq)) ?? Int.max, folderID]
                 )
             }
         }

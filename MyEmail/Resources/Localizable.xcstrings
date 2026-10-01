@@ -1,9 +1,36 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "": {},
-    " ": {},
-    "%@ — authentication expired": {},
+    "": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ""
+          }
+        }
+      }
+    },
+    " ": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " "
+          }
+        }
+      }
+    },
+    "%@ — authentication expired": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — 身份验证已失效"
+          }
+        }
+      }
+    },
     "%@:%lld": {
       "localizations": {
         "en": {
@@ -11,16 +38,55 @@
             "state": "new",
             "value": "%1$@:%2$lld"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@:%lld"
+          }
         }
       }
     },
-    "%lld": {},
+    "%lld": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
     "%lld failed actions": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld неудачных действий"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 个操作失败"
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld failed action"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld failed actions"
+                }
+              }
+            }
           }
         }
       }
@@ -30,15 +96,33 @@
       "extractionState": "manual",
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "(%lld messages)"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld message)"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "(%lld messages)"
+                }
+              }
+            }
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "(%lld сообщений)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "（%lld 封邮件）"
           }
         }
       }
@@ -50,11 +134,35 @@
             "state": "translated",
             "value": "(Без темы)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "（无主题）"
+          }
         }
       }
     },
-    "1 line": {},
-    "1 minute": {},
+    "1 line": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 行"
+          }
+        }
+      }
+    },
+    "1 minute": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 分钟"
+          }
+        }
+      }
+    },
     "120 seconds": {
       "localizations": {
         "ru": {
@@ -62,10 +170,25 @@
             "state": "translated",
             "value": "120 секунд"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "120 秒"
+          }
         }
       }
     },
-    "15 minutes": {},
+    "15 minutes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 分钟"
+          }
+        }
+      }
+    },
     "15 seconds": {
       "localizations": {
         "ru": {
@@ -73,11 +196,35 @@
             "state": "translated",
             "value": "15 секунд"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 秒"
+          }
         }
       }
     },
-    "2 lines": {},
-    "30 minutes": {},
+    "2 lines": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 行"
+          }
+        }
+      }
+    },
+    "30 minutes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 分钟"
+          }
+        }
+      }
+    },
     "30 seconds": {
       "localizations": {
         "ru": {
@@ -85,11 +232,35 @@
             "state": "translated",
             "value": "30 секунд"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 秒"
+          }
         }
       }
     },
-    "5 minutes": {},
-    "587": {},
+    "5 minutes": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 分钟"
+          }
+        }
+      }
+    },
+    "587": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "587"
+          }
+        }
+      }
+    },
     "60 seconds": {
       "localizations": {
         "ru": {
@@ -97,16 +268,37 @@
             "state": "translated",
             "value": "60 секунд"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "60 秒"
+          }
         }
       }
     },
-    "993": {},
+    "993": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "993"
+          }
+        }
+      }
+    },
     "About MyEmail": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "О программе MyEmail"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关于 EmailX"
           }
         }
       }
@@ -118,6 +310,12 @@
             "state": "translated",
             "value": "Учётная запись"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户"
+          }
         }
       }
     },
@@ -127,6 +325,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Название аккаунта"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户名称"
           }
         }
       }
@@ -145,6 +349,12 @@
             "state": "translated",
             "value": "Тип учётной записи"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户类型"
+          }
         }
       }
     },
@@ -161,6 +371,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Учётные записи"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户"
           }
         }
       }
@@ -179,14 +395,65 @@
             "state": "translated",
             "value": "Ошибка учётных записей"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户错误"
+          }
         }
       }
     },
-    "Action": {},
-    "Actions": {},
-    "Add": {},
-    "Add Action": {},
-    "Add Condition": {},
+    "Action": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
+          }
+        }
+      }
+    },
+    "Actions": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加"
+          }
+        }
+      }
+    },
+    "Add Action": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加操作"
+          }
+        }
+      }
+    },
+    "Add Condition": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加条件"
+          }
+        }
+      }
+    },
     "Add account": {
       "extractionState": "manual",
       "localizations": {
@@ -201,6 +468,12 @@
             "state": "translated",
             "value": "Добавить учётную запись"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加账户"
+          }
         }
       }
     },
@@ -211,16 +484,37 @@
             "state": "translated",
             "value": "Добавьте аккаунт в Настройках (⌘,)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在设置中添加账户（⌘,）"
+          }
         }
       }
     },
-    "Add email": {},
+    "Add email": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加邮箱地址"
+          }
+        }
+      }
+    },
     "Add to trusted senders": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Добавить в доверенные"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加到受信任的发件人"
           }
         }
       }
@@ -232,6 +526,12 @@
             "state": "translated",
             "value": "Расширенные"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高级"
+          }
         }
       }
     },
@@ -241,6 +541,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Доступ для агентов (MCP)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "智能体访问（MCP）"
           }
         }
       }
@@ -259,6 +565,12 @@
             "state": "translated",
             "value": "Все"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部"
+          }
         }
       }
     },
@@ -269,6 +581,12 @@
             "state": "translated",
             "value": "Все папки Входящие"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有收件箱"
+          }
         }
       }
     },
@@ -278,6 +596,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вся почта"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有邮件"
           }
         }
       }
@@ -290,16 +614,37 @@
             "state": "translated",
             "value": "Все аккаунты"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有账户"
+          }
         }
       }
     },
-    "All conditions (AND)": {},
+    "All conditions (AND)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "满足所有条件（AND）"
+          }
+        }
+      }
+    },
     "All messages in \"%@\" will be permanently deleted. This cannot be undone.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Все сообщения в «%@» будут удалены безвозвратно. Это действие нельзя отменить."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@”中的所有邮件将被永久删除。此操作无法撤销。"
           }
         }
       }
@@ -311,17 +656,47 @@
             "state": "translated",
             "value": "Разрешить ручной запуск"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许手动执行"
+          }
         }
       }
     },
-    "Always load from %@": {},
-    "Any condition (OR)": {},
+    "Always load from %@": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "始终加载来自 %@ 的内容"
+          }
+        }
+      }
+    },
+    "Any condition (OR)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "满足任一条件（OR）"
+          }
+        }
+      }
+    },
     "Appearance": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Оформление"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "外观"
           }
         }
       }
@@ -333,6 +708,12 @@
             "state": "translated",
             "value": "Применить к Входящим"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用到收件箱"
+          }
         }
       }
     },
@@ -342,6 +723,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Применять к папкам"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用到文件夹"
           }
         }
       }
@@ -353,6 +740,12 @@
             "state": "translated",
             "value": "Применять к входящим"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用到新收到的邮件"
+          }
         }
       }
     },
@@ -362,6 +755,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Архивировать"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档"
           }
         }
       }
@@ -380,6 +779,12 @@
             "state": "translated",
             "value": "Archive"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "归档文件夹"
+          }
         }
       }
     },
@@ -390,6 +795,12 @@
             "state": "translated",
             "value": "Прикрепить файлы"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加附件"
+          }
         }
       }
     },
@@ -399,6 +810,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Письмо с вложениями"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅包含附件的邮件"
           }
         }
       }
@@ -417,6 +834,12 @@
             "state": "translated",
             "value": "Авторизация"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "身份验证"
+          }
         }
       }
     },
@@ -426,6 +849,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Автоопределение"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动检测"
           }
         }
       }
@@ -444,6 +873,12 @@
             "state": "translated",
             "value": "Автопрокрутка вниз"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动滚动到底部"
+          }
         }
       }
     },
@@ -461,6 +896,12 @@
             "state": "translated",
             "value": "Назад"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回"
+          }
         }
       }
     },
@@ -470,6 +911,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Фоновая загрузка"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "后台下载"
           }
         }
       }
@@ -481,6 +928,12 @@
             "state": "translated",
             "value": "Скрытая копия:"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密送："
+          }
         }
       }
     },
@@ -490,6 +943,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скрытая копия: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密送：%@"
           }
         }
       }
@@ -507,16 +966,37 @@
             "state": "translated",
             "value": "before:, after: диапазон дат (YYYY-MM-DD или относительно: 7d, 2w, 3m, 1y)."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before 和 After：日期范围。"
+          }
         }
       }
     },
-    "Block remote images by default": {},
+    "Block remote images by default": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "默认屏蔽远程图片"
+          }
+        }
+      }
+    },
     "Body": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Тело"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正文"
           }
         }
       }
@@ -534,6 +1014,12 @@
             "state": "translated",
             "value": "body: искать только в теле письма."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body：仅匹配邮件正文中的词语。"
+          }
         }
       }
     },
@@ -543,6 +1029,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Полужирный"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粗体"
           }
         }
       }
@@ -554,6 +1046,12 @@
             "state": "translated",
             "value": "Все окна на передний план"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将所有窗口前置"
+          }
         }
       }
     },
@@ -564,17 +1062,47 @@
             "state": "translated",
             "value": "Маркированный список"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "项目符号列表"
+          }
         }
       }
     },
-    "By month (Archive/2026/2026-04/)": {},
-    "By year (Archive/2026/)": {},
+    "By month (Archive/2026/2026-04/)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按月（Archive/2026/2026-04/）"
+          }
+        }
+      }
+    },
+    "By year (Archive/2026/)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "按年（Archive/2026/）"
+          }
+        }
+      }
+    },
     "Cache": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Кеш"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "缓存"
           }
         }
       }
@@ -586,6 +1114,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отмена"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
           }
         }
       }
@@ -604,6 +1138,12 @@
             "state": "translated",
             "value": "Категория"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类"
+          }
         }
       }
     },
@@ -613,6 +1153,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Копия:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "抄送："
           }
         }
       }
@@ -624,10 +1170,25 @@
             "state": "translated",
             "value": "Копия: %@"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "抄送：%@"
+          }
         }
       }
     },
-    "Check for new mail every": {},
+    "Check for new mail every": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查新邮件的间隔"
+          }
+        }
+      }
+    },
     "Choose an account type": {
       "extractionState": "manual",
       "localizations": {
@@ -642,6 +1203,12 @@
             "state": "translated",
             "value": "Выберите тип учётной записи"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择账户类型"
+          }
         }
       }
     },
@@ -651,6 +1218,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выберите файлы для прикрепления"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择附件文件"
           }
         }
       }
@@ -662,6 +1235,12 @@
             "state": "translated",
             "value": "Классический"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "经典"
+          }
         }
       }
     },
@@ -671,6 +1250,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Очистить кеш вложений"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除附件缓存"
           }
         }
       }
@@ -689,6 +1274,12 @@
             "state": "translated",
             "value": "Очистить лог"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除日志"
+          }
         }
       }
     },
@@ -698,6 +1289,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Очистить историю поиска"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除最近搜索"
           }
         }
       }
@@ -709,6 +1306,12 @@
             "state": "translated",
             "value": "Нажмите, чтобы повторить или отбросить неудачные действия"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击以重试或丢弃失败的操作"
+          }
         }
       }
     },
@@ -718,6 +1321,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Закрыть"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
           }
         }
       }
@@ -729,6 +1338,12 @@
             "state": "translated",
             "value": "Закрыть окно"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭窗口"
+          }
         }
       }
     },
@@ -738,6 +1353,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Компактный (22pt)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "紧凑（22 点）"
           }
         }
       }
@@ -749,11 +1370,35 @@
             "state": "translated",
             "value": "Написать письмо"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "撰写邮件"
+          }
         }
       }
     },
-    "Conditions": {},
-    "Confirm before deleting messages": {},
+    "Conditions": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "条件"
+          }
+        }
+      }
+    },
+    "Confirm before deleting messages": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除邮件前确认"
+          }
+        }
+      }
+    },
     "Connected": {
       "extractionState": "manual",
       "localizations": {
@@ -768,6 +1413,12 @@
             "state": "translated",
             "value": "Подключено"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已连接"
+          }
         }
       }
     },
@@ -777,6 +1428,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скопировано"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已复制"
           }
         }
       }
@@ -789,6 +1446,12 @@
             "state": "translated",
             "value": "Копировать"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制"
+          }
         }
       }
     },
@@ -798,6 +1461,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скопировать адрес"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制地址"
           }
         }
       }
@@ -816,6 +1485,12 @@
             "state": "translated",
             "value": "Копировать лог"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制日志"
+          }
         }
       }
     },
@@ -825,6 +1500,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скопировать команду подключения"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制配置命令"
           }
         }
       }
@@ -836,6 +1517,12 @@
             "state": "translated",
             "value": "Создать"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建"
+          }
         }
       }
     },
@@ -845,6 +1532,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Настроить панель инструментов…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自定义工具栏…"
           }
         }
       }
@@ -856,6 +1549,12 @@
             "state": "translated",
             "value": "Вырезать"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "剪切"
+          }
         }
       }
     },
@@ -865,6 +1564,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Размер базы данных"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "数据库大小"
           }
         }
       }
@@ -876,16 +1581,37 @@
             "state": "translated",
             "value": "Дата"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
         }
       }
     },
-    "Dates": {},
+    "Dates": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        }
+      }
+    },
     "Debug": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Отладка"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "调试"
           }
         }
       }
@@ -904,16 +1630,37 @@
             "state": "translated",
             "value": "Отладочный лог"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "调试日志"
+          }
         }
       }
     },
-    "Default signature": {},
+    "Default signature": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "默认签名"
+          }
+        }
+      }
+    },
     "Delete": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Удалить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除"
           }
         }
       }
@@ -925,6 +1672,12 @@
             "state": "translated",
             "value": "Удалить %d писем безвозвратно?"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永久删除 %d 封邮件？"
+          }
         }
       }
     },
@@ -934,6 +1687,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Удалить это письмо безвозвратно?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永久删除这封邮件？"
           }
         }
       }
@@ -945,6 +1704,12 @@
             "state": "translated",
             "value": "Отбросить неудачные действия"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "丢弃失败的操作"
+          }
         }
       }
     },
@@ -954,6 +1719,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Показывать почтовый клиент отправителя"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示邮件客户端信息"
           }
         }
       }
@@ -972,6 +1743,12 @@
             "state": "translated",
             "value": "Отображаемое имя"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示名称"
+          }
         }
       }
     },
@@ -981,6 +1758,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не отправлять"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不发送"
           }
         }
       }
@@ -999,6 +1782,12 @@
             "state": "translated",
             "value": "Готово"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
         }
       }
     },
@@ -1009,6 +1798,12 @@
             "state": "translated",
             "value": "Черновики"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "草稿箱"
+          }
         }
       }
     },
@@ -1018,6 +1813,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Правка"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑"
           }
         }
       }
@@ -1036,6 +1837,12 @@
             "state": "translated",
             "value": "Email"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮箱地址"
+          }
         }
       }
     },
@@ -1045,6 +1852,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Очистить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清空"
           }
         }
       }
@@ -1056,6 +1869,12 @@
             "state": "translated",
             "value": "Очистить Спам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清空垃圾邮件"
+          }
         }
       }
     },
@@ -1066,16 +1885,37 @@
             "state": "translated",
             "value": "Очистить Корзину"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清空废纸篓"
+          }
         }
       }
     },
-    "Enabled": {},
+    "Enabled": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启用"
+          }
+        }
+      }
+    },
     "Encrypted message (PGP/GPG)": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Зашифрованное сообщение (PGP/GPG)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加密邮件（PGP/GPG）"
           }
         }
       }
@@ -1087,6 +1927,12 @@
             "state": "translated",
             "value": "Введите имя папки:"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输入文件夹名称："
+          }
         }
       }
     },
@@ -1096,6 +1942,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Введите новое имя:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输入新名称："
           }
         }
       }
@@ -1107,6 +1959,12 @@
             "state": "translated",
             "value": "Примеры"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "示例"
+          }
         }
       }
     },
@@ -1117,17 +1975,47 @@
             "state": "translated",
             "value": "Не удалось загрузить письмо"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法加载邮件"
+          }
         }
       }
     },
-    "Failed to load message source": {},
-    "Field": {},
+    "Failed to load message source": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法加载邮件源代码"
+          }
+        }
+      }
+    },
+    "Field": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字段"
+          }
+        }
+      }
+    },
     "File": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Файл"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件"
           }
         }
       }
@@ -1146,6 +2034,12 @@
             "state": "translated",
             "value": "Найти…"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查找…"
+          }
         }
       }
     },
@@ -1155,6 +2049,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Поставить флажок"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "旗标"
           }
         }
       }
@@ -1173,10 +2073,25 @@
             "state": "translated",
             "value": "Список"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平铺"
+          }
         }
       }
     },
-    "Flat (Archive/)": {},
+    "Flat (Archive/)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平铺（Archive/）"
+          }
+        }
+      }
+    },
     "Flat View": {
       "extractionState": "manual",
       "localizations": {
@@ -1190,6 +2105,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Плоский список"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "平铺视图"
           }
         }
       }
@@ -1208,6 +2129,12 @@
             "state": "translated",
             "value": "Папка"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件夹"
+          }
         }
       }
     },
@@ -1217,6 +2144,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Структура папок"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件夹结构"
           }
         }
       }
@@ -1229,6 +2162,12 @@
             "state": "translated",
             "value": "Шрифт"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体"
+          }
         }
       }
     },
@@ -1238,6 +2177,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Шрифт"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体系列"
           }
         }
       }
@@ -1249,16 +2194,37 @@
             "state": "translated",
             "value": "Размер шрифта"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字号"
+          }
         }
       }
     },
-    "Forward": {},
+    "Forward": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转发"
+          }
+        }
+      }
+    },
     "Found": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Найдено"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已找到"
           }
         }
       }
@@ -1269,6 +2235,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Найдено: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已找到：%lld"
           }
         }
       }
@@ -1287,6 +2259,12 @@
             "state": "translated",
             "value": "M1 Foundation — откройте панель отладки (⌥⌘Y)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "基础功能阶段 — 打开调试日志面板（⌥⌘Y）"
+          }
         }
       }
     },
@@ -1296,6 +2274,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Свободный поиск — любое слово в теме, отправителе, получателе, теле или идентификаторе списка."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由文本搜索：匹配主题、发件人、收件人、正文或邮件列表标识中的词语。"
           }
         }
       }
@@ -1307,6 +2291,12 @@
             "state": "translated",
             "value": "От"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发件人"
+          }
         }
       }
     },
@@ -1317,6 +2307,12 @@
             "state": "translated",
             "value": "От:"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发件人："
+          }
         }
       }
     },
@@ -1326,6 +2322,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "От: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发件人：%@"
           }
         }
       }
@@ -1342,6 +2344,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "from: совпадение по имени или адресу. Можно указать несколько."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From：匹配姓名或邮箱地址，支持多个值。"
           }
         }
       }
@@ -1360,6 +2368,12 @@
             "state": "translated",
             "value": "Общее"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通用"
+          }
         }
       }
     },
@@ -1377,6 +2391,12 @@
             "state": "translated",
             "value": "Получить почту"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收取邮件"
+          }
         }
       }
     },
@@ -1387,6 +2407,12 @@
             "state": "translated",
             "value": "Получить почту"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收取新邮件"
+          }
         }
       }
     },
@@ -1396,6 +2422,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Глобальный поиск…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全局搜索…"
           }
         }
       }
@@ -1410,6 +2442,12 @@
           }
         },
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gmail"
+          }
+        },
+        "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "Gmail"
@@ -1431,14 +2469,44 @@
             "state": "translated",
             "value": "Gmail (OAuth)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gmail（OAuth）"
+          }
         }
       }
     },
-    "Gmail uses label removal for archiving — messages stay in All Mail.": {},
-    "Gravatar": {},
+    "Gmail uses label removal for archiving — messages stay in All Mail.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gmail 通过移除标签来归档，邮件仍保留在“所有邮件”中。"
+          }
+        }
+      }
+    },
+    "Gravatar": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravatar"
+          }
+        }
+      }
+    },
     "HTML": {
       "localizations": {
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTML"
+          }
+        },
+        "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "HTML"
@@ -1459,6 +2527,12 @@
             "state": "translated",
             "value": "has: фильтр по вложениям — attachment или noattachment."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has：附件筛选。"
+          }
         }
       }
     },
@@ -1469,6 +2543,12 @@
             "state": "translated",
             "value": "Справка"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "帮助"
+          }
         }
       }
     },
@@ -1478,6 +2558,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скрыть Копия/Скрытая копия"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏抄送／密送"
           }
         }
       }
@@ -1496,6 +2582,12 @@
             "state": "translated",
             "value": "Скрыть панель отладки"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏调试日志面板"
+          }
         }
       }
     },
@@ -1506,6 +2598,12 @@
             "state": "translated",
             "value": "Скрыть MyEmail"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏 EmailX"
+          }
         }
       }
     },
@@ -1515,6 +2613,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Скрыть остальные"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏其他应用"
           }
         }
       }
@@ -1533,6 +2637,12 @@
             "state": "translated",
             "value": "Хост, порт, логин и пароль"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器、端口、用户名和密码"
+          }
         }
       }
     },
@@ -1546,6 +2656,12 @@
           }
         },
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IMAP"
+          }
+        },
+        "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "IMAP"
@@ -1567,6 +2683,12 @@
             "state": "translated",
             "value": "IMAP (входящие)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IMAP（收件）"
+          }
         }
       }
     },
@@ -1577,6 +2699,12 @@
             "state": "translated",
             "value": "Таймаут IMAP-соединения"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IMAP 连接超时"
+          }
         }
       }
     },
@@ -1586,6 +2714,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Иконки"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图标"
           }
         }
       }
@@ -1604,6 +2738,12 @@
             "state": "translated",
             "value": "Личные данные"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "身份"
+          }
         }
       }
     },
@@ -1620,6 +2760,12 @@
             "state": "translated",
             "value": "in: ограничить папкой по имени."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In：按名称限定文件夹。"
+          }
         }
       }
     },
@@ -1629,6 +2775,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Входящие"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收件箱"
           }
         }
       }
@@ -1640,6 +2792,12 @@
             "state": "translated",
             "value": "Вставить"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "插入"
+          }
         }
       }
     },
@@ -1649,6 +2807,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вставить ссылку"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "插入链接"
           }
         }
       }
@@ -1666,6 +2830,12 @@
             "state": "translated",
             "value": "is: фильтр по флагам — unread, read, flagged, unflagged."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Is：旗标筛选。"
+          }
         }
       }
     },
@@ -1676,6 +2846,12 @@
             "state": "translated",
             "value": "Курсив"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "斜体"
+          }
         }
       }
     },
@@ -1685,6 +2861,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Спам"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "垃圾邮件"
           }
         }
       }
@@ -1702,6 +2884,12 @@
             "state": "translated",
             "value": "larger:, smaller: фильтр размера (k, M, G — 5M = 5 МиБ)."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Larger 和 Smaller：大小筛选，支持 K、M、G 后缀。"
+          }
         }
       }
     },
@@ -1712,6 +2900,12 @@
             "state": "translated",
             "value": "Расположение"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "布局"
+          }
         }
       }
     },
@@ -1721,6 +2915,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Разрешить агентам работать с этой почтой"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许智能体操作此邮箱"
           }
         }
       }
@@ -1739,6 +2939,12 @@
             "state": "translated",
             "value": "Уровень"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "级别"
+          }
         }
       }
     },
@@ -1748,6 +2954,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Уровень 1"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 1 层"
           }
         }
       }
@@ -1759,6 +2971,12 @@
             "state": "translated",
             "value": "Уровень 2"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 2 层"
+          }
         }
       }
     },
@@ -1769,6 +2987,12 @@
             "state": "translated",
             "value": "Уровень 3"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 3 层"
+          }
         }
       }
     },
@@ -1778,6 +3002,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Подпись ссылки"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "链接文字"
           }
         }
       }
@@ -1795,6 +3025,12 @@
             "state": "translated",
             "value": "list: идентификатор рассылки (List-ID)."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List：邮件列表标识（List-ID）。"
+          }
         }
       }
     },
@@ -1804,6 +3040,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Загрузить изображения"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加载远程内容"
           }
         }
       }
@@ -1815,6 +3057,12 @@
             "state": "translated",
             "value": "Отметить все прочитанными"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部标为已读"
+          }
         }
       }
     },
@@ -1824,6 +3072,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Прочитано/Непрочитано"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为已读／未读"
           }
         }
       }
@@ -1835,6 +3089,12 @@
             "state": "translated",
             "value": "Пометить как спам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为垃圾邮件"
+          }
         }
       }
     },
@@ -1844,6 +3104,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отметить как прочитанное"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为已读"
           }
         }
       }
@@ -1855,6 +3121,12 @@
             "state": "translated",
             "value": "Пометить спамом"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为垃圾邮件"
+          }
         }
       }
     },
@@ -1864,6 +3136,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отметить как непрочитанное"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为未读"
           }
         }
       }
@@ -1875,6 +3153,12 @@
             "state": "translated",
             "value": "Отметить флагом"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置旗标"
+          }
         }
       }
     },
@@ -1884,6 +3168,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отметить спамом"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为垃圾邮件"
           }
         }
       }
@@ -1895,17 +3185,47 @@
             "state": "translated",
             "value": "Отметить прочитанным"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标为已读"
+          }
         }
       }
     },
-    "Mark messages as read when selected": {},
-    "Match": {},
+    "Mark messages as read when selected": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选中邮件时标为已读"
+          }
+        }
+      }
+    },
+    "Match": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匹配"
+          }
+        }
+      }
+    },
     "Max messages to pre-download": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Максимум писем для предзагрузки"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预下载的最大邮件数量"
           }
         }
       }
@@ -1917,6 +3237,12 @@
             "state": "translated",
             "value": "Максимальный размер письма"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每封邮件的最大大小"
+          }
         }
       }
     },
@@ -1927,10 +3253,25 @@
             "state": "translated",
             "value": "Сообщение"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮件"
+          }
         }
       }
     },
-    "Message List": {},
+    "Message List": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮件列表"
+          }
+        }
+      }
+    },
     "Message Source": {
       "extractionState": "manual",
       "localizations": {
@@ -1945,6 +3286,12 @@
             "state": "translated",
             "value": "Исходный код письма"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮件源代码"
+          }
         }
       }
     },
@@ -1956,6 +3303,12 @@
             "state": "translated",
             "value": "Содержимое письма недоступно"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮件正文不可用"
+          }
         }
       }
     },
@@ -1965,6 +3318,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Свернуть"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小化"
           }
         }
       }
@@ -1976,6 +3335,12 @@
             "state": "translated",
             "value": "Моноширинный"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等宽"
+          }
         }
       }
     },
@@ -1986,6 +3351,12 @@
             "state": "translated",
             "value": "Переместить %d писем в Корзину?"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将 %d 封邮件移到废纸篓？"
+          }
         }
       }
     },
@@ -1995,6 +3366,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переместить в папку"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to folder"
           }
         }
       }
@@ -2013,6 +3390,12 @@
             "state": "translated",
             "value": "MyEmail"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EmailX"
+          }
         }
       }
     },
@@ -2023,6 +3406,12 @@
             "state": "translated",
             "value": "Справка MyEmail"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EmailX 帮助"
+          }
         }
       }
     },
@@ -2032,6 +3421,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "MyEmail не поддерживает расшифровку PGP/GPG. Используйте совместимое приложение для чтения этого сообщения."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EmailX 不支持 PGP/GPG 解密。请使用兼容的应用阅读此邮件。"
           }
         }
       }
@@ -2050,6 +3445,12 @@
             "state": "translated",
             "value": "Имя"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称"
+          }
         }
       }
     },
@@ -2067,16 +3468,37 @@
             "state": "translated",
             "value": "Требуется повторная авторизация"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要重新验证身份"
+          }
         }
       }
     },
-    "New Message": {},
+    "New Message": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建邮件"
+          }
+        }
+      }
+    },
     "New Rule": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Новое правило"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建规则"
           }
         }
       }
@@ -2088,6 +3510,12 @@
             "state": "translated",
             "value": "Новая подпапка"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建子文件夹"
+          }
         }
       }
     },
@@ -2098,6 +3526,12 @@
             "state": "translated",
             "value": "Новая подпапка…"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建子文件夹…"
+          }
         }
       }
     },
@@ -2107,6 +3541,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нет доступных аккаунтов"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有可用账户"
           }
         }
       }
@@ -2119,6 +3559,12 @@
             "state": "translated",
             "value": "Нет содержимого"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有内容"
+          }
         }
       }
     },
@@ -2128,6 +3574,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нет недавних поисковых запросов"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有最近搜索"
           }
         }
       }
@@ -2139,6 +3591,12 @@
             "state": "translated",
             "value": "Ничего не найдено"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有结果"
+          }
         }
       }
     },
@@ -2148,6 +3606,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Без подписи"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无签名"
           }
         }
       }
@@ -2166,6 +3630,12 @@
             "state": "translated",
             "value": "Нет"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无"
+          }
         }
       }
     },
@@ -2176,6 +3646,12 @@
             "state": "translated",
             "value": "Обычный (26pt)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标准（26 点）"
+          }
         }
       }
     },
@@ -2185,6 +3661,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нумерованный список"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编号列表"
           }
         }
       }
@@ -2199,6 +3681,12 @@
           }
         },
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OAuth 2.0"
+          }
+        },
+        "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "OAuth 2.0"
@@ -2220,6 +3708,12 @@
             "state": "translated",
             "value": "OK"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确定"
+          }
         }
       }
     },
@@ -2229,6 +3723,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нет сети — %lld в очереди"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离线 — %lld 个待处理操作"
           }
         }
       }
@@ -2246,6 +3746,12 @@
             "state": "translated",
             "value": "%1$@, %2$@ написал(а):"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，%@ 写道："
+          }
         }
       }
     },
@@ -2255,6 +3761,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открыть"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开"
           }
         }
       }
@@ -2266,6 +3778,12 @@
             "state": "translated",
             "value": "Открыть сообщение в новом окне"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在新窗口中打开邮件"
+          }
         }
       }
     },
@@ -2275,6 +3793,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открыть настройки"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开设置"
           }
         }
       }
@@ -2286,6 +3810,12 @@
             "state": "translated",
             "value": "Открыть в новом окне"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在新窗口中打开"
+          }
         }
       }
     },
@@ -2295,6 +3825,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Операторы"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运算符"
           }
         }
       }
@@ -2313,6 +3849,12 @@
             "state": "translated",
             "value": "Другой IMAP-сервер"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他 IMAP 服务器"
+          }
         }
       }
     },
@@ -2330,6 +3872,12 @@
             "state": "translated",
             "value": "Пароль"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
         }
       }
     },
@@ -2339,6 +3887,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вставить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴"
           }
         }
       }
@@ -2350,6 +3904,12 @@
             "state": "translated",
             "value": "Шаблон (regex)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匹配模式（正则表达式）"
+          }
         }
       }
     },
@@ -2359,6 +3919,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Удалить все сообщения безвозвратно?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永久删除所有邮件？"
           }
         }
       }
@@ -2370,6 +3936,12 @@
             "state": "translated",
             "value": "Личный, Рабочий, …"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "个人、工作…"
+          }
         }
       }
     },
@@ -2379,6 +3951,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Простой текст"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "纯文本"
           }
         }
       }
@@ -2397,6 +3975,12 @@
             "state": "translated",
             "value": "Порт"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口"
+          }
         }
       }
     },
@@ -2407,10 +3991,25 @@
             "state": "translated",
             "value": "Заранее загружать тела писем"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预下载邮件正文"
+          }
         }
       }
     },
-    "Predicate": {},
+    "Predicate": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "判断条件"
+          }
+        }
+      }
+    },
     "Prepend a minus sign to exclude a word.": {
       "localizations": {
         "ru": {
@@ -2418,16 +4017,37 @@
             "state": "translated",
             "value": "Поставьте минус перед словом, чтобы исключить его."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在词语前加减号以排除该词语。"
+          }
         }
       }
     },
-    "Preview lines": {},
+    "Preview lines": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预览行数"
+          }
+        }
+      }
+    },
     "Privacy": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Конфиденциальность"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐私"
           }
         }
       }
@@ -2439,6 +4059,12 @@
             "state": "translated",
             "value": "Пропорциональный"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比例字体"
+          }
         }
       }
     },
@@ -2448,6 +4074,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Быстрый просмотр"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速查看"
           }
         }
       }
@@ -2459,6 +4091,12 @@
             "state": "translated",
             "value": "Завершить MyEmail"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出 EmailX"
+          }
         }
       }
     },
@@ -2468,6 +4106,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Цвет цитат"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "引用文字颜色"
           }
         }
       }
@@ -2479,17 +4123,47 @@
             "state": "translated",
             "value": "Пересинхронизировать"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新同步邮件"
+          }
         }
       }
     },
-    "Read/Unread": {},
-    "Reading": {},
+    "Read/Unread": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已读／未读"
+          }
+        }
+      }
+    },
+    "Reading": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "阅读"
+          }
+        }
+      }
+    },
     "Recent searches": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Недавние запросы"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近搜索"
           }
         }
       }
@@ -2502,6 +4176,12 @@
             "state": "translated",
             "value": "Получатели"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收件人"
+          }
         }
       }
     },
@@ -2511,6 +4191,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переподключить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新连接"
           }
         }
       }
@@ -2522,6 +4208,12 @@
             "state": "translated",
             "value": "Повторить"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重做"
+          }
         }
       }
     },
@@ -2532,11 +4224,35 @@
             "state": "translated",
             "value": "Перевыпустить токен"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新生成令牌"
+          }
         }
       }
     },
-    "Remote Content": {},
-    "Remote content is always loaded for trusted senders.": {},
+    "Remote Content": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程内容"
+          }
+        }
+      }
+    },
+    "Remote content is always loaded for trusted senders.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "始终加载受信任发件人的远程内容。"
+          }
+        }
+      }
+    },
     "Remote images blocked": {
       "localizations": {
         "ru": {
@@ -2544,10 +4260,25 @@
             "state": "translated",
             "value": "Внешние изображения заблокированы"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已屏蔽远程图片"
+          }
         }
       }
     },
-    "Remote images can be loaded per-message via the banner.": {},
+    "Remote images can be loaded per-message via the banner.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可通过提示条为单封邮件加载远程图片。"
+          }
+        }
+      }
+    },
     "Remove account": {
       "extractionState": "manual",
       "localizations": {
@@ -2562,6 +4293,12 @@
             "state": "translated",
             "value": "Удалить учётную запись"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除账户"
+          }
         }
       }
     },
@@ -2571,6 +4308,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Удалить вложение"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除附件"
           }
         }
       }
@@ -2582,6 +4325,12 @@
             "state": "translated",
             "value": "Шаблон удаления (regex)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除匹配内容（正则表达式）"
+          }
         }
       }
     },
@@ -2591,6 +4340,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переименовать"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名"
           }
         }
       }
@@ -2602,6 +4357,12 @@
             "state": "translated",
             "value": "Переименовать папку"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名文件夹"
+          }
         }
       }
     },
@@ -2611,6 +4372,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переименовать…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名…"
           }
         }
       }
@@ -2622,17 +4389,47 @@
             "state": "translated",
             "value": "Замена"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "替换内容"
+          }
         }
       }
     },
-    "Reply": {},
-    "Reply All": {},
+    "Reply": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回复"
+          }
+        }
+      }
+    },
+    "Reply All": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回复全部"
+          }
+        }
+      }
+    },
     "Reply-To": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Ответ-Кому"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回复地址"
           }
         }
       }
@@ -2644,6 +4441,12 @@
             "state": "translated",
             "value": "Ответ-Кому:"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回复地址："
+          }
         }
       }
     },
@@ -2653,6 +4456,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пересинхронизировать"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新同步文件夹"
           }
         }
       }
@@ -2664,6 +4473,12 @@
             "state": "translated",
             "value": "Повторить неудачные действия"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试失败的操作"
+          }
         }
       }
     },
@@ -2673,6 +4488,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переписать тему"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改写主题"
           }
         }
       }
@@ -2684,6 +4505,12 @@
             "state": "translated",
             "value": "Форматированный текст"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "富文本"
+          }
         }
       }
     },
@@ -2693,6 +4520,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Плотность строк"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "行密度"
           }
         }
       }
@@ -2704,6 +4537,12 @@
             "state": "translated",
             "value": "Правила"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "规则"
+          }
         }
       }
     },
@@ -2713,6 +4552,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Применить правила к папке"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对文件夹执行筛选规则"
           }
         }
       }
@@ -2724,6 +4569,12 @@
             "state": "translated",
             "value": "Применить правила к выделенным письмам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "对选中邮件执行筛选规则"
+          }
         }
       }
     },
@@ -2734,10 +4585,25 @@
             "state": "translated",
             "value": "Поднимает локальную точку доступа на 127.0.0.1: агент может искать, читать и диагностировать почту. Отправка всегда спрашивает подтверждения. Любой, у кого есть токен, прочитает все письма — давайте его только доверенным инструментам."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 127.0.0.1 上运行本地接口，供智能体搜索、读取邮件和诊断问题。发送前始终需要你的确认。持有令牌的工具可以读取所有邮件，请仅提供给你信任的工具。"
+          }
         }
       }
     },
-    "SMTP": {},
+    "SMTP": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMTP"
+          }
+        }
+      }
+    },
     "SMTP (outgoing)": {
       "extractionState": "manual",
       "localizations": {
@@ -2752,6 +4618,12 @@
             "state": "translated",
             "value": "SMTP (исходящие)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMTP（发件）"
+          }
         }
       }
     },
@@ -2762,12 +4634,45 @@
             "state": "translated",
             "value": "Таймаут SMTP-соединения"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMTP 连接超时"
+          }
         }
       }
     },
-    "SSL/TLS": {},
-    "STARTTLS": {},
-    "Safety": {},
+    "SSL/TLS": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSL/TLS"
+          }
+        }
+      }
+    },
+    "STARTTLS": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STARTTLS"
+          }
+        }
+      }
+    },
+    "Safety": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安全"
+          }
+        }
+      }
+    },
     "Save": {
       "extractionState": "manual",
       "localizations": {
@@ -2775,6 +4680,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сохранить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
           }
         }
       }
@@ -2786,6 +4697,12 @@
             "state": "translated",
             "value": "Сохранить как…"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另存为…"
+          }
         }
       }
     },
@@ -2795,6 +4712,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сохранить в Downloads"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存到“下载”"
           }
         }
       }
@@ -2806,6 +4729,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сохранено"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存"
           }
         }
       }
@@ -2824,6 +4753,12 @@
             "state": "translated",
             "value": "Результаты поиска"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索结果"
+          }
         }
       }
     },
@@ -2833,6 +4768,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Справка по поиску"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索帮助"
           }
         }
       }
@@ -2851,6 +4792,12 @@
             "state": "translated",
             "value": "Поиск по логам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索日志"
+          }
         }
       }
     },
@@ -2861,6 +4808,12 @@
             "state": "translated",
             "value": "Найти сообщения"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索邮件"
+          }
         }
       }
     },
@@ -2870,6 +4823,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Синтаксис поиска"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索语法"
           }
         }
       }
@@ -2888,6 +4847,12 @@
             "state": "translated",
             "value": "Поиск…"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索…"
+          }
         }
       }
     },
@@ -2905,6 +4870,12 @@
             "state": "translated",
             "value": "Безопасность"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安全性"
+          }
         }
       }
     },
@@ -2914,6 +4885,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выделить все"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全选"
           }
         }
       }
@@ -2926,6 +4903,12 @@
             "state": "translated",
             "value": "Выберите папку"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择文件夹"
+          }
         }
       }
     },
@@ -2935,6 +4918,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выберите письмо"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择邮件"
           }
         }
       }
@@ -2946,6 +4935,12 @@
             "state": "translated",
             "value": "Выберите правило"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择规则"
+          }
         }
       }
     },
@@ -2956,6 +4951,12 @@
             "state": "translated",
             "value": "Выберите подпись"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择签名"
+          }
         }
       }
     },
@@ -2965,6 +4966,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выбрать все"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全选"
           }
         }
       }
@@ -2977,6 +4984,12 @@
             "state": "translated",
             "value": "Выберите аккаунт"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择账户"
+          }
         }
       }
     },
@@ -2986,6 +4999,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отправить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送"
           }
         }
       }
@@ -2997,16 +5016,37 @@
             "state": "translated",
             "value": "Отправить это письмо от вашего имени?"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许代你发送这封邮件？"
+          }
         }
       }
     },
-    "Sender email hashes are sent to gravatar.com to fetch avatars.": {},
+    "Sender email hashes are sent to gravatar.com to fetch avatars.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会将发件人邮箱地址的哈希值发送到 gravatar.com，以获取头像。"
+          }
+        }
+      }
+    },
     "Sender name": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Имя отправителя"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发件人姓名"
           }
         }
       }
@@ -3017,6 +5057,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отправленные"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已发送"
           }
         }
       }
@@ -3035,6 +5081,12 @@
             "state": "translated",
             "value": "Сервер"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器"
+          }
         }
       }
     },
@@ -3044,6 +5096,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Службы"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务"
           }
         }
       }
@@ -3055,6 +5113,12 @@
             "state": "translated",
             "value": "Настройки"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置"
+          }
         }
       }
     },
@@ -3064,6 +5128,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Настройки…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置…"
           }
         }
       }
@@ -3075,6 +5145,12 @@
             "state": "translated",
             "value": "Показать все"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部显示"
+          }
         }
       }
     },
@@ -3084,6 +5160,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Показать Копия/Скрытая копия"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示抄送／密送"
           }
         }
       }
@@ -3102,17 +5184,47 @@
             "state": "translated",
             "value": "Показать панель отладки"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示调试日志面板"
+          }
         }
       }
     },
-    "Show Gravatar avatars": {},
-    "Show Unified Inbox": {},
+    "Show Gravatar avatars": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示 Gravatar 头像"
+          }
+        }
+      }
+    },
+    "Show Unified Inbox": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示统一收件箱"
+          }
+        }
+      }
+    },
     "Show in Finder": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Показать в Finder"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Finder 中显示"
           }
         }
       }
@@ -3124,6 +5236,12 @@
             "state": "translated",
             "value": "Свернуть"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收起"
+          }
         }
       }
     },
@@ -3134,10 +5252,25 @@
             "state": "translated",
             "value": "Показать справку по поиску"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示搜索帮助"
+          }
         }
       }
     },
-    "Sidebar": {},
+    "Sidebar": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "侧栏"
+          }
+        }
+      }
+    },
     "Sign in with Google": {
       "extractionState": "manual",
       "localizations": {
@@ -3151,6 +5284,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Войти через Google"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 Google 登录"
           }
         }
       }
@@ -3169,6 +5308,12 @@
             "state": "translated",
             "value": "Войти через Google (OAuth)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 Google 登录（OAuth）"
+          }
         }
       }
     },
@@ -3178,6 +5323,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Подпись"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "签名"
           }
         }
       }
@@ -3189,6 +5340,12 @@
             "state": "translated",
             "value": "Подписи"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "签名"
+          }
         }
       }
     },
@@ -3198,6 +5355,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Размер"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大小"
           }
         }
       }
@@ -3209,6 +5372,12 @@
             "state": "translated",
             "value": "Специальные папки"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "特殊文件夹"
+          }
         }
       }
     },
@@ -3218,6 +5387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ускоряет открытие писем. Отключите, чтобы экономить трафик."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加快邮件打开速度。关闭后可节省带宽。"
           }
         }
       }
@@ -3236,6 +5411,12 @@
             "state": "translated",
             "value": "Статус"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "状态"
+          }
         }
       }
     },
@@ -3245,6 +5426,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Остановлен"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已停止"
           }
         }
       }
@@ -3256,6 +5443,12 @@
             "state": "translated",
             "value": "Тема"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题"
+          }
         }
       }
     },
@@ -3266,6 +5459,12 @@
             "state": "translated",
             "value": "Тема:"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题："
+          }
         }
       }
     },
@@ -3275,6 +5474,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Тема: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题：%@"
           }
         }
       }
@@ -3292,6 +5497,12 @@
             "state": "translated",
             "value": "subject: искать только в теме письма."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subject：仅匹配主题中的词语。"
+          }
         }
       }
     },
@@ -3301,6 +5512,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переключить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换"
           }
         }
       }
@@ -3312,16 +5529,37 @@
             "state": "translated",
             "value": "Переключение в простой текст удалит форматирование. Продолжить?"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换到纯文本将移除格式。是否继续？"
+          }
         }
       }
     },
-    "Sync": {},
+    "Sync": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同步"
+          }
+        }
+      }
+    },
     "Syncing…": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Синхронизация…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在同步…"
           }
         }
       }
@@ -3340,6 +5578,12 @@
             "state": "translated",
             "value": "Проверить соединение"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "测试连接"
+          }
         }
       }
     },
@@ -3349,6 +5593,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Цвет текста"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字颜色"
           }
         }
       }
@@ -3360,6 +5610,12 @@
             "state": "translated",
             "value": "Тема"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题"
+          }
         }
       }
     },
@@ -3370,6 +5626,12 @@
             "state": "translated",
             "value": "Это действие нельзя отменить."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此操作无法撤销。"
+          }
         }
       }
     },
@@ -3379,6 +5641,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Это письмо содержит только вложения. Смотрите панель вложений ниже."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此邮件仅包含附件。请查看下方附件栏。"
           }
         }
       }
@@ -3397,6 +5665,12 @@
             "state": "translated",
             "value": "Цепочки"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话"
+          }
         }
       }
     },
@@ -3414,6 +5688,12 @@
             "state": "translated",
             "value": "С группировкой по тредам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话视图"
+          }
         }
       }
     },
@@ -3424,6 +5704,12 @@
             "state": "translated",
             "value": "Таймауты"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "超时"
+          }
         }
       }
     },
@@ -3433,6 +5719,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Кому"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收件人"
           }
         }
       }
@@ -3450,6 +5742,12 @@
             "state": "translated",
             "value": "to:, cc:, bcc: фильтры получателей."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To、CC、BCC：收件人筛选。"
+          }
         }
       }
     },
@@ -3459,6 +5757,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Кому:"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收件人："
           }
         }
       }
@@ -3470,6 +5774,12 @@
             "state": "translated",
             "value": "Кому: %@"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收件人：%@"
+          }
         }
       }
     },
@@ -3479,6 +5789,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переключить панель отладки"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换调试日志面板"
           }
         }
       }
@@ -3490,6 +5806,12 @@
             "state": "translated",
             "value": "Панель логов"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换日志显示"
+          }
         }
       }
     },
@@ -3499,6 +5821,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переключить боковую панель"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换侧栏显示"
           }
         }
       }
@@ -3510,6 +5838,12 @@
             "state": "translated",
             "value": "Группировка по цепочкам"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "切换会话显示"
+          }
         }
       }
     },
@@ -3519,6 +5853,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Переключение панели отладки — ⌥⌘Y"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 ⌥⌘Y 切换调试日志面板"
           }
         }
       }
@@ -3530,6 +5870,12 @@
             "state": "translated",
             "value": "Корзина"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "废纸篓"
+          }
         }
       }
     },
@@ -3540,17 +5886,47 @@
             "state": "translated",
             "value": "Триггеры"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "触发条件"
+          }
         }
       }
     },
-    "Trusted Senders": {},
-    "URL": {},
+    "Trusted Senders": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受信任的发件人"
+          }
+        }
+      }
+    },
+    "URL": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL"
+          }
+        }
+      }
+    },
     "Underline": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Подчёркнутый"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下划线"
           }
         }
       }
@@ -3562,6 +5938,12 @@
             "state": "translated",
             "value": "Отменить"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "撤销"
+          }
         }
       }
     },
@@ -3571,6 +5953,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Снять флажок"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消旗标"
           }
         }
       }
@@ -3582,6 +5970,12 @@
             "state": "translated",
             "value": "Все входящие"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统一收件箱"
+          }
         }
       }
     },
@@ -3591,6 +5985,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Без ограничений"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不限"
           }
         }
       }
@@ -3602,6 +6002,12 @@
             "state": "translated",
             "value": "Используйте двойные кавычки для точной фразы."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用双引号匹配完整短语。"
+          }
         }
       }
     },
@@ -3612,17 +6018,47 @@
             "state": "translated",
             "value": "Моноширинный шрифт"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用等宽字体"
+          }
         }
       }
     },
-    "Use relative dates (Today, Yesterday)": {},
-    "Value": {},
+    "Use relative dates (Today, Yesterday)": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用相对日期（今天、昨天）"
+          }
+        }
+      }
+    },
+    "Value": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "值"
+          }
+        }
+      }
+    },
     "View": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Вид"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示"
           }
         }
       }
@@ -3634,6 +6070,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Показать исходный код"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看源代码"
           }
         }
       }
@@ -3652,6 +6094,12 @@
             "state": "translated",
             "value": "Ожидание браузера…"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在等待浏览器…"
+          }
         }
       }
     },
@@ -3661,6 +6109,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Широкий"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宽屏"
           }
         }
       }
@@ -3672,6 +6126,12 @@
             "state": "translated",
             "value": "Широкий (34pt)"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宽松（34 点）"
+          }
         }
       }
     },
@@ -3681,6 +6141,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Окно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口"
           }
         }
       }
@@ -3692,6 +6158,12 @@
             "state": "translated",
             "value": "Расположение окна"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口布局"
+          }
         }
       }
     },
@@ -3701,6 +6173,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Их можно восстановить из папки Корзина."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可以从废纸篓中恢复这些邮件。"
           }
         }
       }
@@ -3719,6 +6197,12 @@
             "state": "translated",
             "value": "Вам будет предложено разрешить MyEmail читать и отправлять почту через ваш Gmail-аккаунт. MyEmail никогда не запрашивает доступ к контактам."
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将请你授权 EmailX 读取并发送 Gmail 邮件。EmailX 不会请求访问你的通讯录。"
+          }
         }
       }
     },
@@ -3736,6 +6220,12 @@
             "state": "translated",
             "value": "Ваше имя"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的姓名"
+          }
         }
       }
     },
@@ -3745,6 +6235,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Увеличить"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "缩放"
           }
         }
       }
@@ -3756,6 +6252,12 @@
             "state": "translated",
             "value": "и ещё %lld"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另有 %lld 个"
+          }
         }
       }
     },
@@ -3765,6 +6267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "содержит"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "包含"
           }
         }
       }
@@ -3776,6 +6284,12 @@
             "state": "translated",
             "value": "заканчивается на"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结尾为"
+          }
         }
       }
     },
@@ -3785,6 +6299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "равно"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等于"
           }
         }
       }
@@ -3796,13 +6316,34 @@
             "state": "translated",
             "value": "from:anton -spam before:7d"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from:anton -spam before:7d"
+          }
         }
       }
     },
-    "imap.example.com": {},
+    "imap.example.com": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "imap.example.com"
+          }
+        }
+      }
+    },
     "in:inbox is:unread has:attachment": {
       "localizations": {
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in:inbox is:unread has:attachment"
+          }
+        },
+        "zh-Hans": {
           "stringUnit": {
             "state": "translated",
             "value": "in:inbox is:unread has:attachment"
@@ -3817,16 +6358,37 @@
             "state": "translated",
             "value": "не содержит"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不包含"
+          }
         }
       }
     },
-    "smtp.example.com": {},
+    "smtp.example.com": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "smtp.example.com"
+          }
+        }
+      }
+    },
     "starts with": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "начинается с"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开头为"
           }
         }
       }
@@ -3838,11 +6400,229 @@
             "state": "translated",
             "value": "subject:\"quarterly report\" larger:1M"
           }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "subject:\"quarterly report\" larger:1M"
+          }
         }
       }
     },
-    "user@example.com": {},
-    "—": {}
+    "user@example.com": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "user@example.com"
+          }
+        }
+      }
+    },
+    "—": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "语言"
+          }
+        }
+      }
+    },
+    "Application language": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用语言"
+          }
+        }
+      }
+    },
+    "Follow macOS": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟随系统"
+          }
+        }
+      }
+    },
+    "Changes take effect the next time you open EmailX.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改将在下次启动 EmailX 时生效。"
+          }
+        }
+      }
+    },
+    "%lld messages selected": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld message selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld messages selected"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "已选中 %lld 封邮件"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld письмо выбрано"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld письма выбрано"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld писем выбрано"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld письма выбрано"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Google sign-in is not configured for this build.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本尚未配置 Google 登录。"
+          }
+        }
+      }
+    },
+    "Sign in was cancelled.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消登录。"
+          }
+        }
+      }
+    },
+    "Account %@ is already added.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户 %@ 已添加。"
+          }
+        }
+      }
+    },
+    "Sign-in verification failed. Please try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录验证失败，请重试。"
+          }
+        }
+      }
+    },
+    "Could not complete sign-in. Please try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法完成登录，请重试。"
+          }
+        }
+      }
+    },
+    "Could not load your account information. Please try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法加载账户信息，请重试。"
+          }
+        }
+      }
+    },
+    "Could not connect to the mail server. Check your network and account settings.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法连接邮件服务器，请检查网络和账户设置。"
+          }
+        }
+      }
+    },
+    "Unable to load or update account settings. Please try again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法加载或更新账户设置，请重试。"
+          }
+        }
+      }
+    },
+    "Reconnect failed": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新连接失败。"
+          }
+        }
+      }
+    }
   },
   "version": "1.0"
 }
