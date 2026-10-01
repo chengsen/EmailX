@@ -22,10 +22,9 @@ struct AttachmentStripView: View {
                 attachmentChip(att)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     @ViewBuilder
@@ -51,18 +50,16 @@ struct AttachmentStripView: View {
                         .frame(width: 20, height: 20)
                 }
                 Text(att.filename)
-                    .font(.system(size: 12))
+                    .font(.callout)
                     .lineLimit(1)
                 Text(FormatHelpers.formatByteCount(att.size))
-                    .font(.system(size: 11))
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(Color(nsColor: .quaternaryLabelColor).opacity(0.3))
-            .cornerRadius(4)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.glass)
         .contextMenu { attachmentMenu(att) }
     }
 
