@@ -1,6 +1,6 @@
 //
 //  ToolbarBridge.swift
-//  MyEmail
+//  EmailX
 //
 //  NSToolbar item identifiers and delegate. The toolbar itself is
 //  installed programmatically by MainWindowController — there is no
@@ -120,10 +120,26 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         item.paletteLabel = def.label
         item.toolTip = def.label
         item.image = NSImage(systemSymbolName: def.icon, accessibilityDescription: def.label)
-        item.isBordered = (id == .compose)
+        item.style = (id == .compose) ? .prominent : .plain
+        item.visibilityPriority = visibilityPriority(for: id)
         item.target = self
         item.action = #selector(buttonClicked(_:))
         return item
+    }
+
+    private func visibilityPriority(
+        for id: NSToolbarItem.Identifier
+    ) -> NSToolbarItem.VisibilityPriority {
+        switch id {
+        case .compose, .search:
+            return .user
+        case .reply, .archive:
+            return .high
+        case .tbDelete:
+            return .standard
+        default:
+            return .low
+        }
     }
 
     @objc private func buttonClicked(_ sender: NSToolbarItem) {
@@ -164,6 +180,7 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         let item = NSSearchToolbarItem(itemIdentifier: .search)
         item.searchField.delegate = self
         item.searchField.placeholderString = String(localized: "Search…")
+        item.visibilityPriority = .user
         return item
     }
 
