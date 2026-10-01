@@ -18,7 +18,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>ru.korenskoy.MyEmail.mailto</string>
+			<string>com.chengsen.EmailX.mailto</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>mailto</string>
@@ -26,7 +26,7 @@
 		</dict>
 	</array>
 	<key>NSContactsUsageDescription</key>
-	<string>MyEmail uses your contacts for recipient autocomplete when composing messages.</string>
+	<string>EmailX uses your contacts for recipient autocomplete when composing messages.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
