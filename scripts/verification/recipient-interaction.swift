@@ -70,7 +70,9 @@ struct HeaderFixture: View {
             return found
         }
         func isFocused(_ placeholder: String) -> Bool {
-            field(placeholder).currentEditor() === window.firstResponder
+            guard let editor = field(placeholder).currentEditor(),
+                  let responder = window.firstResponder else { return false }
+            return editor === responder
         }
         func key(_ characters: String, code: UInt16, modifiers: NSEvent.ModifierFlags = []) {
             let event = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: modifiers,
