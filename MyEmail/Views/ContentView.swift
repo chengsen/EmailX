@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  MyEmail
 //
-//  Classic layout (MailMate-style): sidebar | VSplitView(list, detail).
+//  Main macOS 27 shell: sidebar | message list | reading pane.
 //
 
 import AppKit
