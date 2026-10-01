@@ -86,15 +86,13 @@ struct MessageHeaderBar: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        // Icon is absolutely positioned at the bottom-right of the whole
-        // header (before outer padding). Outer .padding(18) then becomes
-        // the icon's margin, so trailing-margin == bottom-margin.
+        // Keep the optional mail-client indicator out of the content flow.
         .overlay(alignment: .bottomTrailing) {
             if showMUA, let ua = message.userAgent, !ua.isEmpty {
                 MUAIconSlot(userAgent: ua)
             }
         }
-        .padding(14)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -116,58 +114,57 @@ struct MessageHeaderBar: View {
     }
 
     private var actionButtons: some View {
-        // Spark-style ordering: triage actions (Archive / Delete / Spam) on
-        // the left for fast left-to-right keyboard-free scanning during
-        // inbox triage; compose actions (Reply / Reply All / Forward) and
-        // the rarely-used View Source on the right.
-        HStack(spacing: 6) {
-            if let onArchive {
-                Button(action: onArchive) {
-                    Image(systemName: "archivebox")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Archive")
-            }
-            if let onDelete {
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Delete")
-            }
-            if let onMarkSpam {
-                Button(action: onMarkSpam) {
-                    Image(systemName: "exclamationmark.octagon")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Mark as Spam")
-            }
-
-            if (onArchive != nil || onDelete != nil || onMarkSpam != nil)
-                && (onReply != nil || onReplyAll != nil || onForward != nil || onViewSource != nil) {
-                Divider().frame(height: 14).padding(.horizontal, 2)
-            }
-
+        HStack(spacing: 8) {
             if let onReply {
                 Button(action: onReply) {
                     Image(systemName: "arrowshape.turn.up.left")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Reply")
+                }
+                .buttonStyle(.borderless)
+                .controlSize(.large)
+                .help("Reply")
             }
-            if let onReplyAll {
-                Button(action: onReplyAll) {
-                    Image(systemName: "arrowshape.turn.up.left.2")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Reply All")
-            }
-            if let onForward {
-                Button(action: onForward) {
-                    Image(systemName: "arrowshape.turn.up.right")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Forward")
-            }
-            if let onViewSource {
-                Button(action: onViewSource) {
-                    Image(systemName: "doc.plaintext")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("View Source")
+
+            if onReplyAll != nil || onForward != nil || onArchive != nil
+                || onDelete != nil || onMarkSpam != nil || onViewSource != nil {
+                Menu {
+                    if let onReplyAll {
+                        Button("Reply All", systemImage: "arrowshape.turn.up.left.2",
+                               action: onReplyAll)
+                    }
+                    if let onForward {
+                        Button("Forward", systemImage: "arrowshape.turn.up.right",
+                               action: onForward)
+                    }
+
+                    if (onReplyAll != nil || onForward != nil)
+                        && (onArchive != nil || onDelete != nil || onMarkSpam != nil) {
+                        Divider()
+                    }
+
+                    if let onArchive {
+                        Button("Archive", systemImage: "archivebox", action: onArchive)
+                    }
+                    if let onDelete {
+                        Button("Delete", systemImage: "trash", role: .destructive,
+                               action: onDelete)
+                    }
+                    if let onMarkSpam {
+                        Button("Mark as Spam", systemImage: "exclamationmark.octagon",
+                               action: onMarkSpam)
+                    }
+
+                    if let onViewSource {
+                        Divider()
+                        Button("View Source", systemImage: "doc.plaintext",
+                               action: onViewSource)
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .menuStyle(.borderlessButton)
+                .controlSize(.large)
+                .fixedSize()
+                .help("More")
             }
         }
     }
