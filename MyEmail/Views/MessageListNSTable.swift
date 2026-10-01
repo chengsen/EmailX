@@ -1,6 +1,6 @@
 //
 //  MessageListNSTable.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit NSTableView wrapped in NSViewRepresentable. Replaces SwiftUI
 //  Table, which pushed NSHostingView into every header/row cell and
@@ -57,7 +57,7 @@ struct MessageListNSTable: NSViewRepresentable {
         let scroll = NSScrollView()
         scroll.hasVerticalScroller = true
         scroll.hasHorizontalScroller = false
-        scroll.autohidesScrollers = false
+        scroll.autohidesScrollers = true
         scroll.borderType = .noBorder
         scroll.drawsBackground = false
 
