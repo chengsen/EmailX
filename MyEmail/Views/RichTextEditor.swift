@@ -33,6 +33,36 @@ enum RichTextSupport {
         [.font: defaultFont, .foregroundColor: NSColor.labelColor]
     }
 
+    /// Keep native URL schemes, but a web link needs an actual server.
+    static func validatedLinkURL(_ raw: String) -> URL? {
+        guard let url = URL(string: raw), let scheme = url.scheme, !scheme.isEmpty,
+              let separator = raw.firstIndex(of: ":"),
+              !raw[raw.index(after: separator)...].trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        else { return nil }
+        if ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
+            guard let host = url.host, !host.isEmpty else { return nil }
+        }
+        return url
+    }
+
+    /// NSTextView's input path owns delegate validation, selection and undo.
+    static func insertLink(_ url: URL, label: String, in textView: NSTextView,
+                           replacing range: NSRange) {
+        guard let storage = textView.textStorage, range.location != NSNotFound,
+              range.location <= storage.length,
+              range.length <= storage.length - range.location else { return }
+        let typing = textView.typingAttributes
+        var attributes = typing
+        attributes[.link] = url
+        attributes[.foregroundColor] = NSColor.linkColor
+        attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+        textView.setSelectedRange(range)
+        textView.insertText(NSAttributedString(string: label, attributes: attributes),
+                            replacementRange: range)
+        // New text after the link should use the original editing style.
+        textView.typingAttributes = typing
+    }
+
     /// Serialize NSAttributedString to a standalone HTML document for SMTP.
     /// Post-processes the output to add CSS generic fallbacks for the two
     /// "Proportional"/"Monospaced" picker aliases.
@@ -293,6 +323,7 @@ struct RichTextEditor: NSViewRepresentable {
 
         scrollView.documentView = textView
 
+        textView.setAccessibilityLabel(String(localized: "Message body"))
         textView.isRichText = true
         textView.allowsUndo = true
         textView.importsGraphics = false
@@ -642,6 +673,7 @@ struct LinkInsertSheet: View {
 
     @State private var urlText: String = "https://"
     @State private var linkText: String = ""
+    @State private var selection = NSRange(location: NSNotFound, length: 0)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -657,7 +689,7 @@ struct LinkInsertSheet: View {
                     .keyboardShortcut(.cancelAction)
                 Button("Insert") { insert() }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(URL(string: urlText) == nil)
+                    .disabled(RichTextSupport.validatedLinkURL(urlText) == nil)
             }
         }
         .padding(16)
@@ -668,31 +700,16 @@ struct LinkInsertSheet: View {
     private func populateFromSelection() {
         guard let textView, let storage = textView.textStorage else { return }
         let sel = textView.selectedRange()
+        selection = sel
         if sel.length > 0 {
             linkText = (storage.string as NSString).substring(with: sel)
         }
     }
 
     private func insert() {
-        guard let textView, let storage = textView.textStorage,
-              let url = URL(string: urlText) else { return }
-        let sel = textView.selectedRange()
-        let visible = linkText.isEmpty ? urlText : linkText
-
-        var attrs = textView.typingAttributes
-        attrs[.link] = url
-        attrs[.foregroundColor] = NSColor.linkColor
-        attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue
-
-        let insertion = NSAttributedString(string: visible, attributes: attrs)
-        storage.beginEditing()
-        if sel.length > 0 {
-            storage.replaceCharacters(in: sel, with: insertion)
-        } else {
-            storage.insert(insertion, at: sel.location)
-        }
-        storage.endEditing()
-        textView.didChangeText()
+        guard let textView, let url = RichTextSupport.validatedLinkURL(urlText) else { return }
+        RichTextSupport.insertLink(url, label: linkText.isEmpty ? urlText : linkText,
+                                   in: textView, replacing: selection)
         onClose()
     }
 }

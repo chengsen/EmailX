@@ -108,7 +108,7 @@ struct MessageDetailView: View {
                             let id = message.id
                             Task { await env.syncService.markAsJunk([id]) }
                         },
-                        maximumHeight: min(220, geometry.size.height * 0.4)
+                        maximumHeight: min(220, geometry.size.height * 0.35)
                     )
                     Divider()
                     bodyContent(message)
@@ -122,7 +122,7 @@ struct MessageDetailView: View {
                             onRefetch: { att in
                                 try? await env.syncService.refetchAttachment(att)
                             },
-                            maximumHeight: min(140, geometry.size.height * 0.25)
+                            maximumHeight: min(140, geometry.size.height * 0.2)
                         )
                     }
                 } else if isLoading {
