@@ -44,11 +44,11 @@ struct MessageHeaderBar: View {
                     AddressTokenView(
                         displayName: fromDisplayName,
                         email: fromEmail,
-                        font: .system(size: 15, weight: .semibold)
+                        font: .headline
                     )
 
                     Text(fromEmail)
-                        .font(.system(size: 12))
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                         // Line up with the sender name above — Menu's
@@ -78,7 +78,7 @@ struct MessageHeaderBar: View {
 
             // Subject
             Text(message.subject)
-                .font(.system(size: 16, weight: .bold))
+                .font(.title2.weight(.semibold))
                 .textSelection(.enabled)
 
             // Date line (plain text — icon is not in this row's layout).
@@ -87,7 +87,7 @@ struct MessageHeaderBar: View {
                 .foregroundStyle(.secondary)
         }
         // Icon is absolutely positioned at the bottom-right of the whole
-        // header (before outer padding). Outer .padding(14) then becomes
+        // header (before outer padding). Outer .padding(18) then becomes
         // the icon's margin, so trailing-margin == bottom-margin.
         .overlay(alignment: .bottomTrailing) {
             if showMUA, let ua = message.userAgent, !ua.isEmpty {
@@ -96,7 +96,6 @@ struct MessageHeaderBar: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     @ViewBuilder
@@ -208,7 +207,7 @@ private struct MUAIconSlot: View {
 struct AddressTokenView: View {
     let displayName: String
     let email: String
-    var font: Font = .system(size: 12)
+    var font: Font = .subheadline
 
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
@@ -287,11 +286,6 @@ struct AddressListRow: View {
                 collapsedRow(width: geo.size.width)
             }
             .frame(height: 22)
-            // Menu borderlessButton's label sits a few points above the
-            // center of its hit area. Nudge the whole recipient column
-            // down so the visible token text lines up with the To: label
-            // baseline. Empirical: 3pt matches macOS 26 rendering.
-            .offset(y: 3)
         }
         .font(.system(size: 12))
     }
