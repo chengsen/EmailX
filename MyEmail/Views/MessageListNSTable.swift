@@ -65,7 +65,7 @@ struct MessageListNSTable: NSViewRepresentable {
         scroll.hasHorizontalScroller = false
         scroll.autohidesScrollers = false
         scroll.borderType = .noBorder
-        scroll.drawsBackground = true
+        scroll.drawsBackground = false
 
         let table = NSTableView()
         table.style = .fullWidth
@@ -74,12 +74,12 @@ struct MessageListNSTable: NSViewRepresentable {
         table.allowsColumnReordering = true
         table.allowsColumnResizing = true
         table.columnAutoresizingStyle = .noColumnAutoresizing
-        // MailMate-style zebra: alternating row background colors,
-        // no vertical grid lines (dense, readable).
-        table.usesAlternatingRowBackgroundColors = true
+        // Let macOS provide the surface; avoid legacy zebra-striping chrome.
+        table.backgroundColor = .clear
+        table.usesAlternatingRowBackgroundColors = false
         table.gridStyleMask = []
         table.rowHeight = rowHeight
-        table.intercellSpacing = NSSize(width: 4, height: 0)
+        table.intercellSpacing = NSSize(width: 8, height: 0)
         table.doubleAction = #selector(Coordinator.tableDoubleClicked(_:))
         table.target = coordinator
         table.registerForDraggedTypes([.string])
