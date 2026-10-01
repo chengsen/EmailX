@@ -299,6 +299,39 @@ struct MessageListNSTable: NSViewRepresentable {
             menu.addMenuItem(String(localized: "Archive")) {
                 [weak self] in self?.parent.onArchive(ids)
             }
+
+            let sortItem = NSMenuItem(
+                title: String(localized: "Sort By"),
+                action: nil,
+                keyEquivalent: ""
+            )
+            let sortMenu = NSMenu(title: String(localized: "Sort By"))
+            for (title, column) in [
+                (String(localized: "Date"), MessageSort.Column.date),
+                (String(localized: "Sender"), MessageSort.Column.fromTo),
+                (String(localized: "Subject"), MessageSort.Column.subject),
+                (String(localized: "Size"), MessageSort.Column.size),
+            ] {
+                let current = parent.sort.column == column
+                let ascending = current ? parent.sort.order.ascending : (column != .date)
+                let item = ClosureMenuItem(title: title) { [weak self] in
+                    guard let self else { return }
+                    let nextAscending = current ? !ascending : (column != .date)
+                    self.parent.onSortChange(
+                        MessageSort(
+                            column: column,
+                            order: nextAscending ? .asc : .desc
+                        )
+                    )
+                }
+                if current {
+                    item.state = .on
+                }
+                sortMenu.addItem(item)
+            }
+            sortItem.submenu = sortMenu
+            menu.addItem(sortItem)
+
             menu.addItem(.separator())
             menu.addMenuItem(String(localized: "Run filters on selected messages")) {
                 [weak self] in self?.parent.onRunRules(ids)
