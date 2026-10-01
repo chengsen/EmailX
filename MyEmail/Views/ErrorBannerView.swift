@@ -77,7 +77,7 @@ private struct StatusNotice<Actions: View>: View {
     let tint: Color
     let title: String
     var detail: String?
-    @ViewBuilder let actions: () -> Actions
+    let actions: () -> Actions
 
     @Environment(\.accessibilityShowBorders) private var showBorders
 
