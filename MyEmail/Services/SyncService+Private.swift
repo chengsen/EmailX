@@ -1230,10 +1230,10 @@ extension SyncService {
         }
 
         if !messageIDs.isEmpty {
-            for msgID in messageIDs {
-                let dir = attachmentsDirectory(accountID: account.id, messageID: msgID)
-                try? FileManager.default.removeItem(at: dir)
+            let directories = messageIDs.map {
+                attachmentsDirectory(accountID: account.id, messageID: $0)
             }
+            await Self.removeAttachmentDirectories(directories)
             LogService.log(.debug, .sync, "Purged attachments for \(messageIDs.count) messages")
         }
 

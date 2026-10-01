@@ -1,9 +1,6 @@
 //
 //  BulkActionPanelView.swift
-//  MyEmail
-//
-//  Shown in the reading pane when 2+ messages are selected.
-//  Displays selection count and bulk action buttons.
+//  EmailX
 //
 
 import SwiftUI
@@ -14,36 +11,35 @@ struct BulkActionPanelView: View {
     @Environment(\.undoManager) private var undoManager
 
     var body: some View {
-        VStack(spacing: 28) {
-            VStack(spacing: 8) {
-                Image(systemName: "envelope.stack")
-                    .font(.system(size: 40, weight: .ultraLight))
-                    .foregroundStyle(.secondary)
-
-                Text(selectionLabel(appState.selectedMessageIDs.count))
-                    .font(.title3.weight(.medium))
-            }
-
-            HStack(spacing: 20) {
-                BulkButton(icon: "archivebox", label: String(localized: "Archive")) {
+        ContentUnavailableView {
+            Label(
+                selectionLabel(appState.selectedMessageIDs.count),
+                systemImage: "envelope.stack"
+            )
+        } actions: {
+            HStack(spacing: 8) {
+                Button("Archive", systemImage: "archivebox") {
                     perform { ids in
                         await env.undoService.archiveMessages(ids, undoManager: undoManager)
                     }
                 }
-                BulkButton(icon: "trash", label: String(localized: "Delete"), isDestructive: true) {
+                .buttonStyle(.glass)
+
+                Button("Delete", systemImage: "trash", role: .destructive) {
                     perform { ids in
                         await env.undoService.deleteMessages(ids, undoManager: undoManager)
                     }
                 }
-                BulkButton(icon: "exclamationmark.octagon", label: String(localized: "Mark as Spam"), isDestructive: true) {
+                .buttonStyle(.glass)
+
+                Button("Mark as Spam", systemImage: "exclamationmark.octagon") {
                     perform { ids in
                         await env.syncService.markAsJunk(ids)
                     }
                 }
+                .buttonStyle(.glass)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
     private nonisolated func selectionLabel(_ n: Int) -> String {
@@ -54,28 +50,5 @@ struct BulkActionPanelView: View {
         let ids = Array(appState.selectedMessageIDs)
         appState.selectedMessageIDs = []
         Task { await op(ids) }
-    }
-}
-
-private struct BulkButton: View {
-    let icon: String
-    let label: String
-    var isDestructive: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                Text(label)
-                    .font(.caption)
-            }
-            .frame(width: 80)
-            .padding(.vertical, 10)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.borderless)
-        .foregroundStyle(isDestructive ? Color.red : Color.primary)
     }
 }

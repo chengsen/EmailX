@@ -1,6 +1,6 @@
 //
 //  ToolbarBridge.swift
-//  MyEmail
+//  EmailX
 //
 //  NSToolbar item identifiers and delegate. The toolbar itself is
 //  installed programmatically by MainWindowController — there is no
@@ -32,7 +32,7 @@ extension NSToolbarItem.Identifier {
 
 /// Stable identifier set on the main window after toolbar install, so that
 /// title-update helpers can reliably find it regardless of current `title`.
-let mainWindowIdentifier = NSUserInterfaceItemIdentifier("MyEmailMainWindow")
+let mainWindowIdentifier = NSUserInterfaceItemIdentifier("EmailXMainWindow")
 
 // MARK: - Toolbar delegate
 
@@ -44,20 +44,18 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
     weak var toolbar: NSToolbar?
 
     private let defaultItems: [NSToolbarItem.Identifier] = [
-        .getMail,
+        .toggleSidebar,
+        .compose,
         .space,
-        .archive, .tbDelete, .junk,
-        .space,
-        .compose, .reply, .replyAll, .forward,
-        .space,
-        .markRead, .flag,
+        .archive,
+        .tbDelete,
+        .reply,
         .flexibleSpace,
-        .toggleLog,
-        .threadingFlat, .threadingThreaded,
         .search,
     ]
 
     private let allItems: [NSToolbarItem.Identifier] = [
+        .toggleSidebar,
         .getMail,
         .compose, .archive, .tbDelete, .junk,
         .reply, .replyAll, .forward,
@@ -124,13 +122,41 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         item.paletteLabel = def.label
         item.toolTip = def.label
         item.image = NSImage(systemSymbolName: def.icon, accessibilityDescription: def.label)
+        item.style = (id == .compose) ? .prominent : .plain
+        item.visibilityPriority = visibilityPriority(for: id)
         item.target = self
         item.action = #selector(buttonClicked(_:))
         return item
     }
 
+    private func visibilityPriority(
+        for id: NSToolbarItem.Identifier
+    ) -> NSToolbarItem.VisibilityPriority {
+        switch id {
+        case .compose, .search:
+            return .user
+        case .reply, .archive:
+            return .high
+        case .tbDelete:
+            return .standard
+        default:
+            return .low
+        }
+    }
+
     @objc private func buttonClicked(_ sender: NSToolbarItem) {
         onAction?(sender.itemIdentifier.rawValue)
+    }
+
+    func refreshSelectionActions(hasSelection: Bool) {
+        for item in toolbar?.items ?? [] {
+            switch item.itemIdentifier {
+            case .archive, .tbDelete, .reply:
+                item.isHidden = !hasSelection
+            default:
+                break
+            }
+        }
     }
 
     // MARK: - Threading selection visuals
@@ -167,6 +193,7 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         let item = NSSearchToolbarItem(itemIdentifier: .search)
         item.searchField.delegate = self
         item.searchField.placeholderString = String(localized: "Search…")
+        item.visibilityPriority = .user
         return item
     }
 

@@ -1,9 +1,6 @@
 //
 //  ErrorBannerView.swift
-//  MyEmail
-//
-//  Dismissable error banners. Auto-dismiss after 8 seconds.
-//  Re-auth errors show a persistent banner with a reconnect button.
+//  EmailX
 //
 
 import SwiftUI
@@ -13,34 +10,59 @@ struct ErrorBannerView: View {
     @Environment(AppEnvironment.self) private var env
 
     var body: some View {
-        VStack(spacing: 4) {
-            // Re-auth banners (persistent, one per account)
+        VStack(spacing: 8) {
             ForEach(accountsNeedingReauth) { account in
-                ReauthBanner(account: account) {
-                    Task {
-                        do {
-                            try await env.authService.refreshViaOAuth(
-                                accountID: account.id, email: account.email
-                            )
-                            // Resume sync immediately — without this IDLE/refreshAll
-                            // wouldn't pick the account back up until the next 5-min tick.
-                            await env.syncService.syncAccount(account)
-                        } catch AuthError.userCancelled {
-                            // User closed the browser; banner stays for next attempt
-                        } catch {
-                            LogService.log(.error, .auth, "Reconnect failed", detail: String(describing: error))
-                            appState.errors.append(AppError(
-                                title: String(localized: "Reconnect failed"),
-                                detail: (error as? AuthError)?.errorDescription ?? String(localized: "Could not connect to the mail server. Check your network and account settings.")
-                            ))
+                StatusNotice(
+                    symbol: "exclamationmark.triangle.fill",
+                    tint: .orange,
+                    title: String(localized: "\(account.email) — authentication expired")
+                ) {
+                    Button("Reconnect") {
+                        Task {
+                            do {
+                                try await env.authService.refreshViaOAuth(
+                                    accountID: account.id, email: account.email
+                                )
+                                await env.syncService.syncAccount(account)
+                            } catch AuthError.userCancelled {
+                                // Keep the notice visible so the user can retry.
+                            } catch {
+                                LogService.log(.error, .auth, "Reconnect failed",
+                                               detail: String(describing: error))
+                                appState.errors.append(AppError(
+                                    title: String(localized: "Reconnect failed"),
+                                    detail: (error as? AuthError)?.errorDescription
+                                        ?? String(localized: "Could not connect to the mail server. Check your network and account settings.")
+                                ))
+                            }
                         }
                     }
+                    .buttonStyle(.glass)
+                    .controlSize(.small)
                 }
             }
 
-            // Transient error banners
             ForEach(appState.errors) { error in
-                TransientErrorBanner(error: error) {
+                StatusNotice(
+                    symbol: "xmark.circle.fill",
+                    tint: .red,
+                    title: error.title,
+                    detail: error.detail
+                ) {
+                    Button {
+                        appState.errors.removeAll { $0.id == error.id }
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .buttonStyle(.glass)
+                    .controlSize(.small)
+                    .help("Dismiss")
+                    .accessibilityLabel(Text("Dismiss"))
+                    .accessibilityHint(Text(error.title))
+                }
+                .task {
+                    try? await Task.sleep(for: .seconds(8))
+                    guard !Task.isCancelled else { return }
                     appState.errors.removeAll { $0.id == error.id }
                 }
             }
@@ -52,65 +74,42 @@ struct ErrorBannerView: View {
     }
 }
 
-// MARK: - Re-auth banner
+private struct StatusNotice<Actions: View>: View {
+    let symbol: String
+    let tint: Color
+    let title: String
+    var detail: String?
+    let actions: () -> Actions
 
-private struct ReauthBanner: View {
-    let account: Account
-    let onReconnect: () -> Void
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.white)
-            Text("\(account.email) — authentication expired")
-                .font(.callout)
-                .foregroundStyle(.white)
-            Spacer()
-            Button("Reconnect") { onReconnect() }
-                .controlSize(.small)
-                .buttonStyle(.bordered)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Color.orange)
-    }
-}
-
-// MARK: - Transient error banner
-
-private struct TransientErrorBanner: View {
-    let error: AppError
-    let onDismiss: () -> Void
+    @Environment(\.accessibilityShowBorders) private var showBorders
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "xmark.circle.fill")
-                .foregroundStyle(.white)
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+
             VStack(alignment: .leading, spacing: 1) {
-                Text(error.title)
+                Text(title)
                     .font(.callout.weight(.medium))
-                    .foregroundStyle(.white)
-                if let detail = error.detail {
+                if let detail, !detail.isEmpty {
                     Text(detail)
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.8))
-                        .lineLimit(1)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
-            Spacer()
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .foregroundStyle(.white)
-            }
-            .buttonStyle(.plain)
+
+            Spacer(minLength: 12)
+            actions()
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Color.red.opacity(0.85))
-        .task {
-            try? await Task.sleep(for: .seconds(8))
-            guard !Task.isCancelled else { return }
-            onDismiss()
+        .padding(.vertical, 9)
+        .glassEffect(in: .rect(cornerRadius: 14))
+        .overlay {
+            if showBorders {
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(.secondary)
+            }
         }
     }
 }

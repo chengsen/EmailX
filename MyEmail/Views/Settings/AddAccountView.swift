@@ -105,7 +105,7 @@ private struct ProviderRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 28))
+                    .font(.title)
                     .foregroundStyle(Color.accentColor)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -119,15 +119,7 @@ private struct ProviderRow: View {
                     .foregroundStyle(.tertiary)
             }
             .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(nsColor: .windowBackgroundColor))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.bordered)
     }
 }

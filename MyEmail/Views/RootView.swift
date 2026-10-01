@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct RootView: View {
-    @AppStorage("debugLogPanelVisible") private var isDebugLogVisible: Bool = true
+    @AppStorage("debugLogPanelVisible") private var isDebugLogVisible: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {

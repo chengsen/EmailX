@@ -141,6 +141,8 @@ extension SyncService {
     }
 
     func pollFolderStatuses(for account: Account) async {
+        guard statusPollingAccounts.insert(account.id).inserted else { return }
+        defer { statusPollingAccounts.remove(account.id) }
         // Don't poll while bootstrap sync is running — it serializes through
         // the same per-account lock and would just stack work behind it. The
         // bootstrap path syncs INBOX itself; non-INBOX folders are covered by
@@ -235,18 +237,19 @@ extension SyncService {
         let localUnread: Int = (try? await pool.write { db -> Int in
             try db.execute(
                 sql: """
+                WITH counts AS (
+                    SELECT COUNT(*) AS total, COALESCE(SUM(is_read = 0), 0) AS unread
+                    FROM messages WHERE folder_id = ?
+                )
                 UPDATE folders SET
-                    unread_count = (
-                        SELECT COUNT(*) FROM messages
-                        WHERE folder_id = folders.id AND is_read = 0
-                    ),
-                    total_count = (
-                        SELECT COUNT(*) FROM messages
-                        WHERE folder_id = folders.id
-                    )
-                WHERE id = ?
+                    unread_count = (SELECT unread FROM counts),
+                    total_count = (SELECT total FROM counts)
+                WHERE id = ? AND (
+                    unread_count != (SELECT unread FROM counts)
+                    OR total_count != (SELECT total FROM counts)
+                )
                 """,
-                arguments: [folder.id]
+                arguments: [folder.id, folder.id]
             )
             return try Int.fetchOne(
                 db,

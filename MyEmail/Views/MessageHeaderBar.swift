@@ -1,6 +1,6 @@
 //
 //  MessageHeaderBar.swift
-//  MyEmail
+//  EmailX
 //
 //  Message header: sender, recipients, subject, date, action buttons.
 //
@@ -44,11 +44,11 @@ struct MessageHeaderBar: View {
                     AddressTokenView(
                         displayName: fromDisplayName,
                         email: fromEmail,
-                        font: .system(size: 15, weight: .semibold)
+                        font: .headline
                     )
 
                     Text(fromEmail)
-                        .font(.system(size: 12))
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                         // Line up with the sender name above — Menu's
@@ -78,7 +78,7 @@ struct MessageHeaderBar: View {
 
             // Subject
             Text(message.subject)
-                .font(.system(size: 16, weight: .bold))
+                .font(.title2.weight(.semibold))
                 .textSelection(.enabled)
 
             // Date line (plain text — icon is not in this row's layout).
@@ -86,17 +86,14 @@ struct MessageHeaderBar: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        // Icon is absolutely positioned at the bottom-right of the whole
-        // header (before outer padding). Outer .padding(14) then becomes
-        // the icon's margin, so trailing-margin == bottom-margin.
+        // Keep the optional mail-client indicator out of the content flow.
         .overlay(alignment: .bottomTrailing) {
             if showMUA, let ua = message.userAgent, !ua.isEmpty {
                 MUAIconSlot(userAgent: ua)
             }
         }
-        .padding(14)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     @ViewBuilder
@@ -117,58 +114,57 @@ struct MessageHeaderBar: View {
     }
 
     private var actionButtons: some View {
-        // Spark-style ordering: triage actions (Archive / Delete / Spam) on
-        // the left for fast left-to-right keyboard-free scanning during
-        // inbox triage; compose actions (Reply / Reply All / Forward) and
-        // the rarely-used View Source on the right.
-        HStack(spacing: 6) {
-            if let onArchive {
-                Button(action: onArchive) {
-                    Image(systemName: "archivebox")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Archive")
-            }
-            if let onDelete {
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Delete")
-            }
-            if let onMarkSpam {
-                Button(action: onMarkSpam) {
-                    Image(systemName: "exclamationmark.octagon")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Mark as Spam")
-            }
-
-            if (onArchive != nil || onDelete != nil || onMarkSpam != nil)
-                && (onReply != nil || onReplyAll != nil || onForward != nil || onViewSource != nil) {
-                Divider().frame(height: 14).padding(.horizontal, 2)
-            }
-
+        HStack(spacing: 8) {
             if let onReply {
                 Button(action: onReply) {
                     Image(systemName: "arrowshape.turn.up.left")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Reply")
+                }
+                .buttonStyle(.glass)
+                .controlSize(.large)
+                .help("Reply")
             }
-            if let onReplyAll {
-                Button(action: onReplyAll) {
-                    Image(systemName: "arrowshape.turn.up.left.2")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Reply All")
-            }
-            if let onForward {
-                Button(action: onForward) {
-                    Image(systemName: "arrowshape.turn.up.right")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("Forward")
-            }
-            if let onViewSource {
-                Button(action: onViewSource) {
-                    Image(systemName: "doc.plaintext")
-                        .font(.system(size: 14))
-                }.buttonStyle(.borderless).help("View Source")
+
+            if onReplyAll != nil || onForward != nil || onArchive != nil
+                || onDelete != nil || onMarkSpam != nil || onViewSource != nil {
+                Menu {
+                    if let onReplyAll {
+                        Button("Reply All", systemImage: "arrowshape.turn.up.left.2",
+                               action: onReplyAll)
+                    }
+                    if let onForward {
+                        Button("Forward", systemImage: "arrowshape.turn.up.right",
+                               action: onForward)
+                    }
+
+                    if (onReplyAll != nil || onForward != nil)
+                        && (onArchive != nil || onDelete != nil || onMarkSpam != nil) {
+                        Divider()
+                    }
+
+                    if let onArchive {
+                        Button("Archive", systemImage: "archivebox", action: onArchive)
+                    }
+                    if let onDelete {
+                        Button("Delete", systemImage: "trash", role: .destructive,
+                               action: onDelete)
+                    }
+                    if let onMarkSpam {
+                        Button("Mark as Spam", systemImage: "exclamationmark.octagon",
+                               action: onMarkSpam)
+                    }
+
+                    if let onViewSource {
+                        Divider()
+                        Button("View Source", systemImage: "doc.plaintext",
+                               action: onViewSource)
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .buttonStyle(.glass)
+                .controlSize(.large)
+                .fixedSize()
+                .help("More")
             }
         }
     }
@@ -208,7 +204,7 @@ private struct MUAIconSlot: View {
 struct AddressTokenView: View {
     let displayName: String
     let email: String
-    var font: Font = .system(size: 12)
+    var font: Font = .subheadline
 
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
@@ -255,104 +251,44 @@ struct AddressListRow: View {
     let addresses: [String]
     @State private var isExpanded = false
 
-    /// Max height of the expanded scrollable area (~5 lines at 12pt).
-    private static let expandedMaxHeight: CGFloat = 100
-
-    /// Left gutter = sender avatar width (36) so recipient tokens align
-    /// with the sender name column. HStack spacing 10 matches sender row.
-    private static let labelGutter: CGFloat = 36
-    private static let gutterSpacing: CGFloat = 10
-
-    /// `.menuStyle(.borderlessButton)` adds an invisible leading inset around
-    /// its label in macOS 15+ (more pronounced under the macOS 26 / Tahoe
-    /// button style). Measured empirically — nudge to match `From:` row.
-    /// 0 means no horizontal nudge (token lines up with To: label column).
-    private static let menuChromeInset: CGFloat = 0
-
     var body: some View {
-        if isExpanded {
-            expandedLayout
-        } else {
-            collapsedLayout
-        }
-    }
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
 
-    // MARK: - Collapsed (single row that fits)
-
-    private var collapsedLayout: some View {
-        HStack(alignment: .center, spacing: Self.gutterSpacing) {
-            labelText
-                .frame(width: Self.labelGutter, alignment: .trailing)
-            GeometryReader { geo in
-                collapsedRow(width: geo.size.width)
-            }
-            .frame(height: 22)
-            // Menu borderlessButton's label sits a few points above the
-            // center of its hit area. Nudge the whole recipient column
-            // down so the visible token text lines up with the To: label
-            // baseline. Empirical: 3pt matches macOS 26 rendering.
-            .offset(y: 3)
-        }
-        .font(.system(size: 12))
-    }
-
-    @ViewBuilder
-    private func collapsedRow(width: CGFloat) -> some View {
-        let (visible, hidden) = pickFittingTokens(width: width)
-        HStack(spacing: 4) {
-            ForEach(Array(visible.enumerated()), id: \.offset) { _, raw in
-                token(for: raw)
-            }
-            if hidden > 0 {
-                Button {
-                    isExpanded = true
-                } label: {
-                    Text("and \(hidden) more")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.accentColor)
-                }
-                .buttonStyle(.borderless)
-            }
-            Spacer(minLength: 0)
-        }
-    }
-
-    // MARK: - Expanded (bounded scroll, plain text, no per-address menus)
-
-    private var expandedLayout: some View {
-        HStack(alignment: .top, spacing: Self.gutterSpacing) {
-            labelText
-                .frame(width: Self.labelGutter, alignment: .trailing)
-                .padding(.top, 2)
-
-            VStack(alignment: .leading, spacing: 4) {
-                ScrollView(.vertical, showsIndicators: true) {
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(addresses.joined(separator: ", "))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.primary)
+                        .font(.subheadline)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.trailing, 4)
-                }
-                .frame(maxHeight: Self.expandedMaxHeight)
 
-                Button {
-                    isExpanded = false
-                } label: {
-                    Text("Show less")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.accentColor)
+                    Button("Show less") {
+                        isExpanded = false
+                    }
+                    .buttonStyle(.link)
+                    .controlSize(.small)
                 }
-                .buttonStyle(.borderless)
+            } else {
+                HStack(spacing: 6) {
+                    ForEach(Array(addresses.prefix(3).enumerated()), id: \.offset) { _, raw in
+                        token(for: raw)
+                    }
+
+                    if addresses.count > 3 {
+                        Button("\(addresses.count - 3) more") {
+                            isExpanded = true
+                        }
+                        .buttonStyle(.link)
+                        .controlSize(.small)
+                    }
+
+                    Spacer(minLength: 0)
+                }
             }
         }
-        .font(.system(size: 12))
-    }
-
-    private var labelText: some View {
-        Text(label)
-            .foregroundStyle(.secondary)
-            .font(.system(size: 12))
+        .font(.subheadline)
     }
 
     @ViewBuilder
@@ -364,55 +300,5 @@ struct AddressListRow: View {
             displayName: name.isEmpty ? addr : name,
             email: addr
         )
-    }
-
-    /// CoreText sizing — fast even for 1000+ addresses. We measure the raw
-    /// string (slightly pessimistic) and reserve worst-case badge width so
-    /// the layout never overflows on the second pass.
-    private func pickFittingTokens(width: CGFloat) -> (visible: [String], hidden: Int) {
-        guard width > 0, !addresses.isEmpty else { return ([], 0) }
-
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 12)
-        ]
-        let spacing: CGFloat = 4
-        // Menu chevron + horizontal padding around the label.
-        let chrome: CGFloat = 18
-        // Worst-case badge text width — `addresses.count` is the upper bound.
-        let badgeText = String(localized: "and \(addresses.count) more")
-        let badgeWidth = (badgeText as NSString).size(withAttributes: attrs).width + chrome
-
-        let available = max(0, width - badgeWidth - spacing)
-        var consumed: CGFloat = 0
-        var visible: [String] = []
-        visible.reserveCapacity(min(addresses.count, 16))
-
-        for raw in addresses {
-            let display = displayFragment(of: raw)
-            let textWidth = (display as NSString).size(withAttributes: attrs).width
-            let tokenWidth = textWidth + chrome
-            let next = consumed + (visible.isEmpty ? 0 : spacing) + tokenWidth
-            if next > available && !visible.isEmpty { break }
-            consumed = next
-            visible.append(raw)
-        }
-
-        if visible.count == addresses.count { return (visible, 0) }
-        return (visible, addresses.count - visible.count)
-    }
-
-    /// Lightweight extraction for measurement: prefer the part shown by the
-    /// token (name or email-only). Avoids the full SwiftMail parser cost in
-    /// a hot loop over 1000 addresses.
-    private func displayFragment(of raw: String) -> String {
-        if let lt = raw.firstIndex(of: "<"), let gt = raw.firstIndex(of: ">"),
-           lt < gt {
-            let name = raw[..<lt].trimmingCharacters(
-                in: .whitespacesAndNewlines.union(.init(charactersIn: "\""))
-            )
-            if !name.isEmpty { return name }
-            return String(raw[raw.index(after: lt)..<gt])
-        }
-        return raw
     }
 }

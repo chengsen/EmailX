@@ -120,6 +120,10 @@ final class SyncService {
 
     /// Periodic sync timer (stored MainActor property — §8.3)
     var periodicSyncTimer: Timer?
+    var periodicSyncTask: Task<Void, Never>?
+    var periodicFullRefreshPending = false
+    var statusPollingAccounts: Set<UUID> = []
+    var receivingActivity: NSObjectProtocol?
 
     /// Network path monitor (stored MainActor property — rule 3). Held so the
     /// monitor isn't a transient local that could be released while its
@@ -486,6 +490,7 @@ final class SyncService {
     /// Returns cached IMAPService or creates one. For OAuth accounts,
     /// call `wireTokenProvider` after to set the dynamic token provider.
     func getOrCreateIMAPService(for account: Account) -> IMAPService {
+        updateReceivingActivity()
         if let existing = imapServices[account.id] { return existing }
         let kc = keychain
         let service = IMAPService(account: account, keychain: kc)
@@ -627,17 +632,19 @@ final class SyncService {
     }
 
     /// Tear down transport + IDLE for a deleted account. IDLE tasks are keyed
-    /// by folder path (not account ID) and paths can collide across accounts
-    /// ("INBOX"), so we cancel all IDLE sessions — remaining accounts re-IDLE
-    /// on their next sync cycle.
+    /// by accountID:folderPath. Cancel only this account so other accounts
+    /// keep receiving pushes without waiting for their next sync cycle.
     ///
     /// `folderIDs` must be captured by the caller BEFORE deleting the account
     /// rows (the folders are gone from the DB by the time this runs), so the
     /// folder-keyed in-memory caches can be purged (§28).
     func removeAccount(id: UUID, folderIDs: [UUID] = []) async {
-        for (_, task) in idleTasks { task.cancel() }
-        idleTasks.removeAll()
-        selectedIdleKey = nil
+        // Removing one account must not interrupt other accounts' push delivery.
+        let prefix = "\(id):"
+        for key in idleTasks.keys.filter({ $0.hasPrefix(prefix) }) {
+            idleTasks.removeValue(forKey: key)?.cancel()
+        }
+        if selectedIdleKey?.hasPrefix(prefix) == true { selectedIdleKey = nil }
 
         if let imap = imapServices.removeValue(forKey: id) {
             await imap.disconnect()
@@ -663,5 +670,6 @@ final class SyncService {
             syncingFolders.remove(fid)
             bulkOpFolderIDs.remove(fid)
         }
+        updateReceivingActivity()
     }
 }

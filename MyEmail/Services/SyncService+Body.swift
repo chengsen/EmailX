@@ -124,25 +124,19 @@ extension SyncService {
         rawData: Data, msg: Message, account: Account
     ) async throws -> Message {
         var msg = msg
-        let email: EmailMessage
+        let body: ParsedBody
         do {
-            email = try EmailMessage(data: rawData)
+            body = try await Self.parseBody(rawData, includeEncryptedAttachments: false)
         } catch {
             LogService.log(.error, .sync,
                            "MIME parse failed for UID \(msg.uid)", detail: "\(error)")
             return msg
         }
 
-        let textBody = email.textBody
-        let htmlBody = email.htmlBody
-
-        // Mail client identity — first non-empty of the canonical headers.
-        let userAgent = Self.firstHeader(email,
-            "User-Agent", "X-Mailer", "X-Mail-Agent", "X-Newsreader")
-
-        // Detect PGP/GPG encryption (PGP/MIME or inline PGP)
-        let pgpEncrypted = email.isEncrypted
-            || (textBody ?? "").contains("-----BEGIN PGP MESSAGE-----")
+        let textBody = body.text
+        let htmlBody = body.html
+        let userAgent = body.userAgent
+        let pgpEncrypted = body.isEncrypted
 
         let id = msg.id
 
@@ -163,7 +157,7 @@ extension SyncService {
         }
 
         // Save all attachments (inline + regular)
-        let allAttachments = email.attachments
+        let allAttachments = body.attachments
         if !allAttachments.isEmpty {
             try await saveAttachments(allAttachments, messageID: msg.id, accountID: account.id)
         }
@@ -189,19 +183,6 @@ extension SyncService {
         msg.userAgent = userAgent
         LogService.log(.info, .sync, "Loaded body for UID \(msg.uid)", detail: "size=\(rawSize)")
         return msg
-    }
-
-    /// Return the first non-empty value among the given header names.
-    /// Order matches the upstream dispmua detection order:
-    /// User-Agent → X-Mailer → X-Mail-Agent → X-Newsreader.
-    private static func firstHeader(_ email: EmailMessage, _ names: String...) -> String? {
-        for name in names {
-            if let value = email.header(name)?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !value.isEmpty {
-                return value
-            }
-        }
-        return nil
     }
 
     /// Load inline attachment refs for CID rewriting in MessageDetailView.
@@ -247,10 +228,10 @@ extension SyncService {
             try await imap.ensureFolderSelected(folder.path)
 
             let rawData = try await imap.fetchRawMessage(uid: msg.uid)
-            let email = try EmailMessage(data: rawData)
+            let body = try await Self.parseBody(rawData)
 
             // Match by contentId or filename
-            guard let part = email.attachments.first(where: { att in
+            guard let part = body.attachments.first(where: { att in
                 if let cid = attachment.contentID, let partCid = att.contentId, cid == partCid {
                     return true
                 }
@@ -262,16 +243,15 @@ extension SyncService {
             }
 
             let base = self.attachmentsDirectory(accountID: account.id, messageID: msg.id)
-            try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-            let filename = Self.sanitizeFilename(attachment.filename)
-            let fileURL = base.appendingPathComponent(filename)
-            try part.data.write(to: fileURL)
-            Self.setQuarantine(on: fileURL)
+            let fileURL = try await Self.writeAttachment(part.data,
+                filename: Self.sanitizeFilename(attachment.filename), directory: base)
 
             var updated = attachment
             updated.localPath = fileURL.path
+            let saved = updated
             try await self.pool.write { db in
-                try updated.update(db)
+                var record = saved
+                try record.update(db)
             }
             LogService.log(.info, .sync, "Re-fetched attachment", detail: attachment.filename)
             return updated
@@ -284,34 +264,7 @@ extension SyncService {
         _ attachments: [SwiftEmailParser.Attachment], messageID: UUID, accountID: UUID
     ) async throws {
         let base = attachmentsDirectory(accountID: accountID, messageID: messageID)
-        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-
-        var records: [MyEmail.Attachment] = []
-        var usedFilenames: Set<String> = []
-        for att in attachments {
-            let rawFilename = att.filename ?? (att.contentId ?? "attachment-\(UUID().uuidString.prefix(8))")
-            var filename = Self.sanitizeFilename(rawFilename)
-            // Avoid collisions within same message
-            if usedFilenames.contains(filename) {
-                filename = "\(UUID().uuidString.prefix(8))-\(filename)"
-            }
-            usedFilenames.insert(filename)
-
-            let fileURL = base.appendingPathComponent(filename)
-            try att.data.write(to: fileURL)
-            Self.setQuarantine(on: fileURL)
-
-            LogService.log(.debug, .sync, "Saved attachment",
-                           detail: "file=\(filename) inline=\(att.isInline) cid=\(att.contentId ?? "nil") size=\(att.data.count) path=\(fileURL.path)")
-
-            records.append(MyEmail.Attachment(
-                id: UUID(), partID: att.contentId ?? "",
-                filename: filename, mimeType: att.mimeType,
-                size: att.size, contentID: att.contentId,
-                isInline: att.isInline, localPath: fileURL.path,
-                messageID: messageID
-            ))
-        }
+        let records = try await Self.writeAttachments(attachments, directory: base, messageID: messageID)
 
         let hasNonInline = records.contains { !$0.isInline }
         try await pool.write { db in
@@ -331,19 +284,6 @@ extension SyncService {
         }
     }
 
-    /// Strip path separators, .., control chars; limit length.
-    nonisolated private static func sanitizeFilename(_ raw: String) -> String {
-        var name = raw
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "\\", with: "_")
-            .replacingOccurrences(of: "..", with: "_")
-            .replacingOccurrences(of: "\0", with: "")
-        name = String(name.unicodeScalars.filter { $0.value >= 0x20 })
-        if name.count > 255 { name = String(name.prefix(255)) }
-        if name.isEmpty { name = UUID().uuidString }
-        return name
-    }
-
     func attachmentsDirectory(accountID: UUID, messageID: UUID) -> URL {
         let appSupport = FileManager.default.urls(
             for: .applicationSupportDirectory, in: .userDomainMask
@@ -353,27 +293,5 @@ extension SyncService {
             .appendingPathComponent("attachments", isDirectory: true)
             .appendingPathComponent(accountID.uuidString, isDirectory: true)
             .appendingPathComponent(messageID.uuidString, isDirectory: true)
-    }
-
-    /// §21: tag a freshly-written attachment with `com.apple.quarantine` so
-    /// Gatekeeper / LaunchServices treat it like a downloaded file — the user
-    /// gets the standard "downloaded from the Internet" warning before opening
-    /// an executable or document macro. Best-effort: failures are logged, not
-    /// fatal (a missing xattr only loses the warning, never blocks the save).
-    nonisolated static func setQuarantine(on url: URL) {
-        // Format: flags;hexTimestamp;agentName;UUID  (LSQuarantine).
-        let flags = "0083"
-        let ts = String(format: "%x", UInt32(Date().timeIntervalSince1970))
-        let value = "\(flags);\(ts);MyEmail;\(UUID().uuidString)"
-        let name = "com.apple.quarantine"
-        url.withUnsafeFileSystemRepresentation { path in
-            guard let path else { return }
-            value.withCString { cStr in
-                if setxattr(path, name, cStr, strlen(cStr), 0, 0) != 0 {
-                    LogService.log(.debug, .sync, "Quarantine xattr failed",
-                                   detail: "\(url.lastPathComponent) errno=\(errno)")
-                }
-            }
-        }
     }
 }

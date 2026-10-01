@@ -37,7 +37,7 @@ final class MainMenuBuilder {
         let item = NSMenuItem()
         let menu = NSMenu(title: appName)
 
-        menu.addItem(withTitle: String(localized: "About MyEmail"),
+        menu.addItem(withTitle: String(localized: "About EmailX"),
                     action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
                     keyEquivalent: "")
         menu.addItem(.separator())
@@ -63,7 +63,7 @@ final class MainMenuBuilder {
 
         menu.addItem(.separator())
 
-        menu.addItem(withTitle: String(localized: "Hide MyEmail"),
+        menu.addItem(withTitle: String(localized: "Hide EmailX"),
                     action: #selector(NSApplication.hide(_:)),
                     keyEquivalent: "h")
 
@@ -81,7 +81,7 @@ final class MainMenuBuilder {
 
         menu.addItem(.separator())
 
-        menu.addItem(withTitle: String(localized: "Quit MyEmail"),
+        menu.addItem(withTitle: String(localized: "Quit EmailX"),
                     action: #selector(NSApplication.terminate(_:)),
                     keyEquivalent: "q")
 
@@ -188,29 +188,6 @@ final class MainMenuBuilder {
         menu.addItem(toggleSidebar)
 
         menu.addItem(.separator())
-
-        let layout = NSMenuItem(title: String(localized: "Layout"),
-                                action: nil, keyEquivalent: "")
-        let layoutMenu = NSMenu(title: String(localized: "Layout"))
-
-        let wide = NSMenuItem(
-            title: String(localized: "Wide"),
-            action: #selector(AppDelegate.setLayoutWide(_:)),
-            keyEquivalent: ""
-        )
-        wide.target = delegate
-        layoutMenu.addItem(wide)
-
-        let classic = NSMenuItem(
-            title: String(localized: "Classic"),
-            action: #selector(AppDelegate.setLayoutClassic(_:)),
-            keyEquivalent: ""
-        )
-        classic.target = delegate
-        layoutMenu.addItem(classic)
-
-        layout.submenu = layoutMenu
-        menu.addItem(layout)
 
         let toggleThreading = makeItem(
             title: String(localized: "Toggle Threading"),
@@ -342,7 +319,7 @@ final class MainMenuBuilder {
         let item = NSMenuItem()
         let menu = NSMenu(title: String(localized: "Help"))
 
-        menu.addItem(withTitle: String(localized: "MyEmail Help"),
+        menu.addItem(withTitle: String(localized: "EmailX Help"),
                     action: #selector(NSApplication.showHelp(_:)),
                     keyEquivalent: "?")
 

@@ -171,11 +171,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         defaults.set(!defaults.bool(forKey: key), forKey: key)
     }
 
-    @objc func setLayoutWide(_ sender: Any?) {
-        UserDefaults.standard.set("wide", forKey: "windowLayout")
-    }
-
-    @objc func setLayoutClassic(_ sender: Any?) {
-        UserDefaults.standard.set("classic", forKey: "windowLayout")
-    }
 }

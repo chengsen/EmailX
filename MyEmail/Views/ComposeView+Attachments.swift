@@ -15,14 +15,18 @@ extension ComposeView {
     /// NSOpenPanel-based multi-file picker. The panel itself grants
     /// temporary read access to the chosen URLs; no security-scoped
     /// bookmarks required.
-    func pickAttachments() {
+    func pickAttachments(in window: NSWindow) {
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = true
         panel.message = String(localized: "Choose files to attach")
-        guard panel.runModal() == .OK else { return }
-        addAttachments(from: panel.urls)
+        // Keep the picker bound to this draft without blocking the app's
+        // event loop or other draft windows.
+        panel.beginSheetModal(for: window) { response in
+            guard response == .OK else { return }
+            addAttachments(from: panel.urls)
+        }
     }
 
     func addAttachments(from urls: [URL]) {

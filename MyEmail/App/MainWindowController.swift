@@ -1,6 +1,6 @@
 //
 //  MainWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned main window. Programmatic NSWindow + NSToolbar + SwiftUI
 //  RootView inside NSHostingView. Observes AppState via one-shot
@@ -19,6 +19,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     let environment: AppEnvironment
 
     let toolbarDelegate = MainToolbarDelegate()
+    private var mainToolbar: NSToolbar?
 
     /// Running debounce task for search text changes. Replaced on each keystroke.
     var searchDebounceTask: Task<Void, Never>?
@@ -33,9 +34,10 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "MyEmail"
+        window.title = "EmailX"
         window.minSize = NSSize(width: 900, height: 600)
         window.identifier = mainWindowIdentifier
+        window.autorecalculatesKeyViewLoop = true
         // Manual frame persistence — `setFrameAutosaveName` stopped
         // restoring reliably once the window's identifier was used
         // elsewhere (toolbar/state restoration). Read/write our own
@@ -53,13 +55,15 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 
         window.contentView = NSHostingView(rootView: rootView)
 
-        let toolbar = NSToolbar(identifier: "MainToolbar.v2")
+        let toolbar = NSToolbar(identifier: "MainToolbar.v3")
         toolbar.delegate = toolbarDelegate
         toolbar.displayMode = .iconOnly
         toolbar.allowsUserCustomization = true
         toolbar.autosavesConfiguration = true
         window.toolbar = toolbar
+        window.toolbarStyle = .unified
         toolbarDelegate.toolbar = toolbar
+        mainToolbar = toolbar
 
         super.init(window: window)
         window.delegate = self
@@ -68,6 +72,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         trackTitle()
         trackThreading()
         trackToolbarVisibility()
+        trackSelectionToolbar()
         updateWindowTitle()
     }
 
@@ -79,7 +84,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     func showMain() {
         showWindow(nil)
         // Set autosaveName on the internal NSSplitView(s) created by
-        // NavigationSplitView/HSplitView so divider positions persist.
+        // NavigationSplitView so divider positions persist.
         // Must happen before makeKeyAndOrderFront to avoid layout jump.
         installSplitViewAutosave()
         window?.makeKeyAndOrderFront(nil)
@@ -90,7 +95,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         guard let contentView = window?.contentView else { return }
         let splits = Self.findAllSplitViews(in: contentView)
         for (index, split) in splits.enumerated() {
-            split.autosaveName = "MyEmailSplit\(index)"
+            split.autosaveName = "EmailXSplit\(index)"
         }
     }
 
@@ -162,6 +167,16 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    private func trackSelectionToolbar() {
+        withObservationTracking {
+            toolbarDelegate.refreshSelectionActions(
+                hasSelection: !appState.selectedMessageIDs.isEmpty
+            )
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in self?.trackSelectionToolbar() }
+        }
+    }
+
     /// Hide toolbar when no accounts — empty state should present only the
     /// welcome card, no chrome to click on.
     private func trackToolbarVisibility() {
@@ -191,7 +206,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             title = folder.localizedName
             count = appState.messageItems.count
         } else {
-            title = "MyEmail"
+            title = "EmailX"
             count = 0
         }
 
@@ -333,7 +348,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - Frame persistence
 
-    private static let frameDefaultsKey = "MyEmailMainWindowFrame"
+    private static let frameDefaultsKey = "EmailXMainWindowFrame"
 
     private func saveFrame() {
         guard let frame = window?.frame else { return }
@@ -341,6 +356,15 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             NSStringFromRect(frame),
             forKey: Self.frameDefaultsKey
         )
+    }
+
+    func windowDidUpdate(_ notification: Notification) {
+        // NavigationSplitView can install its own toolbar after account loading.
+        // Retain the AppKit toolbar and restore only when ownership changes;
+        // normal window updates do not rebuild items or start a polling task.
+        guard let window, let mainToolbar, window.toolbar !== mainToolbar else { return }
+        window.toolbar = mainToolbar
+        mainToolbar.isVisible = !appState.accounts.isEmpty
     }
 
     func windowDidResize(_ notification: Notification) {
