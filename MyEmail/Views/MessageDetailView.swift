@@ -181,44 +181,22 @@ struct MessageDetailView: View {
                 Color.clear.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         case .encrypted:
-            VStack(spacing: 8) {
-                Image(systemName: "lock.shield")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.secondary)
-                Text(String(localized: "Encrypted message (PGP/GPG)"))
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                Text(String(localized: "MyEmail does not support PGP/GPG decryption. Use a compatible application to read this message."))
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ContentUnavailableView(
+                "Encrypted message",
+                systemImage: "lock.shield",
+                description: Text("EmailX does not support PGP/GPG decryption. Use a compatible application to read this message.")
+            )
         case .attachmentsOnly:
-            VStack(spacing: 8) {
-                Image(systemName: "paperclip")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.secondary)
-                Text(String(localized: "Attachment-only message"))
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                Text(String(localized: "This message contains attachments only. See the attachment bar below."))
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 400)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ContentUnavailableView(
+                "Attachment-only message",
+                systemImage: "paperclip",
+                description: Text("This message contains attachments only.")
+            )
         case .none:
-            VStack(spacing: 6) {
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-                Text(String(localized: "Message body unavailable"))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ContentUnavailableView(
+                "Message body unavailable",
+                systemImage: "doc.text.magnifyingglass"
+            )
         }
     }
 
@@ -330,46 +308,18 @@ private struct BodyFormatTabs: View {
     @Binding var preferPlainBody: Bool
 
     var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 0) {
-                tab(
-                    title: String(localized: "HTML"),
-                    selected: !preferPlainBody
-                ) { preferPlainBody = false }
-                tab(
-                    title: String(localized: "Plain text"),
-                    selected: preferPlainBody
-                ) { preferPlainBody = true }
-                Spacer(minLength: 0)
+        HStack {
+            Picker("Message format", selection: $preferPlainBody) {
+                Text("HTML").tag(false)
+                Text("Plain text").tag(true)
             }
-            .frame(height: 22)
-            .background(Color(NSColor.windowBackgroundColor))
-        }
-    }
+            .pickerStyle(.segmented)
+            .controlSize(.small)
+            .fixedSize()
 
-    @ViewBuilder
-    private func tab(
-        title: String, selected: Bool, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 11))
-                .foregroundStyle(selected ? Color.primary : Color.secondary)
-                .padding(.horizontal, 12)
-                .frame(height: 22)
-                .background(
-                    selected
-                        ? Color(NSColor.controlBackgroundColor)
-                        : Color.clear
-                )
-                .overlay(alignment: .trailing) {
-                    // Separator between tabs (Excel-like).
-                    Rectangle()
-                        .fill(Color(NSColor.separatorColor))
-                        .frame(width: 1)
-                }
+            Spacer()
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 }
