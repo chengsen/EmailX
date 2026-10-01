@@ -49,7 +49,7 @@ struct OfflineStatusBannerView: View {
                         tint: .orange
                     )
                 }
-                .menuStyle(.borderlessButton)
+                .buttonStyle(.glass)
                 .fixedSize()
                 .help("Retry or discard failed actions")
             }
