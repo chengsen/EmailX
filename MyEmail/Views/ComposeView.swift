@@ -1,6 +1,6 @@
 //
 //  ComposeView.swift
-//  MyEmail
+//  EmailX
 //
 //  Compose window: new message, reply, forward.
 //  Native macOS compose window.
@@ -100,6 +100,7 @@ struct ComposeWindowContent: View {
 struct ComposeView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let mode: ComposeMode
     let message: Message?
@@ -231,7 +232,7 @@ struct ComposeView: View {
                     }
                     Text("Send")
                 }
-                .animation(.easeInOut(duration: 0.18), value: isSending)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: isSending)
             }
             .keyboardShortcut(.return, modifiers: .command)
             .disabled(isSending || toField.isEmpty)
