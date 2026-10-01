@@ -22,18 +22,14 @@ struct AddGenericAccountView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    AccountFormGeneralSection(form: $form)
-                    Divider()
-                    AccountFormIMAPSection(form: $form)
-                    Divider()
-                    AccountFormSMTPSection(form: $form)
-                }
-                .padding(16)
+
+            Form {
+                AccountFormGeneralSection(form: $form)
+                AccountFormIMAPSection(form: $form)
+                AccountFormSMTPSection(form: $form)
             }
-            Divider()
+            .formStyle(.grouped)
+
             footer
         }
     }
