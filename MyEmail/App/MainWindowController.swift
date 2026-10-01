@@ -33,7 +33,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "MyEmail"
+        window.title = "EmailX"
         window.minSize = NSSize(width: 900, height: 600)
         window.identifier = mainWindowIdentifier
         // Manual frame persistence — `setFrameAutosaveName` stopped
@@ -59,6 +59,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         toolbar.allowsUserCustomization = true
         toolbar.autosavesConfiguration = true
         window.toolbar = toolbar
+        window.toolbarStyle = .unified
         toolbarDelegate.toolbar = toolbar
 
         super.init(window: window)
@@ -90,7 +91,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         guard let contentView = window?.contentView else { return }
         let splits = Self.findAllSplitViews(in: contentView)
         for (index, split) in splits.enumerated() {
-            split.autosaveName = "MyEmailSplit\(index)"
+            split.autosaveName = "EmailXSplit\(index)"
         }
     }
 
@@ -191,7 +192,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             title = folder.localizedName
             count = appState.messageItems.count
         } else {
-            title = "MyEmail"
+            title = "EmailX"
             count = 0
         }
 
@@ -333,7 +334,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - Frame persistence
 
-    private static let frameDefaultsKey = "MyEmailMainWindowFrame"
+    private static let frameDefaultsKey = "EmailXMainWindowFrame"
 
     private func saveFrame() {
         guard let frame = window?.frame else { return }
