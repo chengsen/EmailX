@@ -1,6 +1,6 @@
 //
 //  DebugLogPanelView.swift
-//  MyEmail
+//  EmailX
 //
 //  Сворачиваемая bottom panel главного окна в стиле VS Code terminal.
 //  Единственный способ для пользователя увидеть логи (§6.10, 8.7).
@@ -64,8 +64,8 @@ struct DebugLogPanelView: View {
 
     private var resizeHandle: some View {
         Rectangle()
-            .fill(Color(nsColor: .windowBackgroundColor))
-            .frame(height: 4)
+            .fill(.separator)
+            .frame(height: 3)
             .overlay(alignment: .top) { Divider() }
             .contentShape(Rectangle())
             .onHover { hovering in
@@ -136,7 +136,7 @@ struct DebugLogHeaderBar: View {
                 Image(systemName: autoScroll ? "arrow.down.to.line" : "pin.slash")
             }
             .toggleStyle(.button)
-            .buttonStyle(.borderless)
+            .buttonStyle(.accessoryBarAction)
             .help("Auto-scroll to bottom")
 
             Button {
@@ -145,7 +145,7 @@ struct DebugLogHeaderBar: View {
             } label: {
                 Image(systemName: "doc.on.doc")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.accessoryBarAction)
             .help("Copy log")
 
             Button {
@@ -153,13 +153,12 @@ struct DebugLogHeaderBar: View {
             } label: {
                 Image(systemName: "trash")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.accessoryBarAction)
             .help("Clear log")
         }
         .font(.system(.callout))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 
@@ -181,7 +180,6 @@ struct DebugLogList: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
             }
-            .background(Color(nsColor: .textBackgroundColor))
             .onChange(of: entries.count) { _, _ in
                 guard autoScroll, let last = entries.last else { return }
                 withAnimation(.none) {
