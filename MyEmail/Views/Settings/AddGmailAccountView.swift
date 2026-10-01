@@ -61,7 +61,7 @@ struct AddGmailAccountView: View {
                     Text("Back")
                 }
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .disabled(isWorking)
             Spacer()
         }
@@ -103,7 +103,7 @@ struct AddGmailAccountView: View {
                 Button("Done") {
                     onFinished()
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
                 .controlSize(.large)
             }
@@ -126,7 +126,7 @@ struct AddGmailAccountView: View {
             }
             .frame(minWidth: 220)
         }
-        .buttonStyle(.glassProminent)
+        .buttonStyle(.borderedProminent)
         .controlSize(.large)
         .keyboardShortcut(.defaultAction)
         .disabled(isWorking)

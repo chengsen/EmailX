@@ -8,7 +8,7 @@
 import AppKit
 
 final class MessageSummaryCellView: NSTableCellView {
-    private let unreadDot = MessageUnreadDotView()
+    private let unreadDot = NSImageView()
     private let sender = NSTextField(labelWithString: "")
     private let date = NSTextField(labelWithString: "")
     private let subject = NSTextField(labelWithString: "")
@@ -29,6 +29,9 @@ final class MessageSummaryCellView: NSTableCellView {
     private func setup() {
         unreadDot.translatesAutoresizingMaskIntoConstraints = false
         unreadDot.isHidden = true
+        unreadDot.image = NSImage(systemSymbolName: "circle.fill", accessibilityDescription: nil)
+        unreadDot.contentTintColor = .controlAccentColor
+        unreadDot.imageScaling = .scaleProportionallyDown
 
         sender.translatesAutoresizingMaskIntoConstraints = false
         sender.lineBreakMode = .byTruncatingTail
@@ -36,7 +39,7 @@ final class MessageSummaryCellView: NSTableCellView {
         sender.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         date.translatesAutoresizingMaskIntoConstraints = false
-        date.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        date.font = .preferredFont(forTextStyle: .caption1, options: [:])
         date.textColor = .secondaryLabelColor
         date.alignment = .right
 
@@ -46,13 +49,13 @@ final class MessageSummaryCellView: NSTableCellView {
         subject.textColor = .labelColor
 
         preview.translatesAutoresizingMaskIntoConstraints = false
-        preview.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        preview.font = .preferredFont(forTextStyle: .caption1, options: [:])
         preview.textColor = .secondaryLabelColor
         preview.lineBreakMode = .byTruncatingTail
         preview.maximumNumberOfLines = 1
 
         account.translatesAutoresizingMaskIntoConstraints = false
-        account.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        account.font = .preferredFont(forTextStyle: .caption1, options: [:])
         account.textColor = .tertiaryLabelColor
         account.lineBreakMode = .byTruncatingTail
         account.maximumNumberOfLines = 1
@@ -62,7 +65,7 @@ final class MessageSummaryCellView: NSTableCellView {
 
         threadCount.translatesAutoresizingMaskIntoConstraints = false
         threadCount.font = .monospacedDigitSystemFont(
-            ofSize: NSFont.smallSystemFontSize,
+            ofSize: NSFont.preferredFont(forTextStyle: .caption1, options: [:]).pointSize,
             weight: .medium
         )
         threadCount.textColor = .secondaryLabelColor
@@ -147,18 +150,13 @@ final class MessageSummaryCellView: NSTableCellView {
         unreadDot.isHidden = !isUnread
 
         sender.stringValue = senderText
-        sender.font = .systemFont(
-            ofSize: NSFont.systemFontSize,
-            weight: isUnread ? .semibold : .medium
-        )
+        let bodyFont = NSFont.preferredFont(forTextStyle: .body, options: [:])
+        sender.font = isUnread ? NSFontManager.shared.convert(bodyFont, toHaveTrait: .boldFontMask) : bodyFont
 
         subject.stringValue = subjectText.isEmpty
             ? String(localized: "(No Subject)")
             : subjectText
-        subject.font = .systemFont(
-            ofSize: NSFont.systemFontSize,
-            weight: isUnread ? .semibold : .regular
-        )
+        subject.font = isUnread ? NSFontManager.shared.convert(bodyFont, toHaveTrait: .boldFontMask) : bodyFont
 
         preview.stringValue = previewText.replacingOccurrences(of: "\n", with: " ")
         preview.isHidden = preview.stringValue.isEmpty
@@ -178,30 +176,23 @@ final class MessageSummaryCellView: NSTableCellView {
         account.stringValue = accountValue
         account.isHidden = accountValue.isEmpty
 
+        let status = [
+            isUnread ? String(localized: "Unread") : String(localized: "Read"),
+            isFlagged ? String(localized: "Flagged") : nil,
+            hasAttachment ? String(localized: "Has attachments") : nil,
+        ].compactMap { $0 }
+        var description = [senderText, subject.stringValue, preview.stringValue, dateText, accountValue]
+            .filter { !$0.isEmpty } + status
+        if let count, count > 1 { description.append(String(localized: "(\(count) messages)")) }
+        setAccessibilityElement(true)
+        setAccessibilityRole(.cell)
+        setAccessibilityLabel(description.joined(separator: ", "))
+        for view in [sender, date, subject, preview, account, flag, attachment, threadCount, unreadDot] as [NSView] {
+            view.setAccessibilityElement(false)
+        }
+
         toolTip = [senderText, subjectText, previewText]
             .filter { !$0.isEmpty }
             .joined(separator: "\n")
-    }
-}
-
-private final class MessageUnreadDotView: NSView {
-    override var wantsUpdateLayer: Bool { true }
-
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        wantsLayer = true
-    }
-
-    required init?(coder: NSCoder) { fatalError("not implemented") }
-
-    override func updateLayer() {
-        guard let layer else { return }
-        layer.backgroundColor = NSColor.controlAccentColor.cgColor
-        layer.cornerRadius = min(bounds.width, bounds.height) / 2
-    }
-
-    override func layout() {
-        super.layout()
-        layer?.cornerRadius = min(bounds.width, bounds.height) / 2
     }
 }

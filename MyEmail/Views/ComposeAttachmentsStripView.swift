@@ -34,6 +34,8 @@ struct ComposeAttachmentsStripView: View {
                 Text(att.filename)
                     .font(.callout)
                     .lineLimit(1)
+                    .truncationMode(.middle)
+                    .help(att.filename)
                 Text(FormatHelpers.formatByteCount(Int(att.size)))
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -18,7 +18,7 @@ struct ContentView: View {
                 emptyState
             } else {
                 WideLayoutView()
-                    .overlay(alignment: .top) { banners }
+                    .safeAreaInset(edge: .top, spacing: 0) { banners }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

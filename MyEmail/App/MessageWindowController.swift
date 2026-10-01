@@ -7,12 +7,12 @@
 //
 
 import AppKit
+import GRDB
 import SwiftUI
 
 @MainActor
 final class MessageWindowController: NSWindowController, NSWindowDelegate {
     let messageID: UUID
-    private let appState: AppState
     private let environment: AppEnvironment
     private let onClose: (UUID) -> Void
 
@@ -23,7 +23,6 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
         onClose: @escaping (UUID) -> Void
     ) {
         self.messageID = messageID
-        self.appState = appState
         self.environment = environment
         self.onClose = onClose
 
@@ -41,7 +40,7 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
             "EmailXMessageWindow-\(messageID.uuidString.prefix(8))"
         )
 
-        let rootView = MessageDetailView(messageID: messageID)
+        let rootView = MessageDetailView(messageID: messageID, usesWindowToolbar: true)
             .environment(appState)
             .environment(environment)
             .environment(environment.logService)
@@ -50,6 +49,12 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
 
         super.init(window: window)
         window.delegate = self
+        let toolbar = NSToolbar(identifier: "MessageToolbar")
+        toolbar.delegate = self
+        toolbar.displayMode = .iconOnly
+        toolbar.allowsUserCustomization = true
+        toolbar.autosavesConfiguration = true
+        window.toolbar = toolbar
     }
 
     @available(*, unavailable)
@@ -66,21 +71,15 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
     // MARK: - @objc actions (responder chain)
 
     @objc func replyToMessage(_ sender: Any?) {
-        guard let accID = accountID(for: messageID) else { return }
-        (NSApp.delegate as? AppDelegate)?
-            .openCompose(mode: .reply(messageID: messageID, accountID: accID))
+        openCompose { .reply(messageID: self.messageID, accountID: $0) }
     }
 
     @objc func replyAllToMessage(_ sender: Any?) {
-        guard let accID = accountID(for: messageID) else { return }
-        (NSApp.delegate as? AppDelegate)?
-            .openCompose(mode: .replyAll(messageID: messageID, accountID: accID))
+        openCompose { .replyAll(messageID: self.messageID, accountID: $0) }
     }
 
     @objc func forwardMessage(_ sender: Any?) {
-        guard let accID = accountID(for: messageID) else { return }
-        (NSApp.delegate as? AppDelegate)?
-            .openCompose(mode: .forward(messageID: messageID, accountID: accID))
+        openCompose { .forward(messageID: self.messageID, accountID: $0) }
     }
 
     @objc func archiveMessage(_ sender: Any?) {
@@ -99,23 +98,39 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
 
     @objc func toggleReadState(_ sender: Any?) {
         let um = window?.undoManager
-        let isRead = appState.messageItems.first { $0.id == messageID }?.isRead ?? false
         Task { [messageID, environment] in
-            if isRead {
-                await environment.undoService.markAsUnread([messageID], undoManager: um)
-            } else {
-                await environment.undoService.markAsRead([messageID], undoManager: um)
+            do {
+                let isRead = try await environment.database.pool.read { db in
+                    try Bool.fetchOne(db, sql: "SELECT is_read FROM messages WHERE id = ?",
+                                      arguments: [messageID])
+                }
+                guard let isRead else { return }
+                if isRead {
+                    await environment.undoService.markAsUnread([messageID], undoManager: um)
+                } else {
+                    await environment.undoService.markAsRead([messageID], undoManager: um)
+                }
+            } catch {
+                LogService.log(.error, .db, "Failed to load message", detail: "\(error)")
             }
         }
     }
 
     @objc func toggleFlag(_ sender: Any?) {
         let um = window?.undoManager
-        let isFlagged = appState.messageItems.first { $0.id == messageID }?.isFlagged ?? false
         Task { [messageID, environment] in
-            await environment.undoService.setFlagged(
-                [messageID], flagged: !isFlagged, undoManager: um
-            )
+            do {
+                let isFlagged = try await environment.database.pool.read { db in
+                    try Bool.fetchOne(db, sql: "SELECT is_flagged FROM messages WHERE id = ?",
+                                      arguments: [messageID])
+                }
+                guard let isFlagged else { return }
+                await environment.undoService.setFlagged(
+                    [messageID], flagged: !isFlagged, undoManager: um
+                )
+            } catch {
+                LogService.log(.error, .db, "Failed to load message", detail: "\(error)")
+            }
         }
     }
 
@@ -127,9 +142,24 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - Helpers
 
-    private func accountID(for id: UUID) -> UUID? {
-        appState.messageItems.first { $0.id == id }?.accountID
+    private func openCompose(mode: @escaping (UUID) -> ComposeMode) {
+        // Standalone windows survive folder/page changes; resolve their own
+        // message instead of depending on the currently visible list metadata.
+        Task { [environment, messageID] in
+            do {
+                let accountID = try await environment.database.pool.read { db in
+                    try UUID.fetchOne(db,
+                        sql: "SELECT account_id FROM messages WHERE id = ?",
+                        arguments: [messageID])
+                }
+                guard let accountID else { return }
+                (NSApp.delegate as? AppDelegate)?.openCompose(mode: mode(accountID))
+            } catch {
+                LogService.log(.error, .db, "Failed to load message", detail: "\(error)")
+            }
+        }
     }
+
 }
 
 // MARK: - NSUserInterfaceValidations
@@ -139,5 +169,62 @@ extension MessageWindowController: NSUserInterfaceValidations {
         _ item: any NSValidatedUserInterfaceItem
     ) -> Bool {
         return true
+    }
+}
+
+// MARK: - Native reading-window toolbar
+
+extension MessageWindowController: NSToolbarDelegate {
+    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        [.reply, .flexibleSpace, .archive, .tbDelete]
+    }
+
+    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        [.reply, .replyAll, .forward, .archive, .tbDelete, .junk, .space, .flexibleSpace]
+    }
+
+    func toolbar(_ toolbar: NSToolbar,
+                 itemForItemIdentifier id: NSToolbarItem.Identifier,
+                 willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
+        let label: String
+        let symbol: String
+        let action: Selector
+        switch id {
+        case .reply:
+            label = String(localized: "Reply")
+            symbol = "arrowshape.turn.up.left"
+            action = #selector(replyToMessage(_:))
+        case .replyAll:
+            label = String(localized: "Reply All")
+            symbol = "arrowshape.turn.up.left.2"
+            action = #selector(replyAllToMessage(_:))
+        case .forward:
+            label = String(localized: "Forward")
+            symbol = "arrowshape.turn.up.right"
+            action = #selector(forwardMessage(_:))
+        case .archive:
+            label = String(localized: "Archive")
+            symbol = "archivebox"
+            action = #selector(archiveMessage(_:))
+        case .tbDelete:
+            label = String(localized: "Delete")
+            symbol = "trash"
+            action = #selector(deleteMessage(_:))
+        case .junk:
+            label = String(localized: "Mark as Spam")
+            symbol = "exclamationmark.octagon"
+            action = #selector(markAsJunk(_:))
+        default:
+            return nil
+        }
+        let item = NSToolbarItem(itemIdentifier: id)
+        item.label = label
+        item.paletteLabel = label
+        item.toolTip = label
+        item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: label)
+        item.target = self
+        item.action = action
+        item.visibilityPriority = id == .reply ? .high : .standard
+        return item
     }
 }

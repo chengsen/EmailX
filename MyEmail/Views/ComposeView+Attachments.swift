@@ -62,10 +62,12 @@ extension ComposeView {
     @ViewBuilder
     var dropOverlay: some View {
         if isDropTargeted {
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.accentColor, lineWidth: 2)
-                .padding(4)
-                .allowsHitTesting(false)
+            GroupBox {
+                Label("Choose files to attach", systemImage: "paperclip")
+                    .foregroundStyle(.primary)
+                    .padding()
+            }
+            .allowsHitTesting(false)
         }
     }
 

@@ -26,6 +26,7 @@ struct HTMLMailView: NSViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
+        webView.setAccessibilityLabel(String(localized: "Message body"))
         // Transparent background for dark mode CSS to take effect
         webView.setValue(false, forKey: "drawsBackground")
         return webView

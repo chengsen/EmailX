@@ -38,7 +38,7 @@ struct MCPServerSettingsSection: View {
 
                 LabeledContent("Port") {
                     TextField("Port", value: $port, format: .number.grouping(.never))
-                        .frame(width: 80)
+                        .frame(minWidth: 80, idealWidth: 100, maxWidth: 160)
                         .onSubmit { server.port = port }
                 }
 

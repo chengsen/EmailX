@@ -17,27 +17,27 @@ struct BulkActionPanelView: View {
                 systemImage: "envelope.stack"
             )
         } actions: {
-            HStack(spacing: 8) {
+            FlowLayout(spacing: 8) {
                 Button("Archive", systemImage: "archivebox") {
                     perform { ids in
                         await env.undoService.archiveMessages(ids, undoManager: undoManager)
                     }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
 
                 Button("Delete", systemImage: "trash", role: .destructive) {
                     perform { ids in
                         await env.undoService.deleteMessages(ids, undoManager: undoManager)
                     }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
 
                 Button("Mark as Spam", systemImage: "exclamationmark.octagon") {
                     perform { ids in
                         await env.syncService.markAsJunk(ids)
                     }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
             }
         }
     }

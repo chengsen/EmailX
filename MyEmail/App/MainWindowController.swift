@@ -94,8 +94,16 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     private func installSplitViewAutosave() {
         guard let contentView = window?.contentView else { return }
         let splits = Self.findAllSplitViews(in: contentView)
-        for (index, split) in splits.enumerated() {
-            split.autosaveName = "EmailXSplit\(index)"
+        var columnIndex = 0
+        for split in splits {
+            if split.isVertical {
+                // Preserve existing column positions when a horizontal debug
+                // divider is added above the navigation split hierarchy.
+                split.autosaveName = "EmailXSplit\(columnIndex)"
+                columnIndex += 1
+            } else {
+                split.autosaveName = "EmailXDebugSplit"
+            }
         }
     }
 

@@ -12,6 +12,14 @@ import SwiftUI
 enum AppTheme: String, CaseIterable, Sendable {
     case system, light, dark
 
+    var title: String {
+        switch self {
+        case .system: String(localized: "Follow macOS")
+        case .light: String(localized: "Light")
+        case .dark: String(localized: "Dark")
+        }
+    }
+
     func apply() {
         switch self {
         case .system: NSApp.appearance = nil
@@ -38,7 +46,7 @@ struct AppearanceSettingsView: View {
             Section("Theme") {
                 Picker("Appearance", selection: $theme) {
                     ForEach(AppTheme.allCases, id: \.self) { t in
-                        Text(t.rawValue.capitalized).tag(t)
+                        Text(t.title).tag(t)
                     }
                 }
             }
@@ -113,14 +121,13 @@ private struct PlainTextQuotePreview: View {
                     RoundedRectangle(cornerRadius: 1)
                         .frame(width: 3, height: 14)
                         .foregroundStyle(colors[i])
-                    Text(labels[i])
+                    Text(LocalizedStringKey(labels[i]))
                         .font(.caption)
                         .foregroundStyle(colors[i])
                 }
             }
         }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary))
+        .accessibilityElement(children: .combine)
     }
 }
 

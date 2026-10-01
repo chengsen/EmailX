@@ -64,6 +64,8 @@ struct MultiSelectFolderField: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.bordered)
+        .accessibilityLabel(Text("Apply to folders"))
+        .accessibilityValue(summaryText)
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             popoverBody
         }
@@ -80,23 +82,17 @@ struct MultiSelectFolderField: View {
 
             Divider()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 2) {
-                    ForEach(flattened, id: \.folder.id) { entry in
-                        Toggle(isOn: binding(for: entry.folder.path)) {
-                            Text(String(repeating: "  ", count: entry.depth)
-                                 + entry.folder.displayName)
-                                .font(.callout)
-                        }
-                        .toggleStyle(.checkbox)
-                    }
+            List(flattened, id: \.folder.id) { entry in
+                Toggle(isOn: binding(for: entry.folder.path)) {
+                    Text(entry.folder.localizedName)
+                        .padding(.leading, CGFloat(entry.depth) * 12)
                 }
-                .padding(.vertical, 2)
+                .toggleStyle(.checkbox)
             }
-            .frame(maxHeight: 280)
+            .frame(minHeight: 120, idealHeight: 240, maxHeight: 320)
         }
         .padding(10)
-        .frame(width: 260)
+        .frame(minWidth: 260, idealWidth: 320, maxWidth: 440)
     }
 
     private var selectAllBinding: Binding<Bool> {

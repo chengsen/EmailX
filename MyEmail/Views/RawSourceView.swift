@@ -35,6 +35,7 @@ struct RawSourceView: View {
                 Button("Close") { onDismiss() }
                     .keyboardShortcut(.cancelAction)
             }
+            .buttonStyle(.bordered)
             .padding(12)
 
             Divider()
@@ -42,17 +43,18 @@ struct RawSourceView: View {
             if let source, !source.isEmpty {
                 ScrollView {
                     Text(source)
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(.body, design: .monospaced))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(12)
                 }
             } else {
-                Text("Failed to load message source")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ContentUnavailableView(
+                    "Failed to load message source",
+                    systemImage: "doc.text.magnifyingglass"
+                )
             }
         }
-        .frame(minWidth: 700, minHeight: 500)
+        .frame(minWidth: 500, idealWidth: 700, minHeight: 350, idealHeight: 500)
     }
 }

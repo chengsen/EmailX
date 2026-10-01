@@ -15,11 +15,13 @@ struct RuleSettingsView: View {
     @State private var folders: [Folder] = []
     @State private var selectedID: UUID?
 
+    @State private var isConfirmingRemoval = false
+
     private var pool: DatabasePool { DatabaseService.shared.pool }
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Rule list — fixed width, no competing split
+        HSplitView {
+            // Native resizable list and editor panes.
             VStack(spacing: 0) {
                 List(rules, selection: $selectedID) { rule in
                     HStack {
@@ -39,12 +41,10 @@ struct RuleSettingsView: View {
                 AddRemoveToolbar(
                     canRemove: selectedID != nil,
                     onAdd: addRule,
-                    onRemove: removeSelected
+                    onRemove: { isConfirmingRemoval = true }
                 )
             }
-            .frame(width: 240)
-
-            Divider()
+            .frame(minWidth: 180, idealWidth: 220, maxWidth: 300)
 
             // Stable right pane regardless of selection (rule #9).
             ZStack {
@@ -57,13 +57,18 @@ struct RuleSettingsView: View {
                         onApply: { applyToInbox(rules[idx]) }
                     )
                 } else {
-                    Text("Select a rule")
-                        .foregroundStyle(.secondary)
+                    ContentUnavailableView("Select a rule", systemImage: "line.3.horizontal.decrease.circle")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { load() }
+        .confirmationDialog("Remove this rule?", isPresented: $isConfirmingRemoval) {
+            Button("Remove", role: .destructive) { removeSelected() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This rule will be permanently removed.")
+        }
     }
 
     private func load() {
@@ -217,10 +222,10 @@ private struct RuleDetailPane: View {
                     Button {
                         rule.conditions.remove(at: i)
                     } label: {
-                        Image(systemName: "minus.circle.fill")
-                            .foregroundStyle(.red)
+                        Label("Remove condition", systemImage: "minus")
                     }
-                    .buttonStyle(.plain)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.bordered)
                 }
             }
             Button("Add Condition") {
@@ -239,10 +244,10 @@ private struct RuleDetailPane: View {
                     Button {
                         rule.actions.remove(at: i)
                     } label: {
-                        Image(systemName: "minus.circle.fill")
-                            .foregroundStyle(.red)
+                        Label("Remove action", systemImage: "minus")
                     }
-                    .buttonStyle(.plain)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.bordered)
                 }
             }
             Button("Add Action") {
@@ -269,22 +274,18 @@ private struct ConditionRow: View {
     @Binding var condition: RuleCondition
 
     var body: some View {
-        HStack {
+        VStack(alignment: .leading) {
             Picker("Field", selection: $condition.field) {
                 ForEach(RuleCondition.RuleField.allCases, id: \.self) { f in
                     Text(f.label).tag(f)
                 }
             }
-            .labelsHidden()
-            .frame(width: 100)
 
             Picker("Predicate", selection: $condition.predicate) {
                 ForEach(RuleCondition.RulePredicate.allCases, id: \.self) { p in
                     Text(p.label).tag(p)
                 }
             }
-            .labelsHidden()
-            .frame(width: 130)
 
             TextField("Value", text: $condition.value)
         }
@@ -318,14 +319,12 @@ private struct ActionRow: View {
     }
 
     var body: some View {
-        HStack {
+        VStack(alignment: .leading) {
             Picker("Action", selection: $action.type) {
                 ForEach(RuleAction.RuleActionType.allCases, id: \.self) { t in
                     Text(t.label).tag(t)
                 }
             }
-            .labelsHidden()
-            .frame(width: 180)
 
             if action.type == .moveToFolder {
                 Picker("Folder", selection: Binding(
@@ -338,7 +337,6 @@ private struct ActionRow: View {
                             .tag(entry.folder.path)
                     }
                 }
-                .labelsHidden()
             } else if action.type == .rewriteSubject {
                 TextField("Pattern (regex)", text: Binding(
                     get: { action.value ?? "" },

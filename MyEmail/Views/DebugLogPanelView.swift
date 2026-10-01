@@ -2,11 +2,7 @@
 //  DebugLogPanelView.swift
 //  EmailX
 //
-//  Сворачиваемая bottom panel главного окна в стиле VS Code terminal.
-//  Единственный способ для пользователя увидеть логи (§6.10, 8.7).
-//
-//  Разбита на мелкие sub-structs (hard rule: Views ≤ 300 строк,
-//  dedicated `struct View`-субкомпоненты).
+//  Native list and accessory controls for diagnostic logs.
 //
 
 import AppKit
@@ -24,7 +20,6 @@ struct DebugLogPanelView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            resizeHandle
             DebugLogHeaderBar(
                 filterLevelRaw: $filterLevelRaw,
                 filterCategoryRaw: $filterCategoryRaw,
@@ -37,8 +32,9 @@ struct DebugLogPanelView: View {
                 entries: filteredEntries,
                 autoScroll: autoScroll
             )
-                .frame(height: max(120, height - 36))
+
         }
+        .frame(minHeight: 120, idealHeight: max(120, height))
     }
 
     // MARK: - Filtering
@@ -60,28 +56,6 @@ struct DebugLogPanelView: View {
         }
     }
 
-    // MARK: - Resize handle
-
-    private var resizeHandle: some View {
-        Rectangle()
-            .fill(.separator)
-            .frame(height: 3)
-            .overlay(alignment: .top) { Divider() }
-            .contentShape(Rectangle())
-            .onHover { hovering in
-                if hovering {
-                    NSCursor.resizeUpDown.push()
-                } else {
-                    NSCursor.pop()
-                }
-            }
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        height = max(120, min(600, height - value.translation.height))
-                    }
-            )
-    }
 }
 
 // MARK: - Header bar
@@ -137,6 +111,7 @@ struct DebugLogHeaderBar: View {
             }
             .toggleStyle(.button)
             .buttonStyle(.accessoryBarAction)
+            .accessibilityLabel(Text("Auto-scroll to bottom"))
             .help("Auto-scroll to bottom")
 
             Button {
@@ -146,6 +121,7 @@ struct DebugLogHeaderBar: View {
                 Image(systemName: "doc.on.doc")
             }
             .buttonStyle(.accessoryBarAction)
+            .accessibilityLabel(Text("Copy log"))
             .help("Copy log")
 
             Button {
@@ -154,6 +130,7 @@ struct DebugLogHeaderBar: View {
                 Image(systemName: "trash")
             }
             .buttonStyle(.accessoryBarAction)
+            .accessibilityLabel(Text("Clear log"))
             .help("Clear log")
         }
         .font(.system(.callout))
@@ -170,16 +147,11 @@ struct DebugLogList: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(entries) { entry in
-                        DebugLogRow(entry: entry)
-                            .id(entry.id)
-                    }
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+            List(entries) { entry in
+                DebugLogRow(entry: entry)
+                    .id(entry.id)
             }
+            .listStyle(.inset)
             .onChange(of: entries.count) { _, _ in
                 guard autoScroll, let last = entries.last else { return }
                 withAnimation(.none) {
@@ -202,33 +174,26 @@ struct DebugLogRow: View {
     }()
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text(Self.timeFormatter.string(from: entry.timestamp))
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(Self.timeFormatter.string(from: entry.timestamp))
+                    .foregroundStyle(.secondary)
+                Text(entry.level.rawValue.uppercased())
+                    .fontWeight(.semibold)
+                    .foregroundStyle(levelColor)
+                Text(entry.category.rawValue)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.system(.caption, design: .monospaced))
+
+            Text(entry.message)
                 .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .frame(width: 92, alignment: .leading)
-
-            Text(entry.level.rawValue.uppercased())
-                .font(.system(.caption, design: .monospaced).weight(.semibold))
-                .foregroundStyle(levelColor)
-                .frame(width: 56, alignment: .leading)
-
-            Text(entry.category.rawValue)
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .frame(width: 90, alignment: .leading)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(entry.message)
-                    .font(.system(.caption, design: .monospaced))
+                .textSelection(.enabled)
+            if let detail = entry.detail, !detail.isEmpty {
+                Text(detail)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundStyle(.secondary)
                     .textSelection(.enabled)
-
-                if let detail = entry.detail, !detail.isEmpty {
-                    Text(detail)
-                        .font(.system(.caption2, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
-                }
             }
         }
         .padding(.vertical, 1)

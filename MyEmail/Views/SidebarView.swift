@@ -3,7 +3,7 @@
 //  MyEmail
 //
 //  Sidebar with Unified Inbox + per-account folder trees.
-//  List (OK for sidebar per anti-req: "List — только sidebar").
+//  Native sidebar list with system disclosure controls and badges.
 //
 
 import SwiftUI
@@ -14,6 +14,9 @@ struct SidebarView: View {
     @AppStorage("showUnifiedInbox") private var showUnifiedInbox = true
     @State private var cachedTrees: [(account: Account, tree: [FolderNode])] = []
     @State private var folderToEmpty: Folder?
+    @State private var folderToName: Folder?
+    @State private var folderName = ""
+    @State private var isRenamingFolder = false
     @State private var collapsedFolderIDs: Set<UUID> = SidebarView.loadCollapsedIDs()
     @State private var collapsedAccountIDs: Set<UUID> = SidebarView.loadCollapsedAccountIDs()
 
@@ -22,13 +25,8 @@ struct SidebarView: View {
 
         List(selection: $appState.selectedSidebarItem) {
             if showUnifiedInbox {
-                HStack {
-                    Label("Unified Inbox", systemImage: "tray.fill")
-                    Spacer()
-                    if unifiedUnreadCount > 0 {
-                        UnreadBadge(count: unifiedUnreadCount)
-                    }
-                }
+                Label("Unified Inbox", systemImage: "tray.fill")
+                    .badge(unifiedUnreadCount)
                 .tag(SidebarItem.unifiedInbox)
             }
 
@@ -41,6 +39,27 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .alert(isRenamingFolder ? String(localized: "Rename Folder") : String(localized: "New Subfolder"),
+               isPresented: Binding(get: { folderToName != nil }, set: { if !$0 { folderToName = nil } })) {
+            TextField(String(localized: "Folder name"), text: $folderName)
+            Button(String(localized: "Cancel"), role: .cancel) { folderToName = nil }
+            Button(isRenamingFolder ? String(localized: "Rename") : String(localized: "Create")) {
+                guard let folder = folderToName else { return }
+                let name = folderName.trimmingCharacters(in: .whitespacesAndNewlines)
+                let rename = isRenamingFolder
+                folderToName = nil
+                guard !name.isEmpty else { return }
+                Task {
+                    if rename {
+                        guard name != folder.displayName else { return }
+                        await env.syncService.renameFolder(folderID: folder.id, newName: name)
+                    } else if let account = appState.accounts.first(where: { $0.id == folder.accountID }) {
+                        await env.syncService.createSubfolder(name: name, parentPath: folder.path, account: account)
+                    }
+                }
+            }
+            .disabled(folderName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
         .onAppear { rebuildTrees() }
         .onChange(of: appState.folders) { _, _ in rebuildTrees() }
         .onChange(of: appState.accounts) { _, _ in rebuildTrees() }
@@ -259,44 +278,19 @@ struct SidebarView: View {
         return nil
     }
 
-    /// Shared NSAlert text input prompt.
-    private func promptTextInput(
-        title: String, info: String, confirmTitle: String, defaultValue: String = ""
-    ) -> String? {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = info
-        alert.addButton(withTitle: confirmTitle)
-        alert.addButton(withTitle: String(localized: "Cancel"))
-        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
-        input.stringValue = defaultValue
-        alert.accessoryView = input
-        alert.window.initialFirstResponder = input
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return nil }
-        let value = input.stringValue.trimmingCharacters(in: .whitespaces)
-        return value.isEmpty ? nil : value
-    }
-
     private func promptNewSubfolder(parent: Folder) {
-        guard let account = appState.accounts.first(where: { $0.id == parent.accountID }) else { return }
-        guard let name = promptTextInput(
-            title: String(localized: "New Subfolder"),
-            info: String(localized: "Enter folder name:"),
-            confirmTitle: String(localized: "Create")
-        ) else { return }
-        Task { await env.syncService.createSubfolder(name: name, parentPath: parent.path, account: account) }
+        guard appState.accounts.contains(where: { $0.id == parent.accountID }) else { return }
+        isRenamingFolder = false
+        folderName = ""
+        folderToName = parent
     }
 
     private func promptRenameFolder(_ folder: Folder) {
-        guard let newName = promptTextInput(
-            title: String(localized: "Rename Folder"),
-            info: String(localized: "Enter new name:"),
-            confirmTitle: String(localized: "Rename"),
-            defaultValue: folder.displayName
-        ), newName != folder.displayName else { return }
-        Task { await env.syncService.renameFolder(folderID: folder.id, newName: newName) }
+        isRenamingFolder = true
+        folderName = folder.displayName
+        folderToName = folder
     }
+
 }
 
 // MARK: - FolderRowView
@@ -305,20 +299,8 @@ struct FolderRowView: View {
     let folder: Folder
 
     var body: some View {
-        HStack {
-            Label {
-                Text(folder.localizedName)
-            } icon: {
-                Image(systemName: iconName)
-            }
-            Spacer()
-            if folder.unreadCount > 0 {
-                UnreadBadge(
-                    count: folder.unreadCount,
-                    muted: folder.specialUse == .junk || folder.specialUse == .trash
-                )
-            }
-        }
+        Label(folder.localizedName, systemImage: iconName)
+            .badge(folder.unreadCount)
     }
 
     private var iconName: String {

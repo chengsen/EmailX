@@ -11,6 +11,7 @@ import SwiftMail
 
 struct MessageDetailView: View {
     let messageID: UUID
+    var usesWindowToolbar = false
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
     @State private var message: Message?
@@ -89,15 +90,15 @@ struct MessageDetailView: View {
                     gravatarImage: enableGravatar
                         ? env.gravatarService.avatar(for: EmailAddress.emailOnly(from: message.fromAddress))
                         : nil,
-                    onReply: { openCompose(.reply(messageID: message.id, accountID: message.accountID)) },
+                    onReply: usesWindowToolbar ? nil : { openCompose(.reply(messageID: message.id, accountID: message.accountID)) },
                     onReplyAll: { openCompose(.replyAll(messageID: message.id, accountID: message.accountID)) },
                     onForward: { openCompose(.forward(messageID: message.id, accountID: message.accountID)) },
                     onViewSource: { Task { await viewSource() } },
-                    onArchive: {
+                    onArchive: usesWindowToolbar ? nil : {
                         let id = message.id
                         Task { await env.undoService.archiveMessages([id], undoManager: undoManager) }
                     },
-                    onDelete: {
+                    onDelete: usesWindowToolbar ? nil : {
                         let id = message.id
                         Task { await env.undoService.deleteMessages([id], undoManager: undoManager) }
                     },
@@ -121,12 +122,15 @@ struct MessageDetailView: View {
                     )
                 }
             } else if isLoading {
-                ProgressView()
+                ProgressView("Loading…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                Text(String(localized: "Failed to load message"))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ContentUnavailableView {
+                    Label("Failed to load message", systemImage: "envelope.badge")
+                } actions: {
+                    Button("Retry") { Task { await loadBody() } }
+                        .buttonStyle(.bordered)
+                }
             }
         }
         .task(id: messageID) { await loadBody() }
@@ -301,7 +305,7 @@ struct MessageDetailView: View {
 
 // MARK: - Body format tabs
 
-/// Excel-style bottom tab strip for switching between HTML and plain-text
+/// Native segmented control for switching between HTML and plain-text
 /// rendering of a message. Shown only when both variants are non-empty.
 /// The choice persists globally via `@AppStorage("preferPlainBody")`.
 private struct BodyFormatTabs: View {
