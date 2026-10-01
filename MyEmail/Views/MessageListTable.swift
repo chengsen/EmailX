@@ -30,38 +30,22 @@ struct MessageListTable: View {
     @State private var expandedThreadIDs: Set<UUID> = []
     @State private var sourceSheet: SourceSheet?
 
-    // Display-order cache: recomputed only when structural inputs change
-    // (count / first-last id / isThreaded / expanded set / sort). Cell-level
-    // updates (size, flags, read state) reuse the cached order — the byID
-    // lookup in `body` resolves to whichever live MessageListItem just
-    // arrived from the observation, so flag/read flips render immediately.
-    //
-    // Materializing the sort here (instead of in body) is what removes the
-    // per-render hit on huge folders: threading + sorting 135k UIDs is
-    // ~80 ms work which used to happen every body render.
+    // Materialize threading/order and the ID lookup once per metadata update,
+    // rather than rebuilding them for selection or environment redraws.
     @State private var cachedOrder: [UUID] = []
+    @State private var cachedItems: [MessageListItem] = []
+    @State private var cachedLookup: [UUID: MessageListItem] = [:]
     @State private var cachedCounts: [UUID: Int] = [:]
-    @State private var cachedSignature: DisplaySignature = .empty
 
     private struct DisplaySignature: Equatable {
-        let count: Int
-        let firstID: UUID?
-        let lastID: UUID?
         let isThreaded: Bool
         let expanded: Set<UUID>
         let sortColumn: MessageSort.Column
         let sortAscending: Bool
-        static let empty = DisplaySignature(
-            count: -1, firstID: nil, lastID: nil, isThreaded: false, expanded: [],
-            sortColumn: .date, sortAscending: false
-        )
     }
 
     private var currentSignature: DisplaySignature {
         DisplaySignature(
-            count: items.count,
-            firstID: items.first?.id,
-            lastID: items.last?.id,
             isThreaded: appState.isThreaded,
             expanded: expandedThreadIDs,
             sortColumn: appState.messageSort.column,
@@ -80,10 +64,11 @@ struct MessageListTable: View {
     }
 
     private var itemByID: [UUID: MessageListItem] {
-        Dictionary(items.lazy.map { ($0.id, $0) }, uniquingKeysWith: { _, b in b })
+        cachedLookup
     }
 
     private func recomputeDisplayOrder() {
+        cachedLookup = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
         // Step 1: threading collapse → flat UUID order.
         let threadedItems: [MessageListItem]
         if appState.isThreaded {
@@ -116,20 +101,17 @@ struct MessageListTable: View {
         let sorted = threadedItems.sorted(
             by: appState.messageSort, isSentOrDrafts: isSentOrDrafts
         )
+        cachedItems = sorted
         cachedOrder = sorted.map(\.id)
-        cachedSignature = currentSignature
         // Publish for AppState.pruneSelection — it advances the selection to
         // the next row when the selected one is archived/deleted/moved.
         appState.visibleOrder = cachedOrder
     }
 
     var body: some View {
-        // Resolve UUIDs through a fresh byID lookup so flag/read updates
-        // that arrive in `items` without changing the structural signature
-        // still render immediately. The Dictionary build is O(N) but cheap
-        // compared to the old per-render threading + sort.
-        let byID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
-        let displayItems = cachedOrder.compactMap { byID[$0] }
+        // Reuse rows materialized when metadata or display configuration changes.
+        // Selection and unrelated environment updates do not rebuild the lookup.
+        let displayItems = cachedItems
         let threadCounts = cachedCounts
 
         return MessageListNSTable(
@@ -147,7 +129,7 @@ struct MessageListTable: View {
                 // only fire when we're at the last row AND state is not
                 // "known no more" AND we're not already loading.
                 guard id == displayItems.last?.id,
-                      appState.hasMoreMessages != false,
+                      (appState.hasMoreLocalMessages || appState.hasMoreMessages != false),
                       !appState.isLoadingMore else { return }
                 triggerLoadMore()
             },
@@ -162,6 +144,21 @@ struct MessageListTable: View {
             onRunRules: runRulesOnSelection,
             onSortChange: { appState.messageSort = $0 }
         )
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !appState.isSearchActive && (appState.hasPreviousLocalMessages || appState.hasMoreLocalMessages) {
+                HStack {
+                    Button("Previous page", systemImage: "chevron.left") { appState.showPreviousLocalPage() }
+                        .disabled(!appState.hasPreviousLocalMessages)
+                    Spacer()
+                    Text("Page \(appState.currentLocalPage)").foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Next page", systemImage: "chevron.right") { appState.loadMoreLocalMessages() }
+                        .disabled(!appState.hasMoreLocalMessages)
+                }
+                .buttonStyle(.borderless)
+                .padding(8)
+            }
+        }
         .overlay {
             if appState.isSearchActive
                 && !appState.isSearching
@@ -176,9 +173,24 @@ struct MessageListTable: View {
             RawSourceView(source: sheet.source, onDismiss: { sourceSheet = nil })
         }
         .onAppear {
-            if cachedSignature != currentSignature { recomputeDisplayOrder() }
+            recomputeDisplayOrder()
         }
         .onChange(of: currentSignature) { _, _ in recomputeDisplayOrder() }
+        .onChange(of: items) { old, new in
+            cachedLookup = Dictionary(uniqueKeysWithValues: new.map { ($0.id, $0) })
+            // Re-sort only when actual ordering/thread fields change. Flags,
+            // sizes outside size-sort and previews refresh existing rows only.
+            let structureChanged = old.count != new.count || zip(old, new).contains { a, b in
+                a.id != b.id || a.date != b.date || a.threadID != b.threadID
+                || a.messageID != b.messageID || a.inReplyTo != b.inReplyTo || a.references != b.references
+                || (appState.messageSort.column == .subject && a.subject != b.subject)
+                || (appState.messageSort.column == .size && a.size != b.size)
+                || (appState.messageSort.column == .fromTo &&
+                    (a.fromName != b.fromName || a.fromAddress != b.fromAddress || a.toAddresses != b.toAddresses))
+            }
+            if structureChanged { recomputeDisplayOrder() }
+            else { cachedItems = cachedOrder.compactMap { cachedLookup[$0] } }
+        }
     }
 
     private func openMessageWindow(_ id: UUID) {
@@ -301,11 +313,14 @@ struct MessageListTable: View {
     // MARK: - Pagination
 
     private func triggerLoadMore() {
-        guard !appState.isLoadingMore, let fid = folderID else { return }
+        guard !appState.isSearchActive, !appState.isLoadingMore else { return }
+        guard !appState.hasMoreLocalMessages else { return }
+        guard let fid = folderID else { return }
+        let generation = appState.sidebarSelectionGeneration
         appState.isLoadingMore = true
         Task {
             _ = await env.syncService.loadOlderMessages(folderID: fid)
-            appState.isLoadingMore = false
+            if appState.sidebarSelectionGeneration == generation { appState.isLoadingMore = false }
         }
     }
 }

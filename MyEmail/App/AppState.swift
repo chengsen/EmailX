@@ -34,6 +34,7 @@ final class AppState {
     /// applied). Published by `MessageListTable`; read only by
     /// `pruneSelection` to advance the selection when rows vanish.
     var visibleOrder: [UUID] = []
+    private(set) var sidebarSelectionGeneration = 0
     var selectedSidebarItem: SidebarItem? {
         didSet { sidebarSelectionChanged() }
     }
@@ -68,18 +69,45 @@ final class AppState {
     /// as true so infinite-scroll keeps firing until we learn otherwise.
     var hasMoreOnServer: Bool { hasMoreMessages ?? true }
     var isLoadingMore = false
+    private let localPageSize = 500
+    private var localPageStart = 0
+    private var localGroups: [[UUID]] = []
+    var hasMoreLocalMessages: Bool { localGroups.count > localPageStart + localPageSize }
+    var hasPreviousLocalMessages: Bool { localPageStart > 0 }
+    var currentLocalPage: Int { localPageStart / localPageSize + 1 }
+    func showPreviousLocalPage() {
+        localPageStart = max(0, localPageStart - localPageSize)
+        observeVisibleMessageDetails()
+    }
+    private var messageObservationGeneration = 0
+    private var detailObservationGeneration = 0
+    private var messageDetailsCancellable: AnyDatabaseCancellable?
+
+    /// Loading local headers never waits for or changes incoming-mail sync.
+    @discardableResult
+    func loadMoreLocalMessages() -> Bool {
+        guard hasMoreLocalMessages else { return false }
+        localPageStart += localPageSize
+        observeVisibleMessageDetails()
+        return true
+    }
 
     // MARK: - Threading
 
     var isThreaded: Bool = UserDefaults.standard.object(forKey: "isThreaded") as? Bool ?? true {
-        didSet { UserDefaults.standard.set(isThreaded, forKey: "isThreaded") }
+        didSet {
+            UserDefaults.standard.set(isThreaded, forKey: "isThreaded")
+            if oldValue != isThreaded { rebindMessageOrder() }
+        }
     }
 
     // MARK: - Sort
 
     /// Session-scoped message list sort. Reset to `.default` on sidebar
     /// selection change (see `sidebarSelectionChanged`).
-    var messageSort: MessageSort = .default
+    var messageSort: MessageSort = .default {
+        didSet { if oldValue != messageSort { rebindMessageOrder() } }
+    }
 
     // MARK: - Search
 
@@ -156,6 +184,7 @@ final class AppState {
     // MARK: - Sidebar selection → observation switch
 
     private func sidebarSelectionChanged() {
+        sidebarSelectionGeneration += 1
         guard let item = selectedSidebarItem else {
             stopObservingMessages()
             selectedFolder = nil
@@ -167,6 +196,8 @@ final class AppState {
         // Folder switch clears session-scoped sort so each folder opens
         // in its natural date-DESC order (MailMate behavior).
         messageSort = .default
+        localPageStart = 0
+        localGroups = []
         // Clear synchronously so the Table remount (.id switch) does not
         // flash stale rows before the new observation delivers.
         messageItems = []
@@ -174,11 +205,8 @@ final class AppState {
         switch item {
         case .unifiedInbox:
             selectedFolder = nil
-            // IN-subquery (vs JOIN) lets SQLite walk `messages_folder_date`
-            // per resolved inbox folder_id instead of scanning the full
-            // `messages` table (degraded badly once Archive/All Mail grew
-            // past tens of thousands of rows). LIMIT 500 caps the initial
-            // synchronous fetch on MainActor — visually we never show more.
+            // Resolve inbox IDs first so SQLite can use its folder/date index.
+            // The shared observation pages details for both folder and unified lists.
             observeMessages(
                 whereClause: """
                 WHERE m.folder_id IN (
@@ -186,8 +214,7 @@ final class AppState {
                     JOIN accounts a ON a.id = f.account_id
                     WHERE f.special_use = 'inbox' AND a.is_enabled = 1
                 )
-                """,
-                limit: 500
+                """
             )
 
         case .folder(let id):
@@ -206,58 +233,126 @@ final class AppState {
         m.to_addresses, m.date, m.preview,
         m.is_read, m.is_flagged, m.is_answered,
         m.has_attachments,
-        m.thread_id, m.folder_id, m.account_id, m.size, m.interaction_score,
+        m.thread_id, m.folder_id, m.account_id, m.size, 0 AS interaction_score,
         m.message_id, m.in_reply_to, m."references"
         """
 
+    private func rebindMessageOrder() {
+        guard let selectedSidebarItem else { return }
+        localPageStart = 0
+        switch selectedSidebarItem {
+        case .unifiedInbox:
+            observeMessages(whereClause: """
+                WHERE m.folder_id IN (SELECT f.id FROM folders f
+                JOIN accounts a ON a.id = f.account_id
+                WHERE f.special_use = 'inbox' AND a.is_enabled = 1)
+                """)
+        case .folder(let id):
+            observeMessages(whereClause: "WHERE m.folder_id = ?", arguments: [id])
+        }
+    }
+
     private func observeMessages(
         whereClause: String,
-        arguments: StatementArguments = StatementArguments(),
-        limit: Int? = nil
+        arguments: StatementArguments = StatementArguments()
     ) {
-        // Eager model: per-folder queries hit `messages_folder_date` and stay
-        // fast even on huge folders — projection + NSTableView keep memory
-        // bounded. Cross-folder views (Unified Inbox) pass an explicit `limit`
-        // because the initial fetch runs synchronously on MainActor.
-        var sql = """
-            SELECT \(Self.messageListColumns)
-            FROM messages m
-            \(whereClause)
-            ORDER BY m.date DESC
-            """
-        if let limit {
-            sql += "\nLIMIT \(limit)"
-        }
-
-        LogService.log(.debug, .db, "Observing messages", detail: whereClause.prefix(60).description)
-
         messagesCancellable?.cancel()
-
+        messageDetailsCancellable?.cancel()
+        messageObservationGeneration += 1
+        detailObservationGeneration += 1
+        let generation = messageObservationGeneration
+        let sort = messageSort
+        let threaded = isThreaded
+        let sent = selectedFolder?.specialUse == .sent || selectedFolder?.specialUse == .drafts
+        // Only fields affecting grouping/order belong in the global projection.
+        // Flags, previews, fetched bodies and open scores update the visible page only.
+        let subject = sort.column == .subject ? "m.subject" : "''"
+        let fromName = sort.column == .fromTo && !sent ? "m.from_name" : "NULL"
+        let fromAddress = sort.column == .fromTo && !sent ? "m.from_address" : "''"
+        let recipients = sort.column == .fromTo && sent ? "m.to_addresses" : "'[]'"
+        let size = sort.column == .size ? "m.size" : "0"
+        let threadColumns = threaded
+            ? "m.thread_id, m.message_id, m.in_reply_to, m.\"references\""
+            : "NULL AS thread_id, NULL AS message_id, NULL AS in_reply_to, '[]' AS \"references\""
+        let sql = """
+            SELECT m.id, m.uid, m.folder_id, m.account_id, m.date,
+                \(subject) AS subject, \(fromName) AS from_name,
+                \(fromAddress) AS from_address, \(recipients) AS to_addresses,
+                \(size) AS size, '' AS preview, 0 AS is_read, 0 AS is_flagged,
+                0 AS is_answered, 0 AS has_attachments, 0 AS interaction_score,
+                \(threadColumns)
+            FROM messages m \(whereClause) ORDER BY m.date DESC, m.id ASC
+            """
         messagesCancellable = ValueObservation
-            .tracking { db in
-                try MessageListItem.fetchAll(db, sql: sql, arguments: arguments)
+            .tracking { db -> [[UUID]] in
+                let lightweight = try MessageListItem.fetchAll(db, sql: sql, arguments: arguments)
+                if !threaded {
+                    return lightweight.sorted(by: sort, isSentOrDrafts: sent).map { [$0.id] }
+                }
+                let groups = ThreadingService.group(lightweight)
+                let groupByLatest = Dictionary(uniqueKeysWithValues: groups.map { ($0.latest.id, $0) })
+                return groups.map(\.latest).sorted(by: sort, isSentOrDrafts: sent)
+                    .compactMap { groupByLatest[$0.id]?.messages.map(\.id) }
             }
+            .removeDuplicates()
             .start(in: pool, scheduling: .async(onQueue: .global(qos: .userInitiated))) { error in
-                LogService.log(.error, .db, "Messages observation error", detail: "\(error)")
-            } onChange: { [weak self] items in
-                // Async scheduling: the initial fetch runs on a background
-                // queue, so opening a huge folder (e.g. Gmail All Mail with
-                // 135k rows) no longer blocks MainActor on the SELECT and the
-                // 135k MessageListItem allocations. UI stays responsive; rows
-                // appear once the fetch completes (~100-300 ms on SSD).
-                //
-                // `messageItems = []` is already set synchronously in
-                // `sidebarSelectionChanged` before this binds, so there is no
-                // stale-row flash — only a brief empty list during the fetch.
+                LogService.log(.error, .db, "Message order observation error", detail: "\(error)")
+            } onChange: { [weak self] groups in
                 Task { @MainActor [weak self] in
-                    self?.messageItems = items
+                    guard let self, self.messageObservationGeneration == generation else { return }
+                    self.localGroups = groups
+                    self.localPageStart = min(self.localPageStart,
+                        max(0, (groups.count - 1) / self.localPageSize * self.localPageSize))
+                    self.observeVisibleMessageDetails()
                 }
             }
     }
 
+    private func observeVisibleMessageDetails() {
+        messageDetailsCancellable?.cancel()
+        detailObservationGeneration += 1
+        let generation = detailObservationGeneration
+        // Preserve the selected thread when new mail pushes the page boundary down.
+        let ids = localGroups.enumerated().filter { index, group in
+            (localPageStart..<localPageStart + localPageSize).contains(index) || group.contains(where: selectedMessageIDs.contains)
+        }.flatMap(\.element)
+        guard !ids.isEmpty else { messageItems = []; return }
+        let columns = Self.messageListColumns
+        // Ponytail limit: an exceptionally large single thread loads all its headers
+        // to preserve JWZ root/count/expansion. Add member paging if real threads
+        // become large enough to dominate memory; never silently truncate a thread.
+        messageDetailsCancellable = ValueObservation.tracking { db in
+            var items: [MessageListItem] = []
+            // Stay below SQLite's bind limit even for unusually large threads.
+            for start in stride(from: 0, to: ids.count, by: 500) {
+                let chunk = Array(ids[start..<Swift.min(start + 500, ids.count)])
+                let placeholders = Array(repeating: "?", count: chunk.count).joined(separator: ",")
+                items += try MessageListItem.fetchAll(db, sql: """
+                    SELECT \(columns) FROM messages m WHERE m.id IN (\(placeholders))
+                    ORDER BY m.date DESC, m.id ASC
+                    """, arguments: StatementArguments(chunk))
+            }
+            return items.sorted { $0.date == $1.date ? $0.id.uuidString < $1.id.uuidString : $0.date > $1.date }
+        }
+        .removeDuplicates()
+        .start(in: pool, scheduling: .async(onQueue: .global(qos: .userInitiated))) { error in
+            LogService.log(.error, .db, "Message details observation error", detail: "\(error)")
+        } onChange: { [weak self] items in
+            Task { @MainActor [weak self] in
+                guard let self, self.detailObservationGeneration == generation else { return }
+                self.messageItems = items
+            }
+        }
+    }
+
     func stopObservingMessages() {
+        messageObservationGeneration += 1
+        detailObservationGeneration += 1
         messagesCancellable?.cancel()
         messagesCancellable = nil
+        messageDetailsCancellable?.cancel()
+        messageDetailsCancellable = nil
+        localGroups = []
         messageItems = []
     }
 
@@ -316,10 +411,14 @@ final class AppState {
             }
             .start(in: pool, scheduling: .immediate) { error in
                 LogService.log(.error, .db, "Folders observation error", detail: "\(error)")
-            } onChange: { folders in
+            } onChange: { [weak self] folders in
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     self.folders = folders
+                    if self.selectedSidebarItem == nil,
+                       let inbox = folders.first(where: { $0.specialUse == .inbox }) {
+                        self.selectedSidebarItem = .folder(inbox.id)
+                    }
                     // Keep selectedFolder in sync with DB state (moreMessages, unreadCount, etc.)
                     if let sf = self.selectedFolder {
                         self.selectedFolder = folders.first { $0.id == sf.id }
@@ -342,7 +441,7 @@ final class AppState {
             }
             .start(in: pool, scheduling: .immediate) { error in
                 LogService.log(.error, .db, "Accounts observation error", detail: "\(error)")
-            } onChange: { accounts in
+            } onChange: { [weak self] accounts in
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     self.accounts = accounts

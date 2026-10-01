@@ -51,11 +51,20 @@ extension SyncService {
 
     // MARK: - App Nap prevention (§9.8)
 
-    func beginAppNapPrevention() -> NSObjectProtocol {
-        ProcessInfo.processInfo.beginActivity(
-            options: [.userInitiated],
-            reason: "IMAP IDLE connection"
-        )
+    func updateReceivingActivity() {
+        // Ponytail limit: keep App Nap protection whenever an enabled account
+        // needs delivery. More aggressive power saving requires live IDLE/wake tests.
+        guard let needsDelivery = try? pool.read({ db in
+            try Account.filter(Column("is_enabled") == true).fetchCount(db) > 0
+        }) else { return } // A DB error must not release delivery protection.
+        if needsDelivery, receivingActivity == nil {
+            receivingActivity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiated], reason: "Mail delivery"
+            )
+        } else if !needsDelivery, let activity = receivingActivity {
+            ProcessInfo.processInfo.endActivity(activity)
+            receivingActivity = nil
+        }
     }
 
     // MARK: - Multi-folder IDLE (Pattern #3)
@@ -398,15 +407,22 @@ extension SyncService {
         var tick: Int = 0
         periodicSyncTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             tick += 1
-            Task { @MainActor [weak self] in
+            guard let self else { return }
+            if tick % 5 == 0 { self.periodicFullRefreshPending = true }
+            // Coalesce slow sweeps rather than queue another poll every minute.
+            guard self.periodicSyncTask == nil else { return }
+            self.periodicSyncTask = Task { @MainActor [weak self] in
                 guard let self else { return }
+                defer { self.periodicSyncTask = nil }
+                self.updateReceivingActivity()
                 // §27: clear expired optimistic-cooldown entries so a bulk op's
                 // 10k UUIDs don't live in memory until restart.
                 self.pruneExpiredMutations()
                 await self.pollFolderStatuses()
                 await self.updateDockBadge()
                 // Every 5th tick (5 min) — full refresh as safety net
-                if tick % 5 == 0 {
+                if self.periodicFullRefreshPending {
+                    self.periodicFullRefreshPending = false
                     await self.refreshAll()
                 }
             }

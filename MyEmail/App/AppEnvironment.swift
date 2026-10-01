@@ -17,9 +17,6 @@ import Observation
 @Observable
 @MainActor
 final class AppEnvironment {
-    // Lifecycle tokens
-    private var appNapActivity: NSObjectProtocol?
-
     // M1 core services
     let logService: LogService
     let keychain: KeychainService
@@ -80,7 +77,7 @@ final class AppEnvironment {
 
         // Start network monitor + App Nap prevention + proactive OAuth sweep
         sync.startNetworkMonitor()
-        self.appNapActivity = sync.beginAppNapPrevention()
+        sync.updateReceivingActivity()
         sync.startPeriodicSync()
         sync.startWakeObserver()
         sync.startForegroundObserver()

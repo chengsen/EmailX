@@ -20,7 +20,7 @@
 import Foundation
 import GRDB
 
-struct MessageListItem: FetchableRecord, Decodable,
+nonisolated struct MessageListItem: FetchableRecord, Decodable,
                         Identifiable, Hashable, Sendable {
     var id: UUID
     var uid: UInt32

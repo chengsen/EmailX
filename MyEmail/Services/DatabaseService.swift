@@ -146,7 +146,7 @@ final class DatabaseService: Sendable {
     /// CREATE. Replaces the destructive wipe-on-version-bump (hard rule 11):
     /// `wipeLegacyDataIfNeeded` is frozen at v5 and must never be bumped again —
     /// new schema changes go here as immutable `registerMigration` steps.
-    private static func runMigrations(on pool: DatabasePool) throws {
+    static func runMigrations(on pool: DatabasePool) throws {
         var migrator = DatabaseMigrator()
         // Add future schema changes here as immutable registerMigration steps.
         // Each migration name is frozen once shipped (hard rule 11).
@@ -164,6 +164,18 @@ final class DatabaseService: Sendable {
             try db.execute(sql: """
                 CREATE INDEX IF NOT EXISTS messages_account_gm_msgid
                 ON messages(account_id, gm_msgid) WHERE gm_msgid IS NOT NULL
+                """)
+        }
+
+        migrator.registerMigration("vSelectiveFTSUpdates") { db in
+            try installSearchUpdateTrigger(in: db)
+        }
+        migrator.registerMigration("vTrimLegacySubjects") { db in
+            // Clean old decoder output once, without rescanning on subsequent launches.
+            try db.execute(sql: """
+                UPDATE messages
+                SET subject = TRIM(subject, char(10) || char(13) || char(9) || ' ')
+                WHERE subject != TRIM(subject, char(10) || char(13) || char(9) || ' ')
                 """)
         }
 

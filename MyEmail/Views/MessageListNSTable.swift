@@ -163,13 +163,14 @@ struct MessageListNSTable: NSViewRepresentable {
         // Diff items: structural change (ids differ) → reloadData.
         // Value-only change (same ids) → reloadData on visible rows
         // without destroying NSTableRowView instances → no header reflow.
-        let oldIDs = coordinator.items.map(\.id)
-        let newIDs = items.map(\.id)
+        let previousItems = coordinator.items
+        let structureChanged = previousItems.count != items.count
+            || zip(previousItems, items).contains { $0.id != $1.id }
         coordinator.items = items
 
-        if oldIDs != newIDs {
+        if structureChanged {
             table.reloadData()
-        } else if !items.isEmpty {
+        } else if !items.isEmpty && previousItems != items {
             let visible = table.rows(in: scroll.contentView.bounds)
             if visible.length > 0 {
                 let rowIndexes = IndexSet(integersIn: visible.location..<visible.location + visible.length)

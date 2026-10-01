@@ -67,7 +67,8 @@ extension SyncService {
             rawData = try await imap.fetchRawMessage(uid: msg.uid)
         }
 
-        let email = try EmailMessage(data: rawData)
+        let body = try await Self.parseBody(rawData)
+        let headers = body.headers
 
         // Respect locally-edited subject (rewriteSubject rule). If the row
         // has an entry in `message_subject_overrides`, keep `msg.subject`
@@ -81,30 +82,29 @@ extension SyncService {
 
         // Build the updated Message, preserving ID/folder/account fields.
         var updated = msg
-        let fromParsed = email.from.first
+        let fromParsed = headers.from
         updated.fromAddress = fromParsed?.address ?? msg.fromAddress
         updated.fromName    = fromParsed?.name.flatMap { $0.isEmpty ? nil : $0 }
         updated.subject     = subjectOverridden
             ? msg.subject
-            : SyncService.sanitizeSubject(email.subject ?? msg.subject)
-        updated.toAddresses = email.to.map(\.formatted)
-        updated.ccAddresses = email.cc.map(\.formatted)
-        updated.bccAddresses = email.bcc.map(\.formatted)
+            : SyncService.sanitizeSubject(headers.subject ?? msg.subject)
+        updated.toAddresses = headers.to
+        updated.ccAddresses = headers.cc
+        updated.bccAddresses = headers.bcc
         updated.toSearch    = updated.toAddresses.joined(separator: " ")
         updated.ccSearch    = updated.ccAddresses.joined(separator: " ")
         updated.bccSearch   = updated.bccAddresses.joined(separator: " ")
-        updated.bodyText    = email.textBody
-        updated.bodyHTML    = email.htmlBody
+        updated.bodyText    = body.text
+        updated.bodyHTML    = body.html
         updated.downloadState = .full
-        updated.isEncrypted = email.isEncrypted
-            || (email.textBody ?? "").contains("-----BEGIN PGP MESSAGE-----")
+        updated.isEncrypted = body.isEncrypted
         updated.size        = rawData.count
-        if let text = email.textBody, !text.isEmpty {
+        if let text = body.text, !text.isEmpty {
             updated.preview = String(text.prefix(160))
         }
 
         // Attachments
-        let allAttachments = email.attachments
+        let allAttachments = body.attachments
         if !allAttachments.isEmpty {
             try await saveAttachments(allAttachments, messageID: msg.id, accountID: account.id)
         }

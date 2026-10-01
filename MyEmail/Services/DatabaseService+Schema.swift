@@ -2,12 +2,8 @@
 //  DatabaseService+Schema.swift
 //  MyEmail
 //
-//  Single-shot schema bootstrap (v1.1). No DatabaseMigrator — historic v1..v11
-//  migrations were rolled into the canonical schema below. Single-user app:
-//  legacy db.sqlite is wiped on upgrade (see DatabaseService.init).
-//
-//  If a future schema change is needed, add a NEW `CREATE ... IF NOT EXISTS`
-//  here AND wipe the DB again (bump WIPE_VERSION_KEY in DatabaseService).
+//  Canonical schema for new databases; existing stores evolve only through
+//  additive, immutable migrations. Never bump the legacy wipe marker.
 //
 
 import Foundation
@@ -33,17 +29,6 @@ extension DatabaseService {
             try? db.execute(sql:
                 "ALTER TABLE messages ADD COLUMN user_agent TEXT")
 
-            // Backfill: strip stray trailing CR/LF/tabs/spaces from `subject`
-            // left by some MIME decoders. A trailing newline reserves a second
-            // line in NSTextField's intrinsic height and shifts the visible
-            // baseline upward, even with `maximumNumberOfLines = 1`.
-            // Idempotent: no-op once all rows are clean.
-            try? db.execute(sql: """
-                UPDATE messages
-                SET subject = TRIM(subject, char(10) || char(13) || char(9) || ' ')
-                WHERE subject != TRIM(subject, char(10) || char(13) || char(9) || ' ')
-                """)
-
             // FTS5 virtual table — system SQLite on macOS 15+ supports it.
             // `synchronize(withTable:)` installs AFTER INSERT/UPDATE/DELETE
             // triggers that mirror `messages` rows into `messages_fts`.
@@ -55,23 +40,50 @@ extension DatabaseService {
             // filtering (`list:` operator). `prefix='2 3 4 5'` builds indexes
             // for 2..5-char prefix matches — lets typing "ant" match "anton"
             // incrementally without wildcards.
-            try db.create(virtualTable: "messages_fts", ifNotExists: true, using: FTS5()) { t in
-                t.synchronize(withTable: "messages")
-                // `.remove` = remove_diacritics=2 — strips combining marks
-                // across full Unicode range (e.g. ё→е, ü→u, café→cafe).
-                t.tokenizer = .unicode61(diacritics: .remove)
-                t.prefixes = [2, 3, 4, 5]
-                t.column("subject")
-                t.column("from_name")
-                t.column("from_address")
-                t.column("to_search")
-                t.column("cc_search")
-                t.column("bcc_search")
-                t.column("list_id")
-                t.column("preview")
-                t.column("body_text")
+            // GRDB's synchronize hook rebuilds even with ifNotExists: true.
+            // Existing indexes are maintained by triggers, never rebuilt at launch.
+            if try !db.tableExists("messages_fts") {
+                try db.create(virtualTable: "messages_fts", using: FTS5()) { t in
+                    t.synchronize(withTable: "messages")
+                    // `.remove` = remove_diacritics=2 — strips combining marks
+                    // across full Unicode range (e.g. ё→е, ü→u, café→cafe).
+                    t.tokenizer = .unicode61(diacritics: .remove)
+                    t.prefixes = [2, 3, 4, 5]
+                    t.column("subject")
+                    t.column("from_name")
+                    t.column("from_address")
+                    t.column("to_search")
+                    t.column("cc_search")
+                    t.column("bcc_search")
+                    t.column("list_id")
+                    t.column("preview")
+                    t.column("body_text")
+                }
+                try installSearchUpdateTrigger(in: db)
             }
         }
+    }
+
+    /// Flags, scores and repeated header writes must not tokenize the body again.
+    /// Keep this column order aligned with FTS creation and search bm25 weights.
+    static func installSearchUpdateTrigger(in db: Database) throws {
+        let columns = ["subject", "from_name", "from_address", "to_search",
+                       "cc_search", "bcc_search", "list_id", "preview", "body_text"]
+        let names = (["rowid"] + columns).joined(separator: ", ")
+        let oldValues = (["rowid"] + columns).map { "old.\($0)" }.joined(separator: ", ")
+        let newValues = (["rowid"] + columns).map { "new.\($0)" }.joined(separator: ", ")
+        // IS NOT compares values null-safely: NULL→text and text→NULL both update.
+        let changed = (["rowid"] + columns)
+            .map { "old.\($0) IS NOT new.\($0)" }.joined(separator: " OR ")
+        try db.execute(sql: """
+            DROP TRIGGER IF EXISTS "__messages_fts_au";
+            CREATE TRIGGER "__messages_fts_au" AFTER UPDATE ON messages
+            WHEN \(changed)
+            BEGIN
+                INSERT INTO messages_fts(messages_fts, \(names)) VALUES('delete', \(oldValues));
+                INSERT INTO messages_fts(\(names)) VALUES(\(newValues));
+            END;
+            """)
     }
 
     // MARK: - Schema (canonical)

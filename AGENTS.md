@@ -27,3 +27,7 @@ If `semble` is not on `$PATH`, use `uvx --from "semble[mcp]" semble` in its plac
 ## Localization
 
 Use Apple String Catalogs in `MyEmail/Resources/Localizable.xcstrings`; preserve existing translations. Localize SwiftUI literals and use `String(localized:)` for dynamic strings and AppKit labels. Use native catalog plural variations and Foundation formatting. Do not translate mail content, contact names, attachment filenames, or custom folder names; use `Folder.localizedName` for role-based folder labels. The Settings language picker contains only system, zh-Hans, and en, and saves native app-scoped `AppleLanguages` preferences for the next launch.
+
+## Performance and delivery
+
+Do not rebuild existing FTS at startup. Index format changes and data backfills require additive one-time migrations; preserve queued actions and search integrity. Metadata flags/scores must not reindex unchanged text. Keep MIME decoding and attachment IO off MainActor and preserve per-account connection serialization. Detailed folder metadata is paged; preserve full sorting/thread semantics and historical reachability. Keep IDLE, 60-second STATUS, wake/network recovery and 5-minute fallback; verify overlap coalescing and other-account IDLE survival when changing scheduling. Use the executable checks documented in `docs/performance-verification-2026-10-01.md`; isolated fixtures are not live-account acceptance.

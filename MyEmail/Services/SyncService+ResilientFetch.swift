@@ -183,9 +183,9 @@ extension SyncService {
     func rawHeaderFallback(uid: UInt32, imap: IMAPService) async -> MessageInfo? {
         do {
             let rawData = try await imap.fetchRawMessage(uid: uid)
-            let email = try EmailMessage(data: rawData)
+            let headers = try await Self.parseHeaders(rawData)
 
-            let fromAddr = email.from.first
+            let fromAddr = headers.from
             let fromStr = fromAddr.map { addr in
                 if let name = addr.name, !name.isEmpty {
                     return "\"\(name)\" <\(addr.address)>"
@@ -198,19 +198,19 @@ extension SyncService {
             // RFC822.SIZE isn't fetched on this fallback path; the raw message
             // octet count is the same value, so the Size column stays populated.
             info.size = rawData.count
-            info.subject = SyncService.sanitizeSubject(email.subject)
+            info.subject = SyncService.sanitizeSubject(headers.subject)
             info.from = fromStr
-            info.to = email.to.map(\.formatted)
-            info.cc = email.cc.map(\.formatted)
-            info.bcc = email.bcc.map(\.formatted)
-            info.date = email.date
-            if let msgID = email.messageId {
+            info.to = headers.to
+            info.cc = headers.cc
+            info.bcc = headers.bcc
+            info.date = headers.date
+            if let msgID = headers.messageID {
                 info.messageId = MessageID(msgID)
             }
-            if let replyTo = email.inReplyTo {
+            if let replyTo = headers.inReplyTo {
                 info.inReplyTo = MessageID(replyTo)
             }
-            let refs = email.references.compactMap { MessageID($0) }
+            let refs = headers.references.compactMap { MessageID($0) }
             info.references = refs.isEmpty ? nil : refs
 
             if let flagInfo = try? await imap.fetchSingleMessageInfo(uid: uid) {
