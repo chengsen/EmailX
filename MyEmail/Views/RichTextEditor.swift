@@ -471,9 +471,8 @@ struct FormattingToolbar: View {
             }
             Spacer()
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .sheet(isPresented: $showLinkSheet) {
             LinkInsertSheet(textView: textView) { showLinkSheet = false }
         }
@@ -564,9 +563,8 @@ struct FormattingToolbar: View {
             if let tv = textView { action(tv) }
         } label: {
             Image(systemName: systemImage)
-                .frame(width: 24, height: 20)
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.accessoryBarAction)
         .help(label)
 
         if let shortcut {
