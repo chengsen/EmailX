@@ -32,7 +32,7 @@ extension NSToolbarItem.Identifier {
 
 /// Stable identifier set on the main window after toolbar install, so that
 /// title-update helpers can reliably find it regardless of current `title`.
-let mainWindowIdentifier = NSUserInterfaceItemIdentifier("MyEmailMainWindow")
+let mainWindowIdentifier = NSUserInterfaceItemIdentifier("EmailXMainWindow")
 
 // MARK: - Toolbar delegate
 
@@ -44,16 +44,12 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
     weak var toolbar: NSToolbar?
 
     private let defaultItems: [NSToolbarItem.Identifier] = [
-        .getMail,
+        .compose,
         .space,
-        .archive, .tbDelete, .junk,
-        .space,
-        .compose, .reply, .replyAll, .forward,
-        .space,
-        .markRead, .flag,
+        .archive,
+        .tbDelete,
+        .reply,
         .flexibleSpace,
-        .toggleLog,
-        .threadingFlat, .threadingThreaded,
         .search,
     ]
 
