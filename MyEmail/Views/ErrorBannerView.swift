@@ -3,6 +3,7 @@
 //  EmailX
 //
 
+import Accessibility
 import SwiftUI
 
 struct ErrorBannerView: View {
@@ -39,7 +40,7 @@ struct ErrorBannerView: View {
                         }
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .controlSize(.regular)
                 }
             }
 
@@ -54,9 +55,10 @@ struct ErrorBannerView: View {
                         appState.errors.removeAll { $0.id == error.id }
                     } label: {
                         Image(systemName: "xmark")
+                            .frame(minWidth: 20, minHeight: 20)
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .controlSize(.regular)
                     .help("Dismiss")
                     .accessibilityLabel(Text("Dismiss"))
                     .accessibilityHint(Text(error.title))
@@ -101,6 +103,11 @@ private struct StatusNotice<Actions: View>: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 actions()
             }
+        }
+        .onAppear {
+            AccessibilityNotification.Announcement(
+                [title, detail].compactMap { $0 }.joined(separator: ". ")
+            ).post()
         }
     }
 }

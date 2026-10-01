@@ -19,6 +19,7 @@ struct MessageHeaderBar: View {
     var onArchive: (() -> Void)?
     var onDelete: (() -> Void)?
     var onMarkSpam: (() -> Void)?
+    var maximumHeight: CGFloat = 220
 
     @AppStorage("showMailUserAgent") private var showMUA: Bool = false
 
@@ -30,12 +31,21 @@ struct MessageHeaderBar: View {
     }()
 
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            headerContent.fixedSize(horizontal: false, vertical: true)
+            ScrollView(.vertical) { headerContent }
+        }
+        .frame(maxHeight: maximumHeight)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var headerContent: some View {
         // Parse once — avoid re-parsing the same address 3× per body re-eval.
         let fromEmail = EmailAddress.emailOnly(from: message.fromAddress)
         let fromDisplayName = (message.fromName?.isEmpty == false ? message.fromName : nil)
             ?? EmailAddress.displayName(from: message.fromAddress)
 
-        VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 8) {
             // Sender row: avatar + name/email + action buttons
             HStack(alignment: .top, spacing: 10) {
                 senderAvatar(email: fromEmail)

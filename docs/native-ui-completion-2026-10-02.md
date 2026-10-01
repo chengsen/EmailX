@@ -14,7 +14,7 @@
 | HTML、纯文本、EML | WKWebView 是系统邮件内容渲染组件，继续使用原有过滤、CSP、CID 和外部链接规则；邮件作者内容不强制改成应用主题。EML 使用原生文档窗口，源码使用语义等宽字体和标准 Copy/Close。 |
 | 写信 | 每个草稿自己的 NSToolbar；收件人与主题使用 Grid/TextField/Picker；正文使用 NSTextView。格式动作在标准 accessory bar，窄宽度可横向滚动；链接使用 grouped Form sheet。 |
 | 附件、拖放、预览 | 标准文件图标、语义字号、原生 bordered Button、NSOpenPanel 和 Quick Look；长文件名中间省略、保留完整提示。共享 FlowLayout 仅负责换行几何，宽度测量和放置一致。 |
-| 设置导航、七个 pane | 原生 NavigationSplitView、List、grouped Form、Picker、Toggle、Stepper 和 ColorPicker。账户、签名、规则使用 HSplitView；空状态使用 ContentUnavailableView。 |
+| 设置导航、七个 pane | 后续严格复核已改为不可定制的 AppKit preference NSToolbar。内容仍使用 grouped Form、Picker、Toggle、Stepper、ColorPicker 和 HSplitView；详见后续验收报告。 |
 | 添加账户 | 原生账户类型按钮；IMAP/SMTP 使用分组表单和带标签的字段；Gmail 使用标准授权入口。认证机制、凭证保存与网络安全规则未修改。 |
 | 规则与签名 | 标准编辑字段、动态动作/条件；文件夹多选使用 popover/List/Toggle；移除账户、规则、签名有原生确认提示。 |
 | 状态、认证、远程内容 | GroupBox、Label、标准 bordered Button/Menu；错误详情可选择和换行；VoiceOver 开启时不执行错误的自动消失计时。远程内容加载与永久信任仍是独立操作。 |
@@ -45,3 +45,7 @@ Release 构建成功，产物位于 `build/NativeUIDerivedData/Build/Products/Re
 新增界面优先使用标准系统组件、语义字体和带标签的控件。仅保留邮件内容渲染、文件图标、头像和换行布局等必要内容逻辑。以后改动共享布局或工具栏，运行相关 native UI/compose 检查；改动协议或调度时，再执行对应收信回归和真实账户验收。
 
 依据：[Apple — Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass)、[accessibilityShowBorders](https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityshowborders)、[macOS 27 Release Notes](https://developer.apple.com/documentation/macos-release-notes/macos-27-release-notes)。
+
+## 后续严格复核
+
+本报告为第一轮原生化记录。设置导航、快捷键、辅助功能树和长内容布局的后续修复，以及用户选择隔离模拟后的验收边界，见 [macOS 27 设计验收](macos27-design-acceptance-2026-10-02.md)。以该报告为最新状态，不能把本报告视作全部辅助技术场景通过。

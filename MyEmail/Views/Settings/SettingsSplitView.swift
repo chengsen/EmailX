@@ -2,8 +2,8 @@
 //  SettingsSplitView.swift
 //  EmailX
 //
-//  Native macOS settings navigation.
-//  Hosted inside SettingsWindowController's NSHostingView (no toolbar).
+//  Native settings panes hosted by SettingsWindowController.
+//  Pane navigation belongs to the window's preference-style NSToolbar.
 //
 
 import SwiftUI
@@ -38,28 +38,17 @@ enum SettingsCategory: String, Hashable, CaseIterable, Identifiable {
     }
 }
 
-struct SettingsSplitView: View {
-    @State private var selection: SettingsCategory = .general
+struct SettingsPaneView: View {
+    let category: SettingsCategory
 
     var body: some View {
-        NavigationSplitView {
-            List(SettingsCategory.allCases, selection: $selection) { cat in
-                Label(cat.title, systemImage: cat.icon).tag(cat)
-            }
-            .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 220)
-        } detail: {
-            detailView(for: selection)
-                .navigationTitle(selection.title)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 860, minHeight: 560)
+        detailView
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
-    private func detailView(for cat: SettingsCategory) -> some View {
-        switch cat {
+    private var detailView: some View {
+        switch category {
         case .general:    GeneralSettingsView()
         case .accounts:   AccountSettingsView()
         case .signatures: SignatureSettingsView()

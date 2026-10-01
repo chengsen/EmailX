@@ -467,8 +467,17 @@ struct FormattingToolbar: View {
                 toolbarButton("Insert link", systemImage: "link", shortcut: "k") { _ in
                     showLinkSheet = true
                 }
-                toolbarButton("Text color", systemImage: "paintpalette") { _ in
-                    NSColorPanel.shared.orderFront(nil)
+                toolbarButton("Text color", systemImage: "paintpalette") { tv in
+                    // Preserve the selection and use AppKit's current-window
+                    // responder chain; a shared panel must not retain one draft
+                    // as its target when the user switches to another draft.
+                    tv.window?.makeFirstResponder(tv)
+                    let panel = NSColorPanel.shared
+                    panel.setTarget(nil)
+                    panel.setAction(#selector(NSTextView.changeColor(_:)))
+                    panel.isContinuous = true
+                    panel.color = (tv.typingAttributes[.foregroundColor] as? NSColor) ?? .labelColor
+                    panel.orderFront(nil)
                 }
                 Spacer()
             }
@@ -568,6 +577,7 @@ struct FormattingToolbar: View {
             if let tv = textView { action(tv) }
         } label: {
             Image(systemName: systemImage)
+                .frame(minWidth: 20, minHeight: 20)
         }
         .buttonStyle(.accessoryBarAction)
         .accessibilityLabel(Text(label))

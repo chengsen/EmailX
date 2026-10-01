@@ -12,11 +12,21 @@ import UniformTypeIdentifiers
 struct AttachmentStripView: View {
     let attachments: [Attachment]
     let onRefetch: (Attachment) async -> Attachment?
+    var maximumHeight: CGFloat = 140
 
     @State private var refetchingIDs: Set<UUID> = []
     @State private var quickLookCoordinator = QuickLookCoordinator()
 
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            attachmentContent.fixedSize(horizontal: false, vertical: true)
+            ScrollView(.vertical) { attachmentContent }
+        }
+        .frame(maxHeight: maximumHeight)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var attachmentContent: some View {
         FlowLayout(spacing: 6) {
             ForEach(attachments) { att in
                 attachmentChip(att)

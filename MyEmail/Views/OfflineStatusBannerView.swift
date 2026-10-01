@@ -3,6 +3,7 @@
 //  EmailX
 //
 
+import Accessibility
 import SwiftUI
 
 struct OfflineStatusBannerView: View {
@@ -54,6 +55,17 @@ struct OfflineStatusBannerView: View {
             }
         }
         .transition(.opacity)
+        .onChange(of: sync.isOnline) { _, online in
+            let message = online ? String(localized: "Connected")
+                : String(localized: "Offline — \(queue.pendingCount) pending")
+            AccessibilityNotification.Announcement(message).post()
+        }
+        .onChange(of: queue.failedCount) { previous, count in
+            guard count > previous else { return }
+            AccessibilityNotification.Announcement(
+                String(localized: "\(count) failed actions")
+            ).post()
+        }
     }
 
     private func notice(icon: String, text: String, tint: Color) -> some View {

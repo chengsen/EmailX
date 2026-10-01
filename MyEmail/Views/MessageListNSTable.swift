@@ -60,7 +60,9 @@ struct MessageListNSTable: NSViewRepresentable {
         scroll.borderType = .noBorder
         scroll.drawsBackground = false
 
-        let table = NSTableView()
+        let table = MessageListTableView()
+        table.onActivateSelection = { [weak coordinator] in coordinator?.activateSelection() }
+        table.setAccessibilityLabel(String(localized: "Messages"))
         table.style = .fullWidth
         table.selectionHighlightStyle = .regular
         table.allowsMultipleSelection = true
@@ -211,6 +213,13 @@ struct MessageListNSTable: NSViewRepresentable {
         }
 
         func tableView(_ tableView: NSTableView,
+                       typeSelectStringFor tableColumn: NSTableColumn?, row: Int) -> String? {
+            guard items.indices.contains(row) else { return nil }
+            let item = items[row]
+            return parent.isSentOrDrafts ? item.displayTo : item.displayFrom
+        }
+
+        func tableView(_ tableView: NSTableView,
                        pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
             guard row >= 0, row < items.count else { return nil }
             let pb = NSPasteboardItem()
@@ -244,6 +253,11 @@ struct MessageListNSTable: NSViewRepresentable {
                     parentRef.selectedMessageIDs = ids
                 }
             }
+        }
+
+        func activateSelection() {
+            guard let table = tableView, items.indices.contains(table.selectedRow) else { return }
+            parent.onDoubleClick(items[table.selectedRow].id)
         }
 
         @objc func tableDoubleClicked(_ sender: Any?) {

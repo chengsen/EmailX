@@ -23,3 +23,18 @@ The compose window uses its existing window-local NSToolbar for sending, attachm
 - No String Catalog keys were added. Existing localized labels are reused.
 
 The probe proves the native toolbar bridge and window isolation, not live SMTP delivery or a full visual/accessibility pass. The parent integration build and runtime checks cover the application as a whole; live-account delivery, VoiceOver, narrow-width interaction and system appearance checks require separate acceptance evidence. Custom flow layout remains a geometry helper because SwiftUI has no native wrapping attachment container; its upgrade trigger is a platform wrapping layout with equivalent interaction and accessibility.
+
+## Strict acceptance follow-up
+
+The acceptance branch additionally corrects these concrete defects:
+
+- Recipient suggestions are computed from user editing and from entering the field, not from unfocused programmatic prefill. Native suggestion buttons explicitly expose the full name and email as one accessible label.
+- Each compose attachment exposes its full filename and byte-count description as accessible information; its removal action exposes the filename as a value rather than relying on a VoiceOver hint. The native removal button uses regular sizing and a minimum 20-point symbol region.
+- Large attachment batches now use a native vertical ViewThatFits and ScrollView with a maximum 140-point viewport. All attachments remain in the scroll content rather than being omitted or clipped; the parent acceptance simulation measures both a natural-height single item and multirow batches.
+- Formatting icon controls and the Cc/Bcc toggle have minimum 20-point symbol regions in their native button styles. This is a region inside the native button, not a claim that all measured targets are 28 points; integration AX-frame measurements determine the actual target size.
+- Text-color action restores the active editor as first responder and resets the shared color panel to the native `changeColor:` responder chain with no persistent draft target. A direct AppKit probe confirmed selected text is colored without changing unselected text or the other draft. Standalone CLI/app probes did not establish key/main windows, so active-window responder routing remains an integration UI check.
+- Send errors and status notices post native accessibility announcements. Offline/reconnected and newly failed queue transitions are announced without announcing each repeated sync sweep. Existing localized strings are reused.
+
+Apple references reviewed for this pass: [Keyboards](https://developer.apple.com/design/human-interface-guidelines/keyboards), [Focus and selection](https://developer.apple.com/design/human-interface-guidelines/focus-and-selection), [Toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars), [Show Borders](https://developer.apple.com/documentation/swiftui/environmentvalues/accessibilityshowborders), and [native accessibility announcements](https://developer.apple.com/documentation/accessibility/accessibilitynotification/announcement). Native bordered controls retain system focus and borders; the Show Borders guidance applies to custom interactive controls and does not require drawing a second border around system buttons.
+
+RichTextEditor type-checking with an isolated logging stub, Swift parsing of affected files, `git diff --check`, and the existing compose-toolbar probe passed. No system preferences, private APIs, production test flags, or localization keys were added.
