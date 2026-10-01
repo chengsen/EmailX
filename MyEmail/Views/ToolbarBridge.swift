@@ -120,6 +120,7 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
         item.paletteLabel = def.label
         item.toolTip = def.label
         item.image = NSImage(systemSymbolName: def.icon, accessibilityDescription: def.label)
+        item.isBordered = (id == .compose)
         item.target = self
         item.action = #selector(buttonClicked(_:))
         return item
