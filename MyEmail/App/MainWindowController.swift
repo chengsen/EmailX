@@ -53,7 +53,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
 
         window.contentView = NSHostingView(rootView: rootView)
 
-        let toolbar = NSToolbar(identifier: "MainToolbar.v2")
+        let toolbar = NSToolbar(identifier: "MainToolbar.v3")
         toolbar.delegate = toolbarDelegate
         toolbar.displayMode = .iconOnly
         toolbar.allowsUserCustomization = true
@@ -80,7 +80,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     func showMain() {
         showWindow(nil)
         // Set autosaveName on the internal NSSplitView(s) created by
-        // NavigationSplitView/HSplitView so divider positions persist.
+        // NavigationSplitView so divider positions persist.
         // Must happen before makeKeyAndOrderFront to avoid layout jump.
         installSplitViewAutosave()
         window?.makeKeyAndOrderFront(nil)
