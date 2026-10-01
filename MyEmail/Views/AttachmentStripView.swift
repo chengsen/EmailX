@@ -1,8 +1,8 @@
 //
 //  AttachmentStripView.swift
-//  MyEmail
+//  EmailX
 //
-//  Wrap-layout strip of non-inline attachments pinned at bottom (Thunderbird-style).
+//  Native attachment strip for message reading.
 //
 
 import Quartz
