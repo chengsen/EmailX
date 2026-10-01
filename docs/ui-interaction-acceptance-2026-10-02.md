@@ -21,6 +21,8 @@
 
 `scripts/verify-editor-interaction.sh` 编译生产 RichTextEditor，在真正的 NSApplication 异步事件循环中运行两个 NSTextView 窗口。检查 URL 校验、标签、链接插入、选区、输入属性、一次 Undo/Redo、编辑委托拒绝及其他草稿不变。两个真实 key/main 窗口之间切换后，nil-target NSColorPanel 的 changeColor 通过原生响应链只修改当前草稿的选区。该项通过，没有跳过；这是原生事件路由检查，不是鼠标操作颜色选择器的全流程验收。
 
+`scripts/verify-recipient-interaction.sh` 编译最终生产 ComposeHeaderFields，在真实异步 AppKit 事件循环及 700×600 fixture 窗口中，通过窗口自身的 native keyDown 和 field editor 验证 Down/Down/Up/Return 的正确候选、光标回到末尾、继续输入保留旧地址、Escape 保留字段焦点，以及候选显示时 To→Subject 的 Tab。展开字段后，To→Cc→Bcc→Reply-To 的逐步 Tab 也通过。此检查使用生产 SwiftUI 表单，只有账户和联系人服务为合成替身；不是对用户应用发送系统键盘事件，也不是完整键盘控制或窄窗口离屏控件的全流程证明。最终共享焦点修改由该原生运行检查覆盖；屏幕采集失败期间未把最终 Tab 操作称为 CUA 实机点击验收。
+
 `scripts/verify-native-layout.sh` 直接编译生产写信邮件头和附件视图，在 560/900/1200pt 宽度、Aqua/Dark/两种增强对比度 NSAppearance 下检查 24 个邮件头组合和 24 个附件组合。邮件头包含大量地址、长主题及展开的抄送字段；附件包含 1/40 个长文件名。全部保持在设定的 viewport 内。增强对比度 NSAppearance 是几何模拟，不能证明像素对比度或真实 Show Borders 效果。
 
 `scripts/verify-reading-layout.sh` 编译完整生产 MessageDetailView 和 EmlViewerView。真实 fixture NSWindow 使用 unified toolbar，外框 500×400、内容高度 334pt；100 行主题、大量地址和 100 个附件场景中，邮件正文从 41pt 增至 74pt，EML 正文从 115pt 增至 148pt，均超过检查要求的 70pt。数据、服务和 HTML renderer 为隔离替身，因此不证明真实 HTML 渲染或协议运行。
