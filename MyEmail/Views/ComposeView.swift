@@ -3,7 +3,7 @@
 //  MyEmail
 //
 //  Compose window: new message, reply, forward.
-//  Presented as sheet from main window.
+//  Native macOS compose window.
 //
 
 import AppKit
@@ -171,7 +171,6 @@ struct ComposeView: View {
                     onRemove: { att in attachments.removeAll { $0.id == att.id }; isDirty = true }
                 )
             }
-            Divider()
             composeToolbar
         }
         .frame(minWidth: 560, minHeight: 400)
@@ -210,7 +209,7 @@ struct ComposeView: View {
             } label: {
                 Image(systemName: "paperclip")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.glass)
             .help(String(localized: "Attach files"))
             signatureMenu
             if let errorMessage {
@@ -236,9 +235,11 @@ struct ComposeView: View {
             }
             .keyboardShortcut(.return, modifiers: .command)
             .disabled(isSending || toField.isEmpty)
+            .buttonStyle(.glassProminent)
             .controlSize(.large)
         }
-        .padding(12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .alert("Switching to plain text will remove formatting. Continue?",
                isPresented: $showPlainConfirmAlert) {
             Button("Cancel", role: .cancel) {}
@@ -263,7 +264,7 @@ struct ComposeView: View {
             } label: {
                 Image(systemName: "signature")
             }
-            .menuStyle(.borderlessButton)
+            .buttonStyle(.glass)
             .menuIndicator(.hidden)
             .fixedSize()
             .help(String(localized: "Signature"))
