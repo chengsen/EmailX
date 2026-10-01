@@ -44,6 +44,7 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
     weak var toolbar: NSToolbar?
 
     private let defaultItems: [NSToolbarItem.Identifier] = [
+        .toggleSidebar,
         .compose,
         .space,
         .archive,
@@ -54,6 +55,7 @@ final class MainToolbarDelegate: NSObject, NSToolbarDelegate, NSSearchFieldDeleg
     ]
 
     private let allItems: [NSToolbarItem.Identifier] = [
+        .toggleSidebar,
         .getMail,
         .compose, .archive, .tbDelete, .junk,
         .reply, .replyAll, .forward,

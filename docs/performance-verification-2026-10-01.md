@@ -1,6 +1,6 @@
 # EmailX 性能修复与复测
 
-2026-10-01，在 `ui/macos27-baseline` 上完成五项性能修复。基线为 `47def58`，优化版使用本地未提交的工作区代码。最终 arm64 Release 构建成功，严格深度签名检查通过。优化产物位于 `build/PerformanceDerivedData/Build/Products/Release/MyEmail.app`，原有构建产物未覆盖。
+2026-10-01，在 `ui/macos27-baseline` 上完成五项性能修复。基线为 `47def58`，优化版在测量时使用本地未提交的工作区代码；此后保存为 `ebe62fa`，完整备份于 `codex/performance-before-ui-merge`。最终 arm64 Release 构建成功，严格深度签名检查通过。优化产物位于 `build/PerformanceDerivedData/Build/Products/Release/MyEmail.app`，原有构建产物未覆盖。
 
 ## 五项修复
 
@@ -68,4 +68,4 @@ scripts/verify-background-scheduling.sh
 python3 scripts/verify-background-counts.py
 ```
 
-原始 trace 与指标位于 `build/Profiling`，数据库结果位于 `build/verification/database-benchmark`。完整构建日志为 `build/build-performance.log`，协议测试日志为 `build/package-tests-performance.log`。文件未提交或推送 GitHub。
+原始 trace 与指标位于 `build/Profiling`，数据库结果位于 `build/verification/database-benchmark`。完整构建日志为 `build/build-performance.log`，协议测试日志为 `build/package-tests-performance.log`。该记录描述原测量时的状态；源码、检查和文档随后随性能备份提交保存，构建日志和原始 trace 保留在本机的忽略目录。最新整合结果见 `docs/ui-integration-2026-10-02.md`。

@@ -100,7 +100,6 @@ struct ComposeWindowContent: View {
 struct ComposeView: View {
     @Environment(AppEnvironment.self) private var env
     @Environment(AppState.self) private var appState
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let mode: ComposeMode
     let message: Message?
@@ -172,10 +171,42 @@ struct ComposeView: View {
                     onRemove: { att in attachments.removeAll { $0.id == att.id }; isDirty = true }
                 )
             }
-            composeToolbar
+            if let errorMessage {
+                Text(errorMessage)
+                    .foregroundStyle(.red)
+                    .textSelection(.enabled)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityLabel(String(localized: "Send") + ": " + errorMessage)
+            }
         }
         .frame(minWidth: 560, minHeight: 400)
         .overlay(dropOverlay)
+        .background {
+            ComposeToolbar(
+                canSend: !isSending && !Self.parseAddressList(toField).isEmpty,
+                isSending: isSending,
+                isRichMode: isRichMode,
+                signatures: availableSignatures,
+                selectedSignatureID: selectedSignatureID,
+                onSend: { Task { await send() } },
+                onAttach: { pickAttachments(in: $0) },
+                onModeChange: { requestModeChange($0) },
+                onSignatureChange: { selectedSignatureID = $0 }
+            )
+            // SwiftUI registers this shortcut with the hosting window; the
+            // visible action lives in NSToolbar, including its overflow menu.
+            Button("Send") { Task { await send() } }
+                .keyboardShortcut(.return, modifiers: .command)
+                .disabled(isSending || Self.parseAddressList(toField).isEmpty)
+                .hidden()
+                .accessibilityHidden(true)
+        }
+        .alert("Switching to plain text will remove formatting. Continue?",
+               isPresented: $showPlainConfirmAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Switch", role: .destructive) { convertToPlain() }
+        }
         .onDrop(of: [.fileURL], isTargeted: $isDropTargeted, perform: handleDrop)
         .onAppear {
             prefill()
@@ -200,98 +231,13 @@ struct ComposeView: View {
         }
     }
 
-    // MARK: - Toolbar
-
-    private var composeToolbar: some View {
-        HStack {
-            modeToggle
-            Button {
-                pickAttachments()
-            } label: {
-                Image(systemName: "paperclip")
-            }
-            .buttonStyle(.glass)
-            .help(String(localized: "Attach files"))
-            signatureMenu
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .lineLimit(1)
-            }
-            Spacer()
-            Button {
-                Task { await send() }
-            } label: {
-                HStack(spacing: 6) {
-                    if isSending {
-                        ProgressView()
-                            .controlSize(.small)
-                            .progressViewStyle(.circular)
-                            .transition(.opacity.combined(with: .scale))
-                    }
-                    Text("Send")
-                }
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: isSending)
-            }
-            .keyboardShortcut(.return, modifiers: .command)
-            .disabled(isSending || toField.isEmpty)
-            .buttonStyle(.glassProminent)
-            .controlSize(.large)
+    private func requestModeChange(_ newValue: Bool) {
+        guard newValue != isRichMode else { return }
+        if !newValue && hasFormatting {
+            showPlainConfirmAlert = true
+        } else {
+            isRichMode = newValue
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .alert("Switching to plain text will remove formatting. Continue?",
-               isPresented: $showPlainConfirmAlert) {
-            Button("Cancel", role: .cancel) {}
-            Button("Switch", role: .destructive) { convertToPlain() }
-        }
-    }
-
-    /// Signature picker — Menu with an inline Picker so the row shows a
-    /// checkmark next to the active entry. Hidden when the From account has
-    /// no signatures configured.
-    @ViewBuilder
-    private var signatureMenu: some View {
-        if !availableSignatures.isEmpty {
-            Menu {
-                Picker(String(localized: "Signature"), selection: $selectedSignatureID) {
-                    Text(String(localized: "No signature")).tag(UUID?.none)
-                    ForEach(availableSignatures) { sig in
-                        Text(sig.name).tag(UUID?.some(sig.id))
-                    }
-                }
-                .pickerStyle(.inline)
-            } label: {
-                Image(systemName: "signature")
-            }
-            .buttonStyle(.glass)
-            .menuIndicator(.hidden)
-            .fixedSize()
-            .help(String(localized: "Signature"))
-        }
-    }
-
-    /// Segmented rich/plain toggle. Rich → Plain is gated by a confirmation
-    /// alert when formatting (beyond defaults and signature) is present.
-    private var modeToggle: some View {
-        Picker("", selection: Binding(
-            get: { isRichMode },
-            set: { newValue in
-                if newValue == isRichMode { return }
-                if !newValue && hasFormatting {
-                    showPlainConfirmAlert = true
-                } else {
-                    isRichMode = newValue
-                }
-            }
-        )) {
-            Image(systemName: "textformat").tag(true)
-            Image(systemName: "doc.plaintext").tag(false)
-        }
-        .pickerStyle(.segmented)
-        .fixedSize()
-        .help(isRichMode ? "Rich text" : "Plain text")
     }
 
     /// Detects whether the body carries any formatting beyond the default
@@ -368,6 +314,7 @@ struct ComposeView: View {
     // MARK: - Send
 
     private func send() async {
+        guard !isSending, !Self.parseAddressList(toField).isEmpty else { return }
         isSending = true
         errorMessage = nil
         defer { isSending = false }

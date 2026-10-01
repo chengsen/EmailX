@@ -31,3 +31,7 @@ Use Apple String Catalogs in `MyEmail/Resources/Localizable.xcstrings`; preserve
 ## Performance and delivery
 
 Do not rebuild existing FTS at startup. Index format changes and data backfills require additive one-time migrations; preserve queued actions and search integrity. Metadata flags/scores must not reindex unchanged text. Keep MIME decoding and attachment IO off MainActor and preserve per-account connection serialization. Detailed folder metadata is paged; preserve full sorting/thread semantics and historical reachability. Keep IDLE, 60-second STATUS, wake/network recovery and 5-minute fallback; verify overlap coalescing and other-account IDLE survival when changing scheduling. Use the executable checks documented in `docs/performance-verification-2026-10-01.md`; isolated fixtures are not live-account acceptance.
+
+## Native macOS interface
+
+Compose actions belong to each draft window's native NSToolbar; keep editor selection formatting in its accessory bar. Verify window isolation, enabled state and Cmd+Return using `scripts/verify-compose-toolbar.sh` after changing the bridge. Prefer native bordered controls for attachment and recipient actions rather than handwritten glass or border overlays. The app icon is `EmailXAppIcon.icon`; native asset compilation and the built bundle must select it. Preserve the original icon assets for recovery. Use APIs available on the macOS target; a cross-platform SwiftUI symbol is not evidence of macOS availability. Full build and runtime checks remain necessary after UI branch integration.

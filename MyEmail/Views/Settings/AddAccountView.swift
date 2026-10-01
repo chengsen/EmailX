@@ -120,6 +120,6 @@ private struct ProviderRow: View {
             }
             .padding(12)
         }
-        .buttonStyle(.card)
+        .buttonStyle(.bordered)
     }
 }

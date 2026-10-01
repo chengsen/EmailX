@@ -48,6 +48,7 @@ struct AttachmentStripView: View {
                     Image(nsImage: fileIcon(for: att))
                         .resizable()
                         .frame(width: 20, height: 20)
+                        .accessibilityHidden(true)
                 }
                 Text(att.filename)
                     .font(.callout)
@@ -59,7 +60,12 @@ struct AttachmentStripView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
+        .accessibilityLabel(Text(att.filename))
+        .accessibilityValue(Text(FormatHelpers.formatByteCount(att.size)))
+        .accessibilityHint(Text(Self.isEml(att) ? LocalizedStringKey("Open") : LocalizedStringKey("Quick Look")))
+        .disabled(isRefetching)
+        .help(att.filename)
         .contextMenu { attachmentMenu(att) }
     }
 

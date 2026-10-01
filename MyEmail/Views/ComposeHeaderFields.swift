@@ -25,7 +25,7 @@ struct ComposeHeaderFields: View {
             GridRow {
                 fieldLabel("To")
                 HStack(spacing: 8) {
-                    RecipientTextField(text: $to, placeholder: String(localized: "Recipients"))
+                    RecipientTextField(text: $to, placeholder: String(localized: "To"))
                     Button {
                         showExtraFields.toggle()
                     } label: {
@@ -35,7 +35,7 @@ struct ComposeHeaderFields: View {
                         )
                         .labelStyle(.iconOnly)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .help(showExtraFields ? "Hide Cc/Bcc" : "Show Cc/Bcc")
                 }
             }
@@ -101,7 +101,7 @@ struct RecipientTextField: View {
     @Binding var text: String
     let placeholder: String
 
-    @Environment(\.accessibilityShowBorders) private var showBorders
+    @FocusState private var isEditing: Bool
     @State private var suggestions: [RecipientSuggestion] = []
     @State private var showSuggestions = false
 
@@ -114,6 +114,11 @@ struct RecipientTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             TextField(placeholder, text: $text)
+                .focused($isEditing)
+                .onExitCommand {
+                    suggestions = []
+                    showSuggestions = false
+                }
                 .onChange(of: text) { _, _ in updateSuggestions() }
 
             if showSuggestions {
@@ -140,17 +145,11 @@ struct RecipientTextField: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.bordered)
+                        .accessibilityElement(children: .combine)
                     }
                 }
-                .padding(4)
-                .glassEffect(in: .rect(cornerRadius: 12))
-                .overlay {
-                    if showBorders {
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(.secondary)
-                    }
-                }
+                .accessibilityElement(children: .contain)
             }
         }
     }
@@ -174,5 +173,6 @@ struct RecipientTextField: View {
         text = parts.joined(separator: ", ") + ", "
         suggestions = []
         showSuggestions = false
+        isEditing = true
     }
 }

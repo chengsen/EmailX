@@ -10,8 +10,7 @@
 //
 //  Contract: same external API as the previous SwiftUI Table —
 //  `items`, `selectedMessageIDs` binding, context menu, double-click,
-//  pagination trigger, drag. Column order + width persist via
-//  NSTableView.autosaveName.
+//  pagination trigger, drag. A single summary column follows window width.
 //
 
 import AppKit
@@ -67,7 +66,7 @@ struct MessageListNSTable: NSViewRepresentable {
         table.allowsMultipleSelection = true
         table.allowsColumnReordering = false
         table.allowsColumnResizing = false
-        table.columnAutoresizingStyle = .lastColumnOnly
+        table.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
         // Let macOS provide the surface; avoid legacy zebra-striping chrome.
         table.backgroundColor = .clear
         table.usesAlternatingRowBackgroundColors = false

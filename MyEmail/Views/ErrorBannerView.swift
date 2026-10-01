@@ -57,6 +57,8 @@ struct ErrorBannerView: View {
                     .buttonStyle(.glass)
                     .controlSize(.small)
                     .help("Dismiss")
+                    .accessibilityLabel(Text("Dismiss"))
+                    .accessibilityHint(Text(error.title))
                 }
                 .task {
                     try? await Task.sleep(for: .seconds(8))

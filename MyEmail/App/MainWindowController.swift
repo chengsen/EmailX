@@ -19,6 +19,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
     let environment: AppEnvironment
 
     let toolbarDelegate = MainToolbarDelegate()
+    private var mainToolbar: NSToolbar?
 
     /// Running debounce task for search text changes. Replaced on each keystroke.
     var searchDebounceTask: Task<Void, Never>?
@@ -62,6 +63,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.toolbar = toolbar
         window.toolbarStyle = .unified
         toolbarDelegate.toolbar = toolbar
+        mainToolbar = toolbar
 
         super.init(window: window)
         window.delegate = self
@@ -354,6 +356,15 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             NSStringFromRect(frame),
             forKey: Self.frameDefaultsKey
         )
+    }
+
+    func windowDidUpdate(_ notification: Notification) {
+        // NavigationSplitView can install its own toolbar after account loading.
+        // Retain the AppKit toolbar and restore only when ownership changes;
+        // normal window updates do not rebuild items or start a polling task.
+        guard let window, let mainToolbar, window.toolbar !== mainToolbar else { return }
+        window.toolbar = mainToolbar
+        mainToolbar.isVisible = !appState.accounts.isEmpty
     }
 
     func windowDidResize(_ notification: Notification) {

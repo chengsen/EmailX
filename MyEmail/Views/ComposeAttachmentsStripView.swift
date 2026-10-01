@@ -26,6 +26,7 @@ struct ComposeAttachmentsStripView: View {
         HStack(spacing: 8) {
             Image(nsImage: fileIcon(for: att))
                 .resizable()
+                .accessibilityHidden(true)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 20, height: 20)
 
@@ -43,14 +44,16 @@ struct ComposeAttachmentsStripView: View {
             } label: {
                 Image(systemName: "xmark")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .controlSize(.small)
             .help("Remove attachment")
+            .accessibilityLabel(Text("Remove attachment"))
+            .accessibilityHint(Text(att.filename))
         }
         .padding(.leading, 10)
         .padding(.trailing, 6)
         .padding(.vertical, 7)
-        .glassEffect()
+        .accessibilityElement(children: .contain)
     }
 
     private func fileIcon(for att: ComposeAttachment) -> NSImage {
