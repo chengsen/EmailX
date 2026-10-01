@@ -70,6 +70,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         trackTitle()
         trackThreading()
         trackToolbarVisibility()
+        trackSelectionToolbar()
         updateWindowTitle()
     }
 
@@ -161,6 +162,16 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             toolbarDelegate.refreshThreadingSelection(isThreaded: appState.isThreaded)
         } onChange: { [weak self] in
             Task { @MainActor [weak self] in self?.trackThreading() }
+        }
+    }
+
+    private func trackSelectionToolbar() {
+        withObservationTracking {
+            toolbarDelegate.refreshSelectionActions(
+                hasSelection: !appState.selectedMessageIDs.isEmpty
+            )
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in self?.trackSelectionToolbar() }
         }
     }
 
