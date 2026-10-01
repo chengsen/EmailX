@@ -1,6 +1,6 @@
 //
 //  PrivacySettingsView.swift
-//  MyEmail
+//  EmailX
 //
 //  Privacy settings: remote content, Gravatar, trusted senders.
 //
@@ -48,7 +48,8 @@ struct PrivacySettingsView: View {
                                 Image(systemName: "trash")
                                     .foregroundStyle(.secondary)
                             }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.glass)
+                            .controlSize(.small)
                         }
                     }
                 }
@@ -58,6 +59,7 @@ struct PrivacySettingsView: View {
                     TextField("Add email", text: $newSenderEmail)
                         .textFieldStyle(.roundedBorder)
                     Button("Add") { addSender() }
+                        .buttonStyle(.glass)
                         .disabled(newSenderEmail.isEmpty)
                 }
             }

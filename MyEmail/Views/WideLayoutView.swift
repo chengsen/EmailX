@@ -1,6 +1,6 @@
 //
 //  WideLayoutView.swift
-//  MyEmail
+//  EmailX
 //
 //  Wide layout: NavigationSplitView (sidebar | message list | reading pane).
 //  Default layout per DESIGN.md §4.1.
@@ -39,6 +39,5 @@ struct WideLayoutView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
-        .animation(.none, value: appState.selectedFolder?.id)
     }
 }

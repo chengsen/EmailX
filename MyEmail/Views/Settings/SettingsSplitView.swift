@@ -1,8 +1,8 @@
 //
 //  SettingsSplitView.swift
-//  MyEmail
+//  EmailX
 //
-//  MailMate-style sidebar settings: category list on the left, form on the right.
+//  Native macOS settings navigation.
 //  Hosted inside SettingsWindowController's NSHostingView (no toolbar).
 //
 
@@ -50,6 +50,7 @@ struct SettingsSplitView: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 220)
         } detail: {
             detailView(for: selection)
+                .navigationTitle(selection.title)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationSplitViewStyle(.balanced)

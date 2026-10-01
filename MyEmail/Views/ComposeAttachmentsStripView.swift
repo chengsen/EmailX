@@ -1,10 +1,6 @@
 //
 //  ComposeAttachmentsStripView.swift
-//  MyEmail
-//
-//  Strip of pending attachments shown above the compose toolbar.
-//  Mirrors AttachmentStripView visually but each chip carries a remove (×)
-//  affordance and has no Quick Look integration (file already lives on disk).
+//  EmailX
 //
 
 import AppKit
@@ -16,42 +12,45 @@ struct ComposeAttachmentsStripView: View {
     let onRemove: (ComposeAttachment) -> Void
 
     var body: some View {
-        FlowLayout(spacing: 6) {
+        FlowLayout(spacing: 8) {
             ForEach(attachments) { att in
                 chip(att)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .controlBackgroundColor))
     }
 
-    @ViewBuilder
     private func chip(_ att: ComposeAttachment) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             Image(nsImage: fileIcon(for: att))
                 .resizable()
+                .aspectRatio(contentMode: .fit)
                 .frame(width: 20, height: 20)
-            Text(att.filename)
-                .font(.system(size: 12))
-                .lineLimit(1)
-            Text(FormatHelpers.formatByteCount(Int(att.size)))
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(att.filename)
+                    .font(.callout)
+                    .lineLimit(1)
+                Text(FormatHelpers.formatByteCount(Int(att.size)))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Button {
                 onRemove(att)
             } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
+                Image(systemName: "xmark")
             }
-            .buttonStyle(.plain)
-            .help(String(localized: "Remove attachment"))
+            .buttonStyle(.glass)
+            .controlSize(.small)
+            .help("Remove attachment")
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .background(Color(nsColor: .quaternaryLabelColor).opacity(0.3))
-        .cornerRadius(4)
+        .padding(.leading, 10)
+        .padding(.trailing, 6)
+        .padding(.vertical, 7)
+        .glassEffect()
     }
 
     private func fileIcon(for att: ComposeAttachment) -> NSImage {

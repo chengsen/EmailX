@@ -1,6 +1,6 @@
 //
 //  EmlViewerView.swift
-//  MyEmail
+//  EmailX
 //
 //  Read-only viewer for a raw `.eml` file parsed by SwiftEmailParser.
 //  Unlike `MessageDetailView`, this view never touches GRDB — all data
@@ -57,14 +57,10 @@ struct EmlViewerView: View {
             HTMLMailView(html: html, baseURL: nil, inlineRefs: inlineRefs)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            VStack {
-                Spacer()
-                Text("No body content")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ContentUnavailableView(
+                "No body content",
+                systemImage: "doc.text"
+            )
         }
     }
 
@@ -100,7 +96,7 @@ private struct EmlViewerHeader: View {
         VStack(alignment: .leading, spacing: 8) {
             if let subject = email.subject, !subject.isEmpty {
                 Text(subject)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.title2.weight(.semibold))
                     .textSelection(.enabled)
             }
             HStack(spacing: 6) {
@@ -109,7 +105,7 @@ private struct EmlViewerHeader: View {
                 Text(formattedAddresses(email.from))
                     .textSelection(.enabled)
             }
-            .font(.system(size: 12))
+            .font(.subheadline)
             if !email.to.isEmpty {
                 HStack(spacing: 6) {
                     Text("To:")
@@ -117,7 +113,7 @@ private struct EmlViewerHeader: View {
                     Text(formattedAddresses(email.to))
                         .textSelection(.enabled)
                 }
-                .font(.system(size: 12))
+                .font(.subheadline)
             }
             if !email.cc.isEmpty {
                 HStack(spacing: 6) {
@@ -126,7 +122,7 @@ private struct EmlViewerHeader: View {
                     Text(formattedAddresses(email.cc))
                         .textSelection(.enabled)
                 }
-                .font(.system(size: 12))
+                .font(.subheadline)
             }
             if let date = email.date {
                 Text(dateFormatter.string(from: date))
@@ -134,9 +130,8 @@ private struct EmlViewerHeader: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(14)
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     private func formattedAddresses(_ addrs: [EmailAddress]) -> String {

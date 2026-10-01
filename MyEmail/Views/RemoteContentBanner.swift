@@ -1,8 +1,6 @@
 //
 //  RemoteContentBanner.swift
-//  MyEmail
-//
-//  Banner for blocked remote content with load/trust actions.
+//  EmailX
 //
 
 import SwiftUI
@@ -13,43 +11,39 @@ struct RemoteContentBanner: View {
     let onAllow: () -> Void
     let onTrustSender: () -> Void
 
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityShowBorders) private var showBorders
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "shield.lefthalf.filled")
-                    .foregroundStyle(.orange)
-                Text(String(localized: "Remote images blocked"))
-                    .font(.callout)
-                Spacer()
-                Menu {
-                    Button(String(localized: "Load remote content")) {
-                        onAllow()
-                    }
-                    Divider()
-                    Button(String(localized: "Always load from \(EmailAddress.emailOnly(from: senderEmail))")) {
-                        onTrustSender()
-                    }
-                } label: {
-                    Text(String(localized: "Load remote content"))
-                } primaryAction: {
-                    onAllow()
-                }
-                .controlSize(.small)
-                .fixedSize()
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(background)
-            Divider()
-        }
-    }
+        HStack(spacing: 10) {
+            Label("Remote images blocked", systemImage: "shield.lefthalf.filled")
+                .foregroundStyle(.secondary)
 
-    // Sandy-beige in light mode, system control background in dark.
-    private var background: Color {
-        colorScheme == .light
-            ? Color(red: 0xFD / 255.0, green: 0xF8 / 255.0, blue: 0xF0 / 255.0)
-            : Color(nsColor: .controlBackgroundColor)
+            Spacer()
+
+            Menu {
+                Button("Load remote content", action: onAllow)
+                Divider()
+                Button("Always load from \(EmailAddress.emailOnly(from: senderEmail))",
+                       action: onTrustSender)
+            } label: {
+                Text("Load")
+            } primaryAction: {
+                onAllow()
+            }
+            .buttonStyle(.glass)
+            .controlSize(.small)
+            .fixedSize()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .glassEffect(in: .rect(cornerRadius: 12))
+        .overlay {
+            if showBorders {
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(.secondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
     }
 }

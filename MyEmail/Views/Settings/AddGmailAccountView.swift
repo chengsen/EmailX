@@ -1,6 +1,6 @@
 //
 //  AddGmailAccountView.swift
-//  MyEmail
+//  EmailX
 //
 //  Шаг 2a в Add Account flow: кнопка «Войти через Google» → OAuth →
 //  аккаунт в GRDB + tokens в Keychain.
@@ -29,13 +29,13 @@ struct AddGmailAccountView: View {
             Spacer(minLength: 8)
 
             Image(systemName: "envelope.circle.fill")
-                .font(.system(size: 56))
+                .font(.largeTitle)
                 .foregroundStyle(Color.accentColor)
 
             Text("Sign in with Google")
                 .font(.title3.weight(.semibold))
 
-            Text("You will be asked to authorize MyEmail to read and send mail for your Gmail account. MyEmail never requests access to your contacts.")
+            Text("You will be asked to authorize EmailX to read and send mail for your Gmail account. EmailX never requests access to your contacts.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -61,7 +61,7 @@ struct AddGmailAccountView: View {
                     Text("Back")
                 }
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.glass)
             .disabled(isWorking)
             Spacer()
         }
@@ -103,6 +103,7 @@ struct AddGmailAccountView: View {
                 Button("Done") {
                     onFinished()
                 }
+                .buttonStyle(.glassProminent)
                 .keyboardShortcut(.defaultAction)
                 .controlSize(.large)
             }
@@ -125,6 +126,7 @@ struct AddGmailAccountView: View {
             }
             .frame(minWidth: 220)
         }
+        .buttonStyle(.glassProminent)
         .controlSize(.large)
         .keyboardShortcut(.defaultAction)
         .disabled(isWorking)

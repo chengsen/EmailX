@@ -1,8 +1,8 @@
 //
 //  SettingsWindowController.swift
-//  MyEmail
+//  EmailX
 //
-//  AppKit-owned Settings window. No NSToolbar — standard title bar only.
+//  AppKit-owned native Settings window.
 //  Content is SwiftUI SettingsSplitView inside NSHostingView.
 //
 
@@ -21,7 +21,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         )
         window.title = String(localized: "Settings")
         window.minSize = NSSize(width: 860, height: 560)
-        window.setFrameAutosaveName("MyEmailSettingsWindow")
+        window.toolbarStyle = .unified
+        window.autorecalculatesKeyViewLoop = true
+        window.setFrameAutosaveName("EmailXSettingsWindow")
         window.isReleasedWhenClosed = false
 
         let rootView = SettingsSplitView()

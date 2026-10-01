@@ -45,9 +45,9 @@ struct AppearanceSettingsView: View {
 
             Section("Message List") {
                 Picker("Row density", selection: $density) {
-                    Text("Compact (22pt)").tag("compact")
-                    Text("Normal (26pt)").tag("normal")
-                    Text("Wide (34pt)").tag("wide")
+                    Text("Compact").tag("compact")
+                    Text("Comfortable").tag("normal")
+                    Text("Roomy").tag("wide")
                 }
 
                 Picker("Preview lines", selection: $previewLines) {
@@ -114,7 +114,7 @@ private struct PlainTextQuotePreview: View {
                         .frame(width: 3, height: 14)
                         .foregroundStyle(colors[i])
                     Text(labels[i])
-                        .font(.system(size: 12))
+                        .font(.caption)
                         .foregroundStyle(colors[i])
                 }
             }

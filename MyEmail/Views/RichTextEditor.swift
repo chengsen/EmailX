@@ -1,6 +1,6 @@
 //
 //  RichTextEditor.swift
-//  MyEmail
+//  EmailX
 //
 //  NSViewRepresentable bridge for NSTextView (rich-text compose).
 //  Used only from ComposeView.
@@ -16,7 +16,7 @@ enum RichTextSupport {
     /// when the user changes the "From" account.
     nonisolated static let signatureKey = NSAttributedString.Key("myEmailSignature")
 
-    /// Generic CSS family aliases — Thunderbird-style. Picker shows these as
+    /// Generic CSS family aliases for interoperable outgoing HTML. Picker shows these as
     /// "Proportional" / "Monospaced"; HTML export replaces the inline
     /// font-family with a CSS generic fallback chain so recipients without
     /// Helvetica/Menlo still render a sane font.
@@ -54,7 +54,7 @@ enum RichTextSupport {
         }
     }
 
-    /// Thunderbird-style: outgoing HTML uses only CSS generic families for
+    /// Outgoing HTML uses CSS generic families for
     /// the two picker aliases, so each recipient renders in their own system
     /// sans/mono font. The concrete editing font (Helvetica/Menlo) never
     /// leaks into the wire format.
@@ -471,9 +471,8 @@ struct FormattingToolbar: View {
             }
             Spacer()
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(nsColor: .controlBackgroundColor))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .sheet(isPresented: $showLinkSheet) {
             LinkInsertSheet(textView: textView) { showLinkSheet = false }
         }
@@ -564,9 +563,8 @@ struct FormattingToolbar: View {
             if let tv = textView { action(tv) }
         } label: {
             Image(systemName: systemImage)
-                .frame(width: 24, height: 20)
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.accessoryBarAction)
         .help(label)
 
         if let shortcut {

@@ -1,6 +1,6 @@
 //
 //  ComposeWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned Compose window. Multi-instance — N drafts = N controllers
 //  keyed by instanceID in AppDelegate.composeControllers.
@@ -32,6 +32,8 @@ final class ComposeWindowController: NSWindowController, NSWindowDelegate {
         )
         window.title = Self.title(for: mode)
         window.minSize = NSSize(width: 560, height: 400)
+        window.toolbarStyle = .unified
+        window.autorecalculatesKeyViewLoop = true
         // Manual frame persistence: NSWindow.setFrameAutosaveName refuses to
         // save when another window already uses the same name, which breaks
         // multi-instance Compose. Restore from UserDefaults instead.
@@ -86,7 +88,7 @@ final class ComposeWindowController: NSWindowController, NSWindowDelegate {
         )
     }
 
-    private static let frameDefaultsKey = "MyEmailComposeWindowFrame"
+    private static let frameDefaultsKey = "EmailXComposeWindowFrame"
 
     // MARK: - Titles
 

@@ -1,6 +1,6 @@
 //
 //  AccountSettingsView.swift
-//  MyEmail
+//  EmailX
 //
 //  Tab в Settings window: список аккаунтов + Add/Remove. В M2 — минимум для
 //  DOD: видно список, кнопка Add открывает sheet с Gmail/Generic flow,
@@ -202,7 +202,7 @@ private struct AccountListRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: iconName)
-                .font(.system(size: 18))
+                .font(.title3)
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 22)
 
@@ -341,6 +341,7 @@ struct AccountDetailPane: View {
                 .opacity(isSaved ? 1 : 0)
             Spacer()
             Button("Save") { save() }
+                .buttonStyle(.glassProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(accountName.trimmingCharacters(in: .whitespaces).isEmpty)
         }
@@ -410,21 +411,20 @@ struct AddRemoveToolbar: View {
         HStack(spacing: 6) {
             Button(action: onAdd) {
                 Image(systemName: "plus")
-                    .frame(width: 18, height: 18)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.glass)
+            .controlSize(.small)
 
             Button(action: onRemove) {
                 Image(systemName: "minus")
-                    .frame(width: 18, height: 18)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.glass)
+            .controlSize(.small)
             .disabled(!canRemove)
 
             Spacer()
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .padding(.vertical, 6)
     }
 }

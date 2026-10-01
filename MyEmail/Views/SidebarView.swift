@@ -41,9 +41,6 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            OfflineStatusBannerView()
-        }
         .onAppear { rebuildTrees() }
         .onChange(of: appState.folders) { _, _ in rebuildTrees() }
         .onChange(of: appState.accounts) { _, _ in rebuildTrees() }
@@ -338,7 +335,7 @@ struct FolderRowView: View {
     }
 }
 
-// MARK: - Filled unread badge (MailMate-style)
+// MARK: - Unread count
 
 struct UnreadBadge: View {
     let count: Int
@@ -346,10 +343,7 @@ struct UnreadBadge: View {
 
     var body: some View {
         Text("\(count)")
-            .font(.caption2.weight(.bold).monospacedDigit())
-            .foregroundStyle(muted ? Color.secondary : Color.white)
-            .padding(.horizontal, 5)
-            .padding(.vertical, 1)
-            .background(muted ? Color.secondary.opacity(0.2) : Color.accentColor, in: Capsule())
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(muted ? .tertiary : .secondary)
     }
 }

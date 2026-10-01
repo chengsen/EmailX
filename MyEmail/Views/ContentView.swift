@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  MyEmail
+//  EmailX
 //
 //  Main macOS 27 shell: sidebar | message list | reading pane.
 //
@@ -21,7 +21,6 @@ struct ContentView: View {
                     .overlay(alignment: .top) { banners }
             }
         }
-        .transaction { $0.animation = nil }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task { await initialSync() }
         .task { wireNotificationNavigation() }
@@ -56,8 +55,15 @@ struct ContentView: View {
     }
 
     private var banners: some View {
-        ErrorBannerView()
-            .padding(.top, 1)
+        VStack(spacing: 8) {
+            HStack {
+                Spacer()
+                OfflineStatusBannerView()
+            }
+            ErrorBannerView()
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
     }
 
     private func wireNotificationNavigation() {

@@ -1,15 +1,9 @@
 //
 //  ComposeHeaderFields.swift
-//  MyEmail
-//
-//  Header field grid (From/To/Cc/Bcc/Reply-To/Subject) and the recipient
-//  text field with inline autocomplete. Extracted from ComposeView to
-//  keep that file under the 500-line structural limit.
+//  EmailX
 //
 
 import SwiftUI
-
-// MARK: - Header fields
 
 struct ComposeHeaderFields: View {
     let accounts: [Account]
@@ -22,52 +16,60 @@ struct ComposeHeaderFields: View {
     @Binding var showExtraFields: Bool
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
+        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
             GridRow {
-                Text("From:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
+                fieldLabel("From")
                 fromPicker
             }
+
             GridRow {
-                Text("To:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
-                HStack(spacing: 4) {
-                    RecipientTextField(text: $to, placeholder: "Recipients")
+                fieldLabel("To")
+                HStack(spacing: 8) {
+                    RecipientTextField(text: $to, placeholder: String(localized: "Recipients"))
                     Button {
                         showExtraFields.toggle()
                     } label: {
-                        Image(systemName: showExtraFields ? "minus.circle" : "plus.circle")
-                            .foregroundStyle(.secondary)
+                        Label(
+                            showExtraFields ? "Hide Cc/Bcc" : "Add Cc/Bcc",
+                            systemImage: showExtraFields ? "minus.circle" : "plus.circle"
+                        )
+                        .labelStyle(.iconOnly)
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.glass)
                     .help(showExtraFields ? "Hide Cc/Bcc" : "Show Cc/Bcc")
                 }
             }
 
             if showExtraFields {
                 GridRow {
-                    Text("Cc:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
-                    RecipientTextField(text: $cc, placeholder: "Cc")
+                    fieldLabel("Cc")
+                    RecipientTextField(text: $cc, placeholder: String(localized: "Cc"))
                 }
                 GridRow {
-                    Text("Bcc:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
-                    RecipientTextField(text: $bcc, placeholder: "Bcc")
+                    fieldLabel("Bcc")
+                    RecipientTextField(text: $bcc, placeholder: String(localized: "Bcc"))
                 }
                 GridRow {
-                    Text("Reply-To:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
+                    fieldLabel("Reply-To")
                     TextField("Reply-To", text: $replyTo)
-                        .textFieldStyle(.roundedBorder)
                 }
             }
 
             GridRow {
-                Text("Subject:").foregroundStyle(.secondary).frame(width: 72, alignment: .trailing)
+                fieldLabel("Subject")
                 TextField("Subject", text: $subject)
-                    .textFieldStyle(.roundedBorder)
             }
         }
-        .padding(12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 
-    // MARK: - From picker
+    private func fieldLabel(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .gridColumnAlignment(.trailing)
+    }
 
     @ViewBuilder
     private var fromPicker: some View {
@@ -76,74 +78,79 @@ struct ComposeHeaderFields: View {
             Text(displayName(for: enabled.first))
                 .foregroundStyle(.primary)
         } else {
-            Picker("", selection: $selectedAccountID) {
+            Picker("From", selection: $selectedAccountID) {
                 ForEach(enabled) { account in
                     Text(displayName(for: account)).tag(account.id)
                 }
             }
             .labelsHidden()
             .pickerStyle(.menu)
-            .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private func displayName(for account: Account?) -> String {
         guard let account else { return "—" }
         let sender = account.senderName ?? account.name
-        if sender == account.email {
-            return account.email
-        }
-        return "\(sender) <\(account.email)>"
+        return sender == account.email
+            ? account.email
+            : "\(sender) <\(account.email)>"
     }
 }
-
-// MARK: - Recipient field with autocomplete
 
 struct RecipientTextField: View {
     @Binding var text: String
     let placeholder: String
 
+    @Environment(\.accessibilityShowBorders) private var showBorders
     @State private var suggestions: [RecipientSuggestion] = []
     @State private var showSuggestions = false
 
-    /// The portion of text after the last comma — used for autocomplete query.
     private var currentToken: String {
-        let parts = text.components(separatedBy: ",")
-        return parts.last?.trimmingCharacters(in: .whitespaces) ?? ""
+        text.components(separatedBy: ",")
+            .last?
+            .trimmingCharacters(in: .whitespaces) ?? ""
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 6) {
             TextField(placeholder, text: $text)
-                .textFieldStyle(.roundedBorder)
                 .onChange(of: text) { _, _ in updateSuggestions() }
 
             if showSuggestions {
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 2) {
                     ForEach(suggestions) { suggestion in
                         Button {
                             commitSuggestion(suggestion)
                         } label: {
-                            HStack(spacing: 6) {
-                                if let name = suggestion.name {
-                                    Text(name).font(.caption).lineLimit(1)
+                            HStack(spacing: 8) {
+                                VStack(alignment: .leading, spacing: 1) {
+                                    if let name = suggestion.name, !name.isEmpty {
+                                        Text(name)
+                                            .font(.callout)
+                                            .lineLimit(1)
+                                    }
+                                    Text(suggestion.email)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
                                 }
-                                Text(suggestion.email)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                                Spacer()
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
                             .contentShape(Rectangle())
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .background(.background)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .padding(4)
+                .glassEffect(in: .rect(cornerRadius: 12))
+                .overlay {
+                    if showBorders {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.secondary)
+                    }
+                }
             }
         }
     }

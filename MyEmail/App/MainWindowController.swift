@@ -1,6 +1,6 @@
 //
 //  MainWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned main window. Programmatic NSWindow + NSToolbar + SwiftUI
 //  RootView inside NSHostingView. Observes AppState via one-shot
@@ -36,6 +36,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.title = "EmailX"
         window.minSize = NSSize(width: 900, height: 600)
         window.identifier = mainWindowIdentifier
+        window.autorecalculatesKeyViewLoop = true
         // Manual frame persistence — `setFrameAutosaveName` stopped
         // restoring reliably once the window's identifier was used
         // elsewhere (toolbar/state restoration). Read/write our own
@@ -69,6 +70,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         trackTitle()
         trackThreading()
         trackToolbarVisibility()
+        trackSelectionToolbar()
         updateWindowTitle()
     }
 
@@ -160,6 +162,16 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
             toolbarDelegate.refreshThreadingSelection(isThreaded: appState.isThreaded)
         } onChange: { [weak self] in
             Task { @MainActor [weak self] in self?.trackThreading() }
+        }
+    }
+
+    private func trackSelectionToolbar() {
+        withObservationTracking {
+            toolbarDelegate.refreshSelectionActions(
+                hasSelection: !appState.selectedMessageIDs.isEmpty
+            )
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in self?.trackSelectionToolbar() }
         }
     }
 

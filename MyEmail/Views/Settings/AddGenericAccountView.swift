@@ -1,6 +1,6 @@
 //
 //  AddGenericAccountView.swift
-//  MyEmail
+//  EmailX
 //
 //  Шаг 2b в Add Account flow: плoш form с IMAP/SMTP параметрами.
 //  Test Connection в M2 — stub (пишет в LogService, не коннектится).
@@ -22,18 +22,14 @@ struct AddGenericAccountView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    AccountFormGeneralSection(form: $form)
-                    Divider()
-                    AccountFormIMAPSection(form: $form)
-                    Divider()
-                    AccountFormSMTPSection(form: $form)
-                }
-                .padding(16)
+
+            Form {
+                AccountFormGeneralSection(form: $form)
+                AccountFormIMAPSection(form: $form)
+                AccountFormSMTPSection(form: $form)
             }
-            Divider()
+            .formStyle(.grouped)
+
             footer
         }
     }
@@ -50,7 +46,7 @@ struct AddGenericAccountView: View {
                     Text("Back")
                 }
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.glass)
             .disabled(isSaving)
 
             Spacer()
@@ -80,11 +76,13 @@ struct AddGenericAccountView: View {
             Button("Test Connection") {
                 testConnection()
             }
+            .buttonStyle(.glass)
             .disabled(isSaving || !form.isValid)
 
             Button("Save") {
                 Task { await save() }
             }
+            .buttonStyle(.glassProminent)
             .keyboardShortcut(.defaultAction)
             .disabled(isSaving || !form.isValid)
         }
