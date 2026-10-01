@@ -257,7 +257,7 @@ struct MessageListTable: View {
     /// must be on the main thread, NOT inside an awaited Task started from
     /// an NSMenu handler (where the panel is silently swallowed).
     /// Save raw RFC822 source straight to ~/Downloads + reveal in Finder.
-    /// NSSavePanel is unusable in this app on macOS 26 (NSHostingView host
+    /// The app writes directly to Downloads from this context because a modal save panel
     /// silently swallows the panel), so we skip the dialog entirely.
     private func saveMessageToDownloads(_ messageID: UUID) async {
         do {
