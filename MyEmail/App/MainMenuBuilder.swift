@@ -319,7 +319,7 @@ final class MainMenuBuilder {
         let item = NSMenuItem()
         let menu = NSMenu(title: String(localized: "Help"))
 
-        menu.addItem(withTitle: String(localized: "MyEmail Help"),
+        menu.addItem(withTitle: String(localized: "EmailX Help"),
                     action: #selector(NSApplication.showHelp(_:)),
                     keyEquivalent: "?")
 
