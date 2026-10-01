@@ -1,6 +1,6 @@
 //
 //  MessageWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned standalone "read message" window. One controller per
 //  messageID — re-front if already open.
@@ -34,9 +34,11 @@ final class MessageWindowController: NSWindowController, NSWindowDelegate {
             defer: false
         )
         window.title = String(localized: "Message")
+        window.toolbarStyle = .unified
+        window.autorecalculatesKeyViewLoop = true
         window.minSize = NSSize(width: 500, height: 400)
         window.setFrameAutosaveName(
-            "MyEmailMessageWindow-\(messageID.uuidString.prefix(8))"
+            "EmailXMessageWindow-\(messageID.uuidString.prefix(8))"
         )
 
         let rootView = MessageDetailView(messageID: messageID)
