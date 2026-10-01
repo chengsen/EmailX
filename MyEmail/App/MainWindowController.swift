@@ -1,6 +1,6 @@
 //
 //  MainWindowController.swift
-//  MyEmail
+//  EmailX
 //
 //  AppKit-owned main window. Programmatic NSWindow + NSToolbar + SwiftUI
 //  RootView inside NSHostingView. Observes AppState via one-shot
@@ -36,6 +36,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate {
         window.title = "EmailX"
         window.minSize = NSSize(width: 900, height: 600)
         window.identifier = mainWindowIdentifier
+        window.autorecalculatesKeyViewLoop = true
         // Manual frame persistence — `setFrameAutosaveName` stopped
         // restoring reliably once the window's identifier was used
         // elsewhere (toolbar/state restoration). Read/write our own
