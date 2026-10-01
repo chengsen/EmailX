@@ -72,10 +72,10 @@ struct MessageListTable: View {
     /// Row height mapped from density setting (DESIGN.md §4.4).
     private var rowHeight: CGFloat {
         switch density {
-        case "compact": return 22
-        case "normal":  return 26
-        case "wide":    return 34
-        default:        return 22
+        case "compact": return 54
+        case "normal":  return 64
+        case "wide":    return 76
+        default:        return 64
         }
     }
 
